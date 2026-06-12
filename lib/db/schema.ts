@@ -255,15 +255,26 @@ export const entityNotes = pgTable('entity_notes', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// Relations
+
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
   invitations: many(invitations),
+  clients: many(clients),
+  vacancies: many(vacancies),
+  candidates: many(candidates),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
   teamMembers: many(teamMembers),
   invitationsSent: many(invitations),
+  assignedClients: many(clients),
+  assignedVacancies: many(vacancies, { relationName: 'recruiter' }),
+  managedVacancies: many(vacancies, { relationName: 'hiringManager' }),
+  submissions: many(submissions),
+  pipelineChanges: many(pipelineHistory),
+  entityNotes: many(entityNotes),
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
@@ -299,6 +310,94 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   }),
 }));
 
+export const clientsRelations = relations(clients, ({ one, many }) => ({
+  team: one(teams, {
+    fields: [clients.teamId],
+    references: [teams.id]
+  }),
+  assignedUser: one(users, {
+    fields: [clients.assignedUserId],
+    references: [users.id],
+  }),
+  contacts: many(clientContacts),
+  vacancies: many(vacancies),
+}));
+
+export const clientContactsRelations = relations(clientContacts, ({ one }) => ({
+  client: one(clients, {
+    fields: [clientContacts.clientId],
+    references: [clients.id],
+  }),
+})
+);
+
+export const vacanciesRelations = relations(vacancies, ({ one, many }) => ({
+  team: one(teams, {
+    fields: [vacancies.teamId],
+    references: [teams.id]
+  }),
+  client: one(clients, {
+    fields: [vacancies.clientId],
+    references: [clients.id],
+  }),
+  assignedRecruiter: one(users, {
+    fields: [vacancies.assignedRecruiterId],
+    references: [users.id],
+    relationName: 'recruiter',
+  }),
+  hiringManager: one(users, {
+    fields: [vacancies.hiringManagerId],
+    references: [users.id],
+    relationName: 'hiringManager',
+  }),
+  submissions: many(submissions),
+}));
+
+export const candidatesRelations = relations(candidates, ({ one, many }) => ({
+  team: one(teams, {
+    fields: [candidates.teamId],
+    references: [teams.id]
+  }),
+  submissions: many(submissions),
+}));
+
+export const submissionsRelations = relations(submissions, ({ one, many }) => ({
+  vacancy: one(vacancies, {
+    fields: [submissions.vacancyId],
+    references: [vacancies.id],
+  }),
+  candidate: one(candidates, {
+    fields: [submissions.candidateId],
+    references: [candidates.id],
+  }),
+  submittedBy: one(users, {
+    fields: [submissions.submittedBy],
+    references: [users.id],
+  }),
+  history: many(pipelineHistory),
+}));
+
+export const pipelineHistoryRelations = relations(pipelineHistory, ({ one }) => ({
+  submission: one(submissions, {
+    fields: [pipelineHistory.submissionId],
+    references: [submissions.id],
+  }),
+  changedBy: one(users, {
+    fields: [pipelineHistory.changedBy],
+    references: [users.id],
+  }),
+})
+);
+
+export const entityNotesRelations = relations(entityNotes, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [entityNotes.createdBy],
+    references: [users.id],
+  }),
+}));
+
+// Types
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Team = typeof teams.$inferSelect;
@@ -315,6 +414,23 @@ export type TeamDataWithMembers = Team & {
   })[];
 };
 
+export type Client = typeof clients.$inferSelect;
+export type NewClient = typeof clients.$inferInsert;
+export type ClientContact = typeof clientContacts.$inferSelect;
+export type NewClientContact = typeof clientContacts.$inferInsert;
+export type Vacancy = typeof vacancies.$inferSelect;
+export type NewVacancy = typeof vacancies.$inferInsert;
+export type Candidate = typeof candidates.$inferSelect;
+export type NewCandidate = typeof candidates.$inferInsert;
+export type Submission = typeof submissions.$inferSelect;
+export type NewSubmission = typeof submissions.$inferInsert;
+export type PipelineHistory = typeof pipelineHistory.$inferSelect;
+export type NewPipelineHistory = typeof pipelineHistory.$inferInsert;
+export type EntityNote = typeof entityNotes.$inferSelect;
+export type NewEntityNote = typeof entityNotes.$inferInsert;
+
+// Enums & Constants
+
 export enum ActivityType {
   SIGN_UP = 'SIGN_UP',
   SIGN_IN = 'SIGN_IN',
@@ -326,4 +442,43 @@ export enum ActivityType {
   REMOVE_TEAM_MEMBER = 'REMOVE_TEAM_MEMBER',
   INVITE_TEAM_MEMBER = 'INVITE_TEAM_MEMBER',
   ACCEPT_INVITATION = 'ACCEPT_INVITATION',
+
+  // CRM
+  CREATE_CLIENT = 'CREATE_CLIENT',
+  UPDATE_CLIENT = 'UPDATE_CLIENT',
+  ARCHIVE_CLIENT = 'ARCHIVE_CLIENT',
+  CREATE_VACANCY = 'CREATE_VACANCY',
+  UPDATE_VACANCY = 'UPDATE_VACANCY',
+  ARCHIVE_VACANCY = 'ARCHIVE_VACANCY',
+  CREATE_CANDIDATE = 'CREATE_CANDIDATE',
+  UPDATE_CANDIDATE = 'UPDATE_CANDIDATE',
+  ARCHIVE_CANDIDATE = 'ARCHIVE_CANDIDATE',
+  CREATE_SUBMISSION = 'CREATE_SUBMISSION',
+  UPDATE_SUBMISSION_STAGE = 'UPDATE_SUBMISSION_STAGE',
 }
+
+// PIPELINE_STAGES
+
+export const PIPELINE_STAGES = [
+  'sourced',
+  'screening',
+  'hr_interview',
+  'tech_interview',
+  'client_interview',
+  'offer',
+  'hired',
+  'rejected',
+] as const;
+
+export type PipelineStage = (typeof PIPELINE_STAGES)[number];
+
+export const PIPELINE_STAGE_LABELS: Record<PipelineStage, string> = {
+  sourced: 'Sourced',
+  screening: 'Screening',
+  hr_interview: 'HR Interview',
+  tech_interview: 'Tech Interview',
+  client_interview: 'Client Interview',
+  offer: 'Offer',
+  hired: 'Hired',
+  rejected: 'Rejected',
+};
