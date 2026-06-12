@@ -1,12 +1,75 @@
-import {
-  pgTable,
-  serial,
-  varchar,
-  text,
-  timestamp,
-  integer,
-} from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, serial, varchar, text, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+
+// Enums
+
+export const crmRoleEnum = pgEnum('crm_role', [
+  'admin',
+  'recruiter',
+  'hiring_manager',
+  'viewer',
+]);
+
+export const clientStatusEnum = pgEnum('client_status', [
+  'prospect',
+  'active',
+  'inactive',
+]);
+
+export const vacancyStatusEnum = pgEnum('vacancy_status', [
+  'open',
+  'on_hold',
+  'closed',
+  'filled',
+]);
+
+export const vacancyPriorityEnum = pgEnum('vacancy_priority', [
+  'low',
+  'medium',
+  'high',
+]);
+
+export const workTypeEnum = pgEnum('work_type', [
+  'remote',
+  'hybrid',
+  'onsite',
+]);
+
+export const seniorityEnum = pgEnum('seniority', [
+  'intern',
+  'junior',
+  'middle',
+  'senior',
+  'lead',
+  'principal',
+]);
+
+export const candidateStatusEnum = pgEnum('candidate_status', [
+  'active',
+  'passive',
+  'placed',
+  'blacklisted',
+]);
+
+export const pipelineStageEnum = pgEnum('pipeline_stage', [
+  'sourced',
+  'screening',
+  'hr_interview',
+  'tech_interview',
+  'client_interview',
+  'offer',
+  'hired',
+  'rejected',
+]);
+
+export const noteEntityTypeEnum = pgEnum('note_entity_type', [
+  'client',
+  'vacancy',
+  'candidate',
+  'submission',
+]);
+
+// Existing Tables (kept + extended)
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -14,6 +77,7 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   role: varchar('role', { length: 20 }).notNull().default('member'),
+  crmRole: crmRoleEnum('crm_role').notNull().default('viewer'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   deletedAt: timestamp('deleted_at'),
@@ -45,6 +109,8 @@ export const activityLogs = pgTable('activity_logs', {
     .references(() => teams.id),
   userId: integer('user_id').references(() => users.id),
   action: text('action').notNull(),
+  entityType: varchar('entity_type', { length: 50 }),
+  entityId: integer('entity_id'),
   timestamp: timestamp('timestamp').notNull().defaultNow(),
   ipAddress: varchar('ip_address', { length: 45 }),
 });
@@ -56,6 +122,7 @@ export const invitations = pgTable('invitations', {
     .references(() => teams.id),
   email: varchar('email', { length: 255 }).notNull(),
   role: varchar('role', { length: 50 }).notNull(),
+  crmRole: crmRoleEnum('crm_role').notNull().default('viewer'),
   invitedBy: integer('invited_by')
     .notNull()
     .references(() => users.id),
