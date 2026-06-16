@@ -40,7 +40,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    PROTECTED_ROUTES.map(route => `${route}/:path*`),
+    ...PROTECTED_ROUTES.map(route => `${route}/:path*`),
     '/sign-in',
     '/sign-up',
   ],
