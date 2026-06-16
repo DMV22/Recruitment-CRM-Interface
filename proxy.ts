@@ -11,7 +11,7 @@ const PROTECTED_ROUTES = [
   '/team'
 ];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
@@ -40,7 +40,12 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    ...PROTECTED_ROUTES.map(route => `${route}/:path*`),
+    '/dashboard/:path*',
+    '/clients/:path*',
+    '/vacancies/:path*',
+    '/candidates/:path*',
+    '/submissions/:path*',
+    '/team/:path*',
     '/sign-in',
     '/sign-up',
   ],
