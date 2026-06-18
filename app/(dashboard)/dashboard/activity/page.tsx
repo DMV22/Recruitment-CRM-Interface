@@ -1,9 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, LogOut, UserPlus, Lock, UserCog, AlertCircle, UserMinus, Mail, CheckCircle, type LucideIcon } from 'lucide-react';
+import {
+  Settings, LogOut, UserPlus, Lock, UserCog, AlertCircle, UserMinus, Mail, CheckCircle,
+  Building2, Briefcase, UserSquare2, FileCheck2, Archive, GitCommit, type LucideIcon
+} from 'lucide-react';
 import { ActivityType } from '@/lib/db/schema';
 import { getActivityLogs } from '@/lib/db/queries';
 
-const iconMap: Record<ActivityType, LucideIcon> = {
+const iconMap: Record<ActivityType, LucideIcon | undefined> = {
   [ActivityType.SIGN_UP]: UserPlus,
   [ActivityType.SIGN_IN]: UserCog,
   [ActivityType.SIGN_OUT]: LogOut,
@@ -14,6 +17,19 @@ const iconMap: Record<ActivityType, LucideIcon> = {
   [ActivityType.REMOVE_TEAM_MEMBER]: UserMinus,
   [ActivityType.INVITE_TEAM_MEMBER]: Mail,
   [ActivityType.ACCEPT_INVITATION]: CheckCircle,
+
+  // Custom CRM actions
+  [ActivityType.CREATE_CLIENT]: Building2,
+  [ActivityType.UPDATE_CLIENT]: Building2,
+  [ActivityType.ARCHIVE_CLIENT]: Archive,
+  [ActivityType.CREATE_VACANCY]: Briefcase,
+  [ActivityType.UPDATE_VACANCY]: Briefcase,
+  [ActivityType.ARCHIVE_VACANCY]: Archive,
+  [ActivityType.CREATE_CANDIDATE]: UserSquare2,
+  [ActivityType.UPDATE_CANDIDATE]: UserSquare2,
+  [ActivityType.ARCHIVE_CANDIDATE]: Archive,
+  [ActivityType.CREATE_SUBMISSION]: FileCheck2,
+  [ActivityType.UPDATE_SUBMISSION_STAGE]: GitCommit
 };
 
 function getRelativeTime(date: Date) {

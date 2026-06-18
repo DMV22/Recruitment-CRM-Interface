@@ -26,7 +26,7 @@
     "drizzle-orm": "^0.43.1",
     "jose": "^6.0.11",
     "lucide-react": "^0.511.0",
-    "next": "15.6.0-canary.59",
+    "next": "16.2.9",
     "postcss": "^8.5.3",
     "postgres": "^3.4.5",
     "radix-ui": "^1.4.2",
@@ -41,5 +41,8 @@
     "typescript": "^5.8.3",
     "zod": "^3.24.4",
     "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "baseline-browser-mapping": "^2.10.37"
   }
 }
