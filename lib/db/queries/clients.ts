@@ -105,3 +105,74 @@ export async function getClientContacts(clientId: number) {
     .where(eq(clientContacts.clientId, clientId))
     .orderBy(desc(clientContacts.isPrimary));
 }
+
+// ----- Create -----
+
+export async function createClient(
+  data: Omit<NewClient, 'id' | 'createdAt' | 'updatedAt'>,
+  userId: number
+) {
+  const [client] = await db
+    .insert(clients)
+    .values(data)
+    .returning();
+
+  await db.insert(activityLogs).values({
+    teamId: data.teamId,
+    userId,
+    action: ActivityType.CREATE_CLIENT,
+    entityType: 'client',
+    entityId: client.id,
+  });
+
+  return client;
+}
+
+// ----- Update -----
+
+export async function updateClient(
+  id: number,
+  teamId: number,
+  data: Partial<Omit<NewClient, 'id' | 'teamId' | 'createdAt'>>,
+  userId: number
+) {
+  const [updated] = await db
+    .update(clients)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(clients.id, id), eq(clients.teamId, teamId)))
+    .returning();
+
+  if (!updated) return null;
+
+  await db.insert(activityLogs).values({
+    teamId,
+    userId,
+    action: ActivityType.UPDATE_CLIENT,
+    entityType: 'client',
+    entityId: id,
+  });
+
+  return updated;
+}
+
+// ----- Delete (soft via status=inactive) / Hard delete -----
+
+export async function deleteClient(id: number, teamId: number, userId: number) {
+  // Hard delete - only if there are no active job openings
+  const [deleted] = await db
+    .delete(clients)
+    .where(and(eq(clients.id, id), eq(clients.teamId, teamId)))
+    .returning();
+
+  if (!deleted) return null;
+
+  await db.insert(activityLogs).values({
+    teamId,
+    userId,
+    action: ActivityType.ARCHIVE_CLIENT,
+    entityType: 'client',
+    entityId: id,
+  });
+
+  return deleted;
+}
