@@ -41,3 +41,4 @@ postgres_data/
 .env*.local
 
 scripts/test-*.ts
+app/**/test-ui/
