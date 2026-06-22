@@ -42,3 +42,4 @@ postgres_data/
 
 scripts/test-*.ts
 app/**/test-ui/
+app/**/test-table/
