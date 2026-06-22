@@ -1,4 +1,3 @@
-// components/clients/delete-client-dialog.tsx
 'use client';
 
 import { useTransition } from 'react';
@@ -37,8 +36,8 @@ export function DeleteClientDialog({ open, onClose, clientId, clientName }: Prop
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete client?</AlertDialogTitle>
-          <AlertDialogDescription>
-            <strong>{clientName}</strong> will be permanently deleted along
+          <AlertDialogDescription className="text-sm text-muted-foreground block">
+            <span className="font-bold text-foreground">{clientName}</span> will be permanently deleted along
             with all associated data. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
