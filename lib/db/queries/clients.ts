@@ -158,21 +158,33 @@ export async function updateClient(
 // ----- Delete (soft via status=inactive) / Hard delete -----
 
 export async function deleteClient(id: number, teamId: number, userId: number) {
-  // Hard delete - only if there are no active job openings
-  const [deleted] = await db
-    .delete(clients)
-    .where(and(eq(clients.id, id), eq(clients.teamId, teamId)))
-    .returning();
+  try {
+    return await db.transaction(async (tx) => {
 
-  if (!deleted) return null;
+      // Instead of .delete(), use .update()
+      const [updated] = await tx
+        .update(clients)
+        .set({
+          status: 'inactive',
+          updatedAt: new Date()
+        })
+        .where(and(eq(clients.id, id), eq(clients.teamId, teamId)))
+        .returning();
 
-  await db.insert(activityLogs).values({
-    teamId,
-    userId,
-    action: ActivityType.ARCHIVE_CLIENT,
-    entityType: 'client',
-    entityId: id,
-  });
+      if (!updated) return null;
 
-  return deleted;
+      await tx.insert(activityLogs).values({
+        teamId,
+        userId,
+        action: ActivityType.ARCHIVE_CLIENT,
+        entityType: 'client',
+        entityId: id,
+      });
+
+      return updated;
+    });
+  } catch (error) {
+    console.error("Error while archiving the client:", error);
+    return null;
+  }
 }
