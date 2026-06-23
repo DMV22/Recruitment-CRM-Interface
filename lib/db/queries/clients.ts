@@ -1,8 +1,7 @@
 import { db } from '@/lib/db/drizzle';
 import { clients, clientContacts, users, activityLogs, ActivityType } from '@/lib/db/schema';
-import type { NewClient, NewClientContact } from '@/lib/db/schema';
+import type { NewClient } from '@/lib/db/schema';
 import { eq, and, ilike, or, desc, count } from 'drizzle-orm';
-import { getUser } from '@/lib/db/queries';
 
 // ----- List -----
 

@@ -13,13 +13,23 @@ import { ClientStatusBadge } from '@/components/clients/client-status-badge';
 import { ClientForm } from '@/components/clients/client-form';
 import { DeleteClientDialog } from '@/components/clients/delete-client-dialog';
 
-import type { Client, User } from '@/lib/db/schema';
+import type { User } from '@/lib/db/schema';
 import { hasPermission } from '@/lib/rbac';
 
 import { Plus, Pencil, Trash2, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 
-type ClientRow = Pick<Client, 'id' | 'name' | 'industry' | 'website' | 'status' | 'updatedAt'> & {
-  assignedUser: { id: number; name: string | null } | null;
+type ClientRow = {
+  id: number;
+  name: string;
+  industry: string | null;
+  website: string | null;
+  status: 'prospect' | 'active' | 'inactive';
+  notes: string | null;
+  teamId: number;
+  assignedUserId: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+  assignedUser: { id: number | null; name: string | null } | null;
 };
 
 type Props = {
@@ -38,7 +48,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
   const searchParams = useSearchParams();
 
   const [formOpen, setFormOpen] = useState(false);
-  const [editClient, setEditClient] = useState<Client | null>(null);
+  const [editClient, setEditClient] = useState<ClientRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ClientRow | null>(null);
   const [, startTransition] = useTransition();
 
@@ -83,7 +93,10 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
     }),
     col.accessor('status', {
       header: 'Status',
-      cell: (info) => <ClientStatusBadge status={info.getValue()} />,
+      cell: (info) => {
+        // console.log('status value:', info.getValue(), typeof info.getValue());
+        return <ClientStatusBadge status={info.getValue()} />;
+      },
     }),
     col.accessor('assignedUser', {
       header: 'Assigned to',
@@ -117,7 +130,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
               size="icon"
               aria-label={`Edit ${row.original.name}`}
               onClick={() => {
-                setEditClient(row.original as unknown as Client);
+                setEditClient(row.original);
                 setFormOpen(true);
               }}
             >
@@ -271,6 +284,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
 
       {/* Form Sheet */}
       <ClientForm
+        key={editClient ? `edit-${editClient.id}` : 'create'}
         open={formOpen}
         onClose={() => { setFormOpen(false); setEditClient(null) }}
         client={editClient}
