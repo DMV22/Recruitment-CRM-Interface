@@ -95,3 +95,44 @@ export async function getVacancies(
     totalPages: Math.ceil(total / perPage),
   };
 }
+
+// ----- Single -----
+
+export async function getVacancyById(id: number, teamId: number) {
+  const [vacancy] = await db
+    .select({
+      id: vacancies.id,
+      title: vacancies.title,
+      description: vacancies.description,
+      techStack: vacancies.techStack,
+      seniority: vacancies.seniority,
+      salaryMin: vacancies.salaryMin,
+      salaryMax: vacancies.salaryMax,
+      currency: vacancies.currency,
+      location: vacancies.location,
+      workType: vacancies.workType,
+      status: vacancies.status,
+      priority: vacancies.priority,
+      teamId: vacancies.teamId,
+      clientId: vacancies.clientId,
+      assignedRecruiterId: vacancies.assignedRecruiterId,
+      hiringManagerId: vacancies.hiringManagerId,
+      deadlineAt: vacancies.deadlineAt,
+      createdAt: vacancies.createdAt,
+      updatedAt: vacancies.updatedAt,
+      client: {
+        id: clients.id,
+        name: clients.name,
+      },
+      assignedRecruiter: {
+        id: users.id,
+        name: users.name,
+      },
+    })
+    .from(vacancies)
+    .leftJoin(clients, eq(vacancies.clientId, clients.id))
+    .leftJoin(users, eq(vacancies.assignedRecruiterId, users.id))
+    .where(and(eq(vacancies.id, id), eq(vacancies.teamId, teamId)));
+
+  return vacancy ?? null;
+}
