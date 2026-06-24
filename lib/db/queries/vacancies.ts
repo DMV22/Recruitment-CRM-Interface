@@ -1,5 +1,6 @@
 import { db } from '@/lib/db/drizzle';
-import { vacancies, clients, users } from '@/lib/db/schema';
+import { vacancies, clients, users, activityLogs, ActivityType } from '@/lib/db/schema';
+import type { NewVacancy } from '@/lib/db/schema';
 import { eq, and, ilike, desc, count } from 'drizzle-orm';
 
 // ----- Types -----
@@ -135,4 +136,14 @@ export async function getVacancyById(id: number, teamId: number) {
     .where(and(eq(vacancies.id, id), eq(vacancies.teamId, teamId)));
 
   return vacancy ?? null;
+}
+
+// ----- Clients for Select -----
+
+export async function getClientsForSelect(teamId: number) {
+  return db
+    .select({ id: clients.id, name: clients.name })
+    .from(clients)
+    .where(and(eq(clients.teamId, teamId), eq(clients.status, 'active')))
+    .orderBy(clients.name);
 }
