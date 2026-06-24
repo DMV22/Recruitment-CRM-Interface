@@ -48,6 +48,7 @@ export async function getVacancies(
 
   const [rows, [{ total }]] = await Promise.all([
     db
+      .with(recruiter)
       .select({
         id: vacancies.id,
         title: vacancies.title,
@@ -85,7 +86,7 @@ export async function getVacancies(
       .limit(perPage)
       .offset(offset),
 
-    db.select({ total: count() }).from(vacancies).where(where),
+    db.with(recruiter).select({ total: count() }).from(vacancies).where(where),
   ]);
 
   return {
