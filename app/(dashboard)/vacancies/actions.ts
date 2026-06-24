@@ -24,3 +24,28 @@ const vacancySchema = z.object({
   hiringManagerId: z.coerce.number().optional().or(z.literal('')),
   deadlineAt: z.string().optional().or(z.literal('')),
 });
+
+export type VacancyFormState = {
+  error?: string;
+  fieldErrors?: Partial<Record<string, string[]>>;
+  success?: boolean;
+};
+
+// ----- Helpers -----
+
+function parseOptionalNumber(value: unknown) {
+  if (value === '' || value === undefined || value === null) return null;
+  const n = Number(value);
+  return isNaN(n) ? null : n;
+}
+
+function parseOptionalString(value: unknown) {
+  if (value === '' || value === undefined) return null;
+  return value as string;
+}
+
+function parseOptionalDate(value: unknown) {
+  if (value === '' || value === undefined || value === null) return null;
+  const d = new Date(value as string);
+  return isNaN(d.getTime()) ? null : d;
+}
