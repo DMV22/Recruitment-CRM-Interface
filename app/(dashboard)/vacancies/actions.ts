@@ -1,6 +1,13 @@
 'use server';
 
 import { z } from 'zod';
+import { revalidateTag } from 'next/cache';
+import { redirect } from 'next/navigation';
+
+import { getUser } from '@/lib/db/queries';
+import { getUserTeamId } from '@/lib/db/queries';
+import { hasPermission } from '@/lib/rbac';
+import { createVacancy, updateVacancy, deleteVacancy } from '@/lib/db/queries/vacancies';
 
 // ----- Schema -----
 
@@ -48,4 +55,148 @@ function parseOptionalDate(value: unknown) {
   if (value === '' || value === undefined || value === null) return null;
   const d = new Date(value as string);
   return isNaN(d.getTime()) ? null : d;
+}
+
+// ----- Create -----
+
+export async function createVacancyAction(_prev: VacancyFormState, formData: FormData): Promise<VacancyFormState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'vacancies.create')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const raw = {
+    title: formData.get('title'),
+    clientId: formData.get('clientId'),
+    description: formData.get('description'),
+    techStack: formData.get('techStack'),
+    seniority: formData.get('seniority'),
+    salaryMin: formData.get('salaryMin'),
+    salaryMax: formData.get('salaryMax'),
+    currency: formData.get('currency') || 'USD',
+    location: formData.get('location'),
+    workType: formData.get('workType'),
+    status: formData.get('status'),
+    priority: formData.get('priority'),
+    assignedRecruiterId: formData.get('assignedRecruiterId'),
+    hiringManagerId: formData.get('hiringManagerId'),
+    deadlineAt: formData.get('deadlineAt'),
+  };
+
+  const parsed = vacancySchema.safeParse(raw);
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const d = parsed.data;
+
+  await createVacancy(
+    {
+      teamId,
+      title: d.title,
+      clientId: d.clientId,
+      description: parseOptionalString(d.description),
+      techStack: parseOptionalString(d.techStack),
+      seniority: d.seniority || null,
+      salaryMin: parseOptionalNumber(d.salaryMin),
+      salaryMax: parseOptionalNumber(d.salaryMax),
+      currency: d.currency,
+      location: parseOptionalString(d.location),
+      workType: d.workType,
+      status: d.status,
+      priority: d.priority,
+      assignedRecruiterId: parseOptionalNumber(d.assignedRecruiterId),
+      hiringManagerId: parseOptionalNumber(d.hiringManagerId),
+      deadlineAt: parseOptionalDate(d.deadlineAt),
+    },
+    user.id
+  );
+
+  revalidateTag('vacancies', 'default');
+
+  return { success: true }
+}
+
+// ----- Update -----
+
+export async function updateVacancyAction(id: number, _prev: VacancyFormState, formData: FormData): Promise<VacancyFormState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'vacancies.update')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const raw = {
+    title: formData.get('title'),
+    clientId: formData.get('clientId'),
+    description: formData.get('description'),
+    techStack: formData.get('techStack'),
+    seniority: formData.get('seniority'),
+    salaryMin: formData.get('salaryMin'),
+    salaryMax: formData.get('salaryMax'),
+    currency: formData.get('currency') || 'USD',
+    location: formData.get('location'),
+    workType: formData.get('workType'),
+    status: formData.get('status'),
+    priority: formData.get('priority'),
+    assignedRecruiterId: formData.get('assignedRecruiterId'),
+    hiringManagerId: formData.get('hiringManagerId'),
+    deadlineAt: formData.get('deadlineAt'),
+  };
+
+  const parsed = vacancySchema.safeParse(raw);
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const d = parsed.data;
+
+  const updated = await updateVacancy(
+    id,
+    teamId,
+    {
+      title: d.title,
+      clientId: d.clientId,
+      description: parseOptionalString(d.description),
+      techStack: parseOptionalString(d.techStack),
+      seniority: d.seniority || null,
+      salaryMin: parseOptionalNumber(d.salaryMin),
+      salaryMax: parseOptionalNumber(d.salaryMax),
+      currency: d.currency,
+      location: parseOptionalString(d.location),
+      workType: d.workType,
+      status: d.status,
+      priority: d.priority,
+      assignedRecruiterId: parseOptionalNumber(d.assignedRecruiterId),
+      hiringManagerId: parseOptionalNumber(d.hiringManagerId),
+      deadlineAt: parseOptionalDate(d.deadlineAt),
+    },
+    user.id
+  );
+
+  if (!updated) return { error: 'Vacancy not found or access denied' };
+
+  revalidateTag('vacancies', 'default');
+  revalidateTag(`vacancy-${id}`, 'default');
+  return { success: true };
+}
+
+// ----- Delete -----
+
+export async function deleteVacancyAction(id: number): Promise<VacancyFormState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'vacancies.archive')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const deleted = await deleteVacancy(id, teamId, user.id);
+  if (!deleted) return { error: 'Vacancy not found or access denied' };
+
+  revalidateTag('vacancies', 'default');
+  redirect('/vacancies');
 }
