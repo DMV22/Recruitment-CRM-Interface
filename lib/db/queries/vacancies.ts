@@ -147,3 +147,81 @@ export async function getClientsForSelect(teamId: number) {
     .where(and(eq(clients.teamId, teamId), eq(clients.status, 'active')))
     .orderBy(clients.name);
 }
+
+// ----- Create -----
+
+export async function createVacancy(
+  data: Omit<NewVacancy, 'id' | 'createdAt' | 'updatedAt'>,
+  userId: number
+) {
+  const [vacancy] = await db.insert(vacancies).values(data).returning();
+
+  await db.insert(activityLogs).values({
+    teamId: data.teamId,
+    userId,
+    action: ActivityType.CREATE_VACANCY,
+    entityType: 'vacancies',
+    entityId: vacancy.id,
+  });
+
+  return vacancy;
+}
+
+// ----- Update -----
+
+export async function updateVacancy(
+  id: number,
+  teamId: number,
+  data: Partial<Omit<NewVacancy, 'id' | 'teamId' | 'createdAt'>>,
+  userId: number
+) {
+  const [updated] = await db
+    .update(vacancies)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(vacancies.id, id), eq(vacancies.teamId, teamId)))
+    .returning();
+
+  if (!updated) return null;
+
+  await db.insert(activityLogs).values({
+    teamId,
+    userId,
+    action: ActivityType.UPDATE_VACANCY,
+    entityType: 'vacancy',
+    entityId: id,
+  });
+
+  return updated;
+}
+
+// ----- Delete (soft via status=closed)  -----
+
+export async function deleteVacancy(id: number, teamId: number, userId: number) {
+  try {
+    return await db.transaction(async (tx) => {
+      const [updated] = await tx
+        .update(vacancies)
+        .set({
+          status: 'closed',
+          updatedAt: new Date()
+        })
+        .where(and(eq(vacancies.id, id), eq(vacancies.teamId, teamId)))
+        .returning();
+
+      if (!updated) return null;
+
+      await tx.insert(activityLogs).values({
+        teamId,
+        userId,
+        action: ActivityType.ARCHIVE_VACANCY,
+        entityType: 'vacancy',
+        entityId: id,
+      });
+
+      return updated;
+    });
+  } catch (error) {
+    console.error("Error while archiving the vacancy:", error);
+    return null;
+  }
+}
