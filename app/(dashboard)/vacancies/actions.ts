@@ -9,31 +9,61 @@ import { getUserTeamId } from '@/lib/db/queries';
 import { hasPermission } from '@/lib/rbac';
 import { createVacancy, updateVacancy, deleteVacancy } from '@/lib/db/queries/vacancies';
 
+// ----- Helpers -----
+
+const nullableString = z.preprocess((value) => {
+  if (value === '' || value === undefined || value === null) {
+    return null;
+  }
+  return value;
+},
+  z.string().nullable()
+);
+
+const nullableNumber = z.preprocess((value) => {
+  if (value === '' || value === undefined || value === null || value === 'unassigned') {
+    return null;
+  }
+  const num = Number(value);
+
+  return Number.isNaN(num) ? null : num;
+},
+  z.number().min(0).nullable()
+);
+
+const nullableDate = z.preprocess((value) => {
+  if (value === '' || value === undefined || value === null) {
+    return null;
+  }
+  const date = new Date(value as string);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+},
+  z.date().nullable()
+);
+
 // ----- Schema -----
 
 const vacancySchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
-  clientId: z.coerce.number({ invalid_type_error: 'Client is required' }).min(1, 'Client is required'),
-  // Use .transform to automatically clean up lines
-  description: z.string().max(5000).optional().or(z.literal('')).transform(parseOptionalString),
-  techStack: z.string().max(500).optional().or(z.literal('')).transform(parseOptionalString),
-  seniority: z
-    .enum(['intern', 'junior', 'middle', 'senior', 'lead', 'principal'])
-    .optional()
-    .or(z.literal(''))
-    .transform(v => v || null),
-  // Automatically parse numbers
-  salaryMin: z.coerce.number().min(0).optional().or(z.literal('')).transform(parseOptionalNumber),
-  salaryMax: z.coerce.number().min(0).optional().or(z.literal('')).transform(parseOptionalNumber),
+  clientId: z.coerce.number({ invalid_type_error: 'Client is required' })
+    .min(1, 'Client is required'),
+  description: nullableString.pipe(z.string().max(5000).nullable()),
+  techStack: nullableString.pipe(z.string().max(500).nullable()),
+  seniority: z.preprocess(
+    (value) => (value === '' ? null : value),
+    z.enum(['intern', 'junior', 'middle', 'senior', 'lead', 'principal']).nullable()
+  ),
+  salaryMin: nullableNumber,
+  salaryMax: nullableNumber,
   currency: z.string().max(10).default('USD'),
-  location: z.string().max(100).optional().or(z.literal('')).transform(parseOptionalString),
+  location: nullableString.pipe(z.string().max(100).nullable()),
   workType: z.enum(['remote', 'hybrid', 'onsite']).default('remote'),
   status: z.enum(['open', 'on_hold', 'closed', 'filled']).default('open'),
   priority: z.enum(['low', 'medium', 'high']).default('medium'),
-  assignedRecruiterId: z.coerce.number().optional().or(z.literal('')).transform(parseOptionalNumber),
-  hiringManagerId: z.coerce.number().optional().or(z.literal('')).transform(parseOptionalNumber),
-  // Automatically parse date
-  deadlineAt: z.string().optional().or(z.literal('')).transform(parseOptionalDate),
+  assignedRecruiterId: nullableNumber,
+  hiringManagerId: nullableNumber,
+  deadlineAt: nullableDate,
 });
 
 
@@ -43,34 +73,12 @@ export type VacancyFormState = {
   success?: boolean;
 };
 
-// ----- Helpers -----
-
-function parseOptionalNumber(value: unknown) {
-  if (value === '' || value === undefined || value === null) return null;
-  const n = Number(value);
-  return isNaN(n) ? null : n;
-}
-
-function parseOptionalString(value: unknown) {
-  if (value === '' || value === undefined) return null;
-  return value as string;
-}
-
-function parseOptionalDate(value: unknown) {
-  if (value === '' || value === undefined || value === null) return null;
-  const d = new Date(value as string);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-
 function validateVacancyForm(formData: FormData) {
   // Automatically collects all key-value pairs from the form into a single object
   const raw = Object.fromEntries(formData.entries());
-  if (!raw.currency) raw.currency = 'USD';
+  console.log(raw);
 
-  // Convert “unassigned” to an empty string before validation
-  if (raw.assignedRecruiterId === 'unassigned') raw.assignedRecruiterId = '';
-  if (raw.hiringManagerId === 'unassigned') raw.hiringManagerId = '';
+  if (!raw.currency) raw.currency = 'USD';
 
   return vacancySchema.safeParse(raw);
 }
