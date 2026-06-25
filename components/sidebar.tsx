@@ -32,7 +32,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, permission: 'dashboard.read' },
   { label: 'Clients', href: '/clients', icon: Building2, permission: 'clients.read' },
-  { label: 'Vacancies', href: '#', icon: Briefcase, permission: 'vacancies.read' },
+  { label: 'Vacancies', href: '/vacancies', icon: Briefcase, permission: 'vacancies.read' },
   { label: 'Candidates', href: '#', icon: Users, permission: 'candidates.read' },
   { label: 'Submissions', href: '#', icon: GitPullRequest, permission: 'submissions.read' },
   { label: 'Team', href: '#', icon: UsersRound, permission: 'team.read' },
