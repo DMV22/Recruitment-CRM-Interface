@@ -68,6 +68,10 @@ function validateVacancyForm(formData: FormData) {
   const raw = Object.fromEntries(formData.entries());
   if (!raw.currency) raw.currency = 'USD';
 
+  // Convert “unassigned” to an empty string before validation
+  if (raw.assignedRecruiterId === 'unassigned') raw.assignedRecruiterId = '';
+  if (raw.hiringManagerId === 'unassigned') raw.hiringManagerId = '';
+
   return vacancySchema.safeParse(raw);
 }
 
