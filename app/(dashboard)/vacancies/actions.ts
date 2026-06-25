@@ -14,23 +14,28 @@ import { createVacancy, updateVacancy, deleteVacancy } from '@/lib/db/queries/va
 const vacancySchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
   clientId: z.coerce.number({ invalid_type_error: 'Client is required' }).min(1, 'Client is required'),
-  description: z.string().max(5000).optional().or(z.literal('')),
-  techStack: z.string().max(500).optional().or(z.literal('')),
+  // Use .transform to automatically clean up lines
+  description: z.string().max(5000).optional().or(z.literal('')).transform(parseOptionalString),
+  techStack: z.string().max(500).optional().or(z.literal('')).transform(parseOptionalString),
   seniority: z
     .enum(['intern', 'junior', 'middle', 'senior', 'lead', 'principal'])
     .optional()
-    .or(z.literal('')),
-  salaryMin: z.coerce.number().min(0).optional().or(z.literal('')),
-  salaryMax: z.coerce.number().min(0).optional().or(z.literal('')),
+    .or(z.literal(''))
+    .transform(v => v || null),
+  // Automatically parse numbers
+  salaryMin: z.coerce.number().min(0).optional().or(z.literal('')).transform(parseOptionalNumber),
+  salaryMax: z.coerce.number().min(0).optional().or(z.literal('')).transform(parseOptionalNumber),
   currency: z.string().max(10).default('USD'),
-  location: z.string().max(100).optional().or(z.literal('')),
+  location: z.string().max(100).optional().or(z.literal('')).transform(parseOptionalString),
   workType: z.enum(['remote', 'hybrid', 'onsite']).default('remote'),
   status: z.enum(['open', 'on_hold', 'closed', 'filled']).default('open'),
   priority: z.enum(['low', 'medium', 'high']).default('medium'),
-  assignedRecruiterId: z.coerce.number().optional().or(z.literal('')),
-  hiringManagerId: z.coerce.number().optional().or(z.literal('')),
-  deadlineAt: z.string().optional().or(z.literal('')),
+  assignedRecruiterId: z.coerce.number().optional().or(z.literal('')).transform(parseOptionalNumber),
+  hiringManagerId: z.coerce.number().optional().or(z.literal('')).transform(parseOptionalNumber),
+  // Automatically parse date
+  deadlineAt: z.string().optional().or(z.literal('')).transform(parseOptionalDate),
 });
+
 
 export type VacancyFormState = {
   error?: string;
@@ -57,6 +62,15 @@ function parseOptionalDate(value: unknown) {
   return isNaN(d.getTime()) ? null : d;
 }
 
+
+function validateVacancyForm(formData: FormData) {
+  // Automatically collects all key-value pairs from the form into a single object
+  const raw = Object.fromEntries(formData.entries());
+  if (!raw.currency) raw.currency = 'USD';
+
+  return vacancySchema.safeParse(raw);
+}
+
 // ----- Create -----
 
 export async function createVacancyAction(_prev: VacancyFormState, formData: FormData): Promise<VacancyFormState> {
@@ -67,49 +81,15 @@ export async function createVacancyAction(_prev: VacancyFormState, formData: For
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const raw = {
-    title: formData.get('title'),
-    clientId: formData.get('clientId'),
-    description: formData.get('description'),
-    techStack: formData.get('techStack'),
-    seniority: formData.get('seniority'),
-    salaryMin: formData.get('salaryMin'),
-    salaryMax: formData.get('salaryMax'),
-    currency: formData.get('currency') || 'USD',
-    location: formData.get('location'),
-    workType: formData.get('workType'),
-    status: formData.get('status'),
-    priority: formData.get('priority'),
-    assignedRecruiterId: formData.get('assignedRecruiterId'),
-    hiringManagerId: formData.get('hiringManagerId'),
-    deadlineAt: formData.get('deadlineAt'),
-  };
-
-  const parsed = vacancySchema.safeParse(raw);
+  const parsed = validateVacancyForm(formData);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
-  const d = parsed.data;
-
   await createVacancy(
     {
       teamId,
-      title: d.title,
-      clientId: d.clientId,
-      description: parseOptionalString(d.description),
-      techStack: parseOptionalString(d.techStack),
-      seniority: d.seniority || null,
-      salaryMin: parseOptionalNumber(d.salaryMin),
-      salaryMax: parseOptionalNumber(d.salaryMax),
-      currency: d.currency,
-      location: parseOptionalString(d.location),
-      workType: d.workType,
-      status: d.status,
-      priority: d.priority,
-      assignedRecruiterId: parseOptionalNumber(d.assignedRecruiterId),
-      hiringManagerId: parseOptionalNumber(d.hiringManagerId),
-      deadlineAt: parseOptionalDate(d.deadlineAt),
+      ...parsed.data,
     },
     user.id
   );
@@ -129,51 +109,15 @@ export async function updateVacancyAction(id: number, _prev: VacancyFormState, f
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const raw = {
-    title: formData.get('title'),
-    clientId: formData.get('clientId'),
-    description: formData.get('description'),
-    techStack: formData.get('techStack'),
-    seniority: formData.get('seniority'),
-    salaryMin: formData.get('salaryMin'),
-    salaryMax: formData.get('salaryMax'),
-    currency: formData.get('currency') || 'USD',
-    location: formData.get('location'),
-    workType: formData.get('workType'),
-    status: formData.get('status'),
-    priority: formData.get('priority'),
-    assignedRecruiterId: formData.get('assignedRecruiterId'),
-    hiringManagerId: formData.get('hiringManagerId'),
-    deadlineAt: formData.get('deadlineAt'),
-  };
-
-  const parsed = vacancySchema.safeParse(raw);
+  const parsed = validateVacancyForm(formData);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
-  const d = parsed.data;
-
   const updated = await updateVacancy(
     id,
     teamId,
-    {
-      title: d.title,
-      clientId: d.clientId,
-      description: parseOptionalString(d.description),
-      techStack: parseOptionalString(d.techStack),
-      seniority: d.seniority || null,
-      salaryMin: parseOptionalNumber(d.salaryMin),
-      salaryMax: parseOptionalNumber(d.salaryMax),
-      currency: d.currency,
-      location: parseOptionalString(d.location),
-      workType: d.workType,
-      status: d.status,
-      priority: d.priority,
-      assignedRecruiterId: parseOptionalNumber(d.assignedRecruiterId),
-      hiringManagerId: parseOptionalNumber(d.hiringManagerId),
-      deadlineAt: parseOptionalDate(d.deadlineAt),
-    },
+    parsed.data, // Simply pass a clean object
     user.id
   );
 
