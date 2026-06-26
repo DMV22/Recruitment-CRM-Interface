@@ -412,16 +412,29 @@
     @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
   }
 
-  .status-badge-prospect {
+  .status-badge-prospect,
+  .status-badge-on-hold,
+  .status-badge-medium {
     @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
   }
 
-  .status-badge-active {
+  .status-badge-active,
+  .status-badge-open {
     @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
   }
 
-  .status-badge-inactive {
+  .status-badge-inactive,
+  .status-badge-closed,
+  .status-badge-low {
     @apply bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400;
+  }
+
+  .status-badge-filled {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400;
+  }
+
+  .status-badge-high {
+    @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
   }
 
   /* --- Кнопки / іконки --- */
@@ -478,5 +491,58 @@
 
   .text-meta {
     @apply text-xs text-muted-foreground;
+  }
+
+  /* --- Vacancies page --- */
+  .page-title-lg {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  /* --- Vacancy form --- */
+  .form-grid {
+    @apply mt-6 grid grid-cols-1 gap-5 md:grid-cols-2;
+  }
+
+  .form-field-wide {
+    @apply space-y-1.5 md:col-span-2;
+  }
+
+  /* --- Vacancy skeleton --- */
+  .skeleton-header-row {
+    @apply grid grid-cols-7 gap-4 border-b px-4 py-3;
+  }
+
+  .skeleton-body-row {
+    @apply grid grid-cols-7 gap-4;
+  }
+
+  /* --- Salary display --- */
+  .salary-text {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* --- Vacancy detail page --- */
+  .vacancy-meta-row {
+    @apply flex flex-wrap items-center gap-4 text-sm text-muted-foreground;
+  }
+
+  .vacancy-meta-item {
+    @apply inline-flex items-center gap-1.5;
+  }
+
+  .detail-field {
+    @apply space-y-1;
+  }
+
+  .detail-field-label {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .snapshot-item {
+    @apply flex items-center gap-2 text-muted-foreground;
+  }
+
+  .snapshot-placeholder {
+    @apply rounded-md border border-dashed p-4 text-muted-foreground;
   }
 }

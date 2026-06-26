@@ -64,35 +64,35 @@ export default async function VacancyDetailPage({ params }: PageProps) {
   if (user.crmRole === 'hiring_manager' && vacancy.hiringManagerId !== user.id) notFound();
 
   return (
-    <div className="space-y-6">
+    <div className="page-content">
       <Link
         href="/vacancies"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        className="back-link"
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ArrowLeft className="icon-md" />
         Back to vacancies
       </Link>
 
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">{vacancy.title}</h1>
+        <div className="detail-title">
+          <h1 className="page-title-lg">{vacancy.title}</h1>
           <VacancyStatusBadge status={vacancy.status} />
           <VacancyPriorityBadge priority={vacancy.priority} />
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <Building2 className="h-4 w-4" />
+        <div className="vacancy-meta-row">
+          <span className="vacancy-meta-item">
+            <Building2 className="icon-md" />
             {vacancy.client?.name ?? '—'}
           </span>
 
-          <span className="inline-flex items-center gap-1.5">
-            <Briefcase className="h-4 w-4" />
+          <span className="vacancy-meta-item">
+            <Briefcase className="icon-md" />
             {vacancy.workType}
           </span>
 
-          <span className="inline-flex items-center gap-1.5">
-            <MapPin className="h-4 w-4" />
+          <span className="vacancy-meta-item">
+            <MapPin className="icon-md" />
             {vacancy.location ?? '—'}
           </span>
         </div>
@@ -105,41 +105,41 @@ export default async function VacancyDetailPage({ params }: PageProps) {
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Client</p>
+              <div className="detail-field">
+                <p className="detail-field-label">Client</p>
                 <p className="font-medium">{vacancy.client?.name ?? '—'}</p>
               </div>
 
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Seniority</p>
+              <div className="detail-field">
+                <p className="detail-field-label">Seniority</p>
                 <p className="font-medium">{vacancy.seniority ?? '—'}</p>
               </div>
 
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Tech stack</p>
+              <div className="detail-field">
+                <p className="detail-field-label">Tech stack</p>
                 <p className="font-medium">{vacancy.techStack ?? '—'}</p>
               </div>
 
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Salary</p>
+              <div className="detail-field">
+                <p className="detail-field-label">Salary</p>
                 <p className="font-medium">
                   {formatSalary(vacancy.salaryMin, vacancy.salaryMax, vacancy.currency)}
                 </p>
               </div>
 
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Deadline</p>
+              <div className="detail-field">
+                <p className="detail-field-label">Deadline</p>
                 <p className="font-medium">{formatDeadline(vacancy.deadlineAt)}</p>
               </div>
 
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Created</p>
+              <div className="detail-field">
+                <p className="detail-field-label">Created</p>
                 <p className="font-medium">{formatDeadline(vacancy.createdAt)}</p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Description</p>
+              <p className="detail-field-label">Description</p>
               <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
                 {vacancy.description ?? 'No description provided.'}
               </p>
@@ -147,22 +147,22 @@ export default async function VacancyDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
+        <div className="page-content">
           <Card>
             <CardHeader>
               <CardTitle>Assignments</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Assigned recruiter</p>
-                <p className="inline-flex items-center gap-2 font-medium">
-                  <User2 className="h-4 w-4 text-muted-foreground" />
+              <div className="detail-field">
+                <p className="detail-field-label">Assigned recruiter</p>
+                <p className="vacancy-meta-item font-medium">
+                  <User2 className="icon-md text-muted-foreground" />
                   {vacancy.assignedRecruiter?.name ?? 'Unassigned'}
                 </p>
               </div>
 
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Hiring manager ID</p>
+              <div className="detail-field">
+                <p className="detail-field-label">Hiring manager ID</p>
                 <p className="font-medium">{vacancy.hiringManagerId ?? '—'}</p>
               </div>
             </CardContent>
@@ -173,17 +173,17 @@ export default async function VacancyDetailPage({ params }: PageProps) {
               <CardTitle>Snapshot</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Coins className="h-4 w-4" />
+              <div className="snapshot-item">
+                <Coins className="icon-md" />
                 <span>{formatSalary(vacancy.salaryMin, vacancy.salaryMax, vacancy.currency)}</span>
               </div>
 
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <CalendarDays className="h-4 w-4" />
+              <div className="snapshot-item">
+                <CalendarDays className="icon-md" />
                 <span>Deadline: {formatDeadline(vacancy.deadlineAt)}</span>
               </div>
 
-              <div className="rounded-md border border-dashed p-4 text-muted-foreground">
+              <div className="snapshot-placeholder">
                 Pipeline view will be added in the submissions module.
               </div>
             </CardContent>

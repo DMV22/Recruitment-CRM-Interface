@@ -94,8 +94,8 @@ export function VacancyForm({
           <SheetTitle>{isEdit ? 'Edit Vacancy' : 'New Vacancy'}</SheetTitle>
         </SheetHeader>
 
-        <form action={formAction} className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
-          <div className="space-y-1.5 md:col-span-2">
+        <form action={formAction} className="form-grid">
+          <div className="form-field-wide">
             <Label htmlFor="title">
               Title <span className="text-destructive">*</span>
             </Label>
@@ -107,16 +107,16 @@ export function VacancyForm({
               aria-invalid={!!state.fieldErrors?.title}
             />
             {state.fieldErrors?.title && (
-              <p className="text-xs text-destructive">{state.fieldErrors.title[0]}</p>
+              <p className="form-error">{state.fieldErrors.title[0]}</p>
             )}
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="clientId">
               Client <span className="text-destructive">*</span>
             </Label>
             <Select name="clientId" defaultValue={vacancy?.clientId ? String(vacancy.clientId) : undefined}>
-              <SelectTrigger id="clientId" aria-invalid={!!state.fieldErrors?.clientId}>
+              <SelectTrigger id="clientId" className="w-full" aria-invalid={!!state.fieldErrors?.clientId}>
                 <SelectValue placeholder="Select client" />
               </SelectTrigger>
               <SelectContent>
@@ -128,14 +128,14 @@ export function VacancyForm({
               </SelectContent>
             </Select>
             {state.fieldErrors?.clientId && (
-              <p className="text-xs text-destructive">{state.fieldErrors.clientId[0]}</p>
+              <p className="form-error">{state.fieldErrors.clientId[0]}</p>
             )}
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="status">Status</Label>
             <Select name="status" defaultValue={vacancy?.status ?? 'open'}>
-              <SelectTrigger id="status">
+              <SelectTrigger className="w-full" id="status">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
@@ -147,10 +147,10 @@ export function VacancyForm({
             </Select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="priority">Priority</Label>
             <Select name="priority" defaultValue={vacancy?.priority ?? 'medium'}>
-              <SelectTrigger id="priority">
+              <SelectTrigger className="w-full" id="priority">
                 <SelectValue placeholder="Select priority" />
               </SelectTrigger>
               <SelectContent>
@@ -161,10 +161,10 @@ export function VacancyForm({
             </Select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="workType">Work type</Label>
             <Select name="workType" defaultValue={vacancy?.workType ?? 'remote'}>
-              <SelectTrigger id="workType">
+              <SelectTrigger className="w-full" id="workType">
                 <SelectValue placeholder="Select work type" />
               </SelectTrigger>
               <SelectContent>
@@ -175,10 +175,10 @@ export function VacancyForm({
             </Select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="seniority">Seniority</Label>
             <Select name="seniority" defaultValue={vacancy?.seniority ?? undefined}>
-              <SelectTrigger id="seniority">
+              <SelectTrigger className="w-full" id="seniority">
                 <SelectValue placeholder="Select seniority" />
               </SelectTrigger>
               <SelectContent>
@@ -193,7 +193,7 @@ export function VacancyForm({
             </Select>
           </div>
 
-          <div className="space-y-1.5 md:col-span-2">
+          <div className="form-field-wide">
             <Label htmlFor="techStack">Tech stack</Label>
             <Input
               id="techStack"
@@ -203,7 +203,7 @@ export function VacancyForm({
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="salaryMin">Salary min</Label>
             <Input
               id="salaryMin"
@@ -214,11 +214,11 @@ export function VacancyForm({
               placeholder="2000"
             />
             {state.fieldErrors?.salaryMin && (
-              <p className="text-xs text-destructive">{state.fieldErrors.salaryMin[0]}</p>
+              <p className="form-error">{state.fieldErrors.salaryMin[0]}</p>
             )}
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="salaryMax">Salary max</Label>
             <Input
               id="salaryMax"
@@ -230,7 +230,7 @@ export function VacancyForm({
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="currency">Currency</Label>
             <Input
               id="currency"
@@ -240,7 +240,7 @@ export function VacancyForm({
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="location">Location</Label>
             <Input
               id="location"
@@ -250,7 +250,7 @@ export function VacancyForm({
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="assignedRecruiterId">Assigned recruiter</Label>
             <Select
               name="assignedRecruiterId"
@@ -272,7 +272,7 @@ export function VacancyForm({
             </Select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="hiringManagerId">Hiring manager</Label>
             <Select
               name="hiringManagerId"
@@ -294,7 +294,7 @@ export function VacancyForm({
             </Select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="deadlineAt">Deadline</Label>
             <Input
               id="deadlineAt"
@@ -304,7 +304,7 @@ export function VacancyForm({
             />
           </div>
 
-          <div className="space-y-1.5 md:col-span-2">
+          <div className="form-field-wide">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
@@ -316,12 +316,12 @@ export function VacancyForm({
           </div>
 
           {state.error && (
-            <p className="text-sm text-destructive md:col-span-2">{state.error}</p>
+            <p className="form-error-block form-field-wide">{state.error}</p>
           )}
 
-          <div className="flex gap-3 pt-2 md:col-span-2">
+          <div className="form-footer form-field-wide">
             <Button type="submit" disabled={isPending} className="flex-1">
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending && <Loader2 className="spinner" />}
               {isEdit ? 'Save changes' : 'Create vacancy'}
             </Button>
             <Button type="button" variant="outline" onClick={onClose}>

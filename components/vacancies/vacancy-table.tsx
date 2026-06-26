@@ -114,7 +114,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
         header: 'Title',
         cell: (info) => (
           <button
-            className="font-medium text-left text-foreground transition-colors hover:text-primary"
+            className="table-link"
             onClick={() => router.push(`/vacancies/${info.row.original.id}`)}
           >
             {info.getValue()}
@@ -157,7 +157,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
         id: 'daysOpen',
         header: 'Days open',
         cell: (info) => (
-          <span className="text-sm text-muted-foreground">
+          <span className="text-meta">
             {getDaysOpen(info.getValue())}
           </span>
         ),
@@ -167,7 +167,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
         id: 'actions',
         header: () => <span className="sr-only">Actions</span>,
         cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1">
+          <div className="table-actions">
             {canEdit && (
               <Button
                 variant="ghost"
@@ -178,7 +178,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
                   setFormOpen(true);
                 }}
               >
-                <Pencil className="h-3.5 w-3.5" />
+                <Pencil className="icon-sm" />
               </Button>
             )}
 
@@ -190,7 +190,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
                 className="text-destructive hover:text-destructive"
                 onClick={() => setDeleteTarget(row.original)}
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="icon-sm" />
               </Button>
             )}
           </div>
@@ -210,7 +210,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="toolbar">
         <Input
           placeholder="Search by title..."
           defaultValue={searchParams.get('search') ?? ''}
@@ -249,8 +249,8 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
           </SelectContent>
         </Select>
 
-        <div className="ml-auto flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">{total} vacancies</span>
+        <div className="toolbar-actions">
+          <span className="toolbar-count">{total} vacancies</span>
 
           {canCreate && (
             <Button
@@ -260,14 +260,14 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
                 setFormOpen(true);
               }}
             >
-              <Plus className="mr-1.5 h-4 w-4" />
+              <Plus className="mr-1.5 icon-md" />
               New vacancy
             </Button>
           )}
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-md border border-border">
+      <div className="table-wrapper">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -284,8 +284,8 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
           <TableBody>
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-32 text-center">
-                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                <TableCell colSpan={columns.length} className="table-empty-cell">
+                  <div className="table-empty-content">
                     <span className="text-2xl">📋</span>
                     <p className="font-medium">No vacancies yet</p>
                     <p className="text-sm">
@@ -321,19 +321,19 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="pagination">
           <span>
             Page {page} of {totalPages}
           </span>
 
-          <div className="flex gap-2">
+          <div className="pagination-buttons">
             <Button
               variant="outline"
               size="sm"
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="icon-md" />
             </Button>
 
             <Button
@@ -342,7 +342,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="icon-md" />
             </Button>
           </div>
         </div>

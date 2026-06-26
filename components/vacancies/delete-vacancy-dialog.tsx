@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { deleteVacancyAction } from '@/app/(dashboard)/vacancies/actions';
 
+import { Loader2 } from 'lucide-react';
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -32,7 +34,7 @@ export function DeleteVacancyDialog({ open, onOpenChange, vacancy }: Props) {
 
   async function handleDelete(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault()
-    
+
     if (!vacancy) return;
 
     setError(null);
@@ -53,21 +55,22 @@ export function DeleteVacancyDialog({ open, onOpenChange, vacancy }: Props) {
         <AlertDialogHeader>
           <AlertDialogTitle>Archive vacancy?</AlertDialogTitle>
           <AlertDialogDescription>
-            Vacancy <span className="font-medium">{vacancy?.title}</span> will be moved to
-            status <span className="font-medium">closed</span>.
+            Vacancy <span className="font-bold text-foreground">{vacancy?.title}</span> will be moved to
+            status <span className="font-bold text-foreground">closed</span>.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="form-error-block">{error}</p>}
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             disabled={isPending}
             onClick={handleDelete}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="btn-danger"
           >
-            {isPending ? 'Archiving...' : 'Archive'}
+            {isPending ?? <Loader2 className="spinner" />}
+            Archive
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

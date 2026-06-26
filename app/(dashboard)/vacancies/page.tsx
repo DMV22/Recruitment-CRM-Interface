@@ -86,10 +86,10 @@ export default async function VacanciesPage({ searchParams }: PageProps) {
     await getVacanciesPageData(user.id, user.crmRole, teamId, params);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Vacancies</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className="page-content">
+      <div className="page-header">
+        <h1 className="page-title-lg">Vacancies</h1>
+        <p className="page-subtitle">
           Manage open roles, priorities, assignments, and deadlines.
         </p>
       </div>
