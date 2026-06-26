@@ -64,6 +64,14 @@ const vacancySchema = z.object({
   assignedRecruiterId: nullableNumber,
   hiringManagerId: nullableNumber,
   deadlineAt: nullableDate,
+}).superRefine((data, ctx) => {
+  if (data.salaryMin !== null && data.salaryMax !== null && data.salaryMin > data.salaryMax) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Minimum salary cannot be greater than maximum salary',
+      path: ['salaryMin'],
+    });
+  }
 });
 
 

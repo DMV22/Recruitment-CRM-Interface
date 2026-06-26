@@ -17,7 +17,10 @@ type PageProps = {
 
 function formatSalary(min: number | null, max: number | null, currency: string) {
   if (min == null && max == null) return '—';
-  if (min != null && max != null) return `${min} - ${max} ${currency}`;
+  if (min != null && max != null) {
+    if (min > max) return `${min} ${currency}`;
+    return `${min} - ${max} ${currency}`
+  };
   if (min != null) return `From ${min} ${currency}`;
   return `Up to ${max} ${currency}`;
 }

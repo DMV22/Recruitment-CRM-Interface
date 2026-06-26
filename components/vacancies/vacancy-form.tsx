@@ -213,6 +213,9 @@ export function VacancyForm({
               defaultValue={vacancy?.salaryMin ?? ''}
               placeholder="2000"
             />
+            {state.fieldErrors?.salaryMin && (
+              <p className="text-xs text-destructive">{state.fieldErrors.salaryMin[0]}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
