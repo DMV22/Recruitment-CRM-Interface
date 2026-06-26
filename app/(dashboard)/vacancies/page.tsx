@@ -1,13 +1,13 @@
 import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 import { notFound, redirect } from 'next/navigation';
-import { and, inArray } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 
 import { VacancyTable } from '@/components/vacancies/vacancy-table';
 
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getVacancies, getClientsForSelect } from '@/lib/db/queries/vacancies';
 import { db } from '@/lib/db/drizzle';
-import { users } from '@/lib/db/schema';
+import { teamMembers, users } from '@/lib/db/schema';
 import { hasPermission } from '@/lib/rbac';
 
 type PageProps = {
@@ -44,13 +44,14 @@ async function getVacanciesPageData(userId: number, crmRole: string, teamId: num
     }),
     getClientsForSelect(teamId),
     db
-      .select({
-        id: users.id,
-        name: users.name,
-        crmRole: users.crmRole,
-      })
+      .select({ id: users.id, name: users.name, crmRole: users.crmRole })
       .from(users)
-      .where(and(inArray(users.crmRole, ['recruiter', 'admin', 'hiring_manager']))
+      .innerJoin(teamMembers, eq(teamMembers.userId, users.id))
+      .where(
+        and(
+          eq(teamMembers.teamId, teamId),
+          inArray(users.crmRole, ['recruiter', 'admin', 'hiring_manager'])
+        )
       ),
   ]);
 
