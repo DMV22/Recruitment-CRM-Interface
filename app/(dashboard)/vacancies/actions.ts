@@ -76,7 +76,6 @@ export type VacancyFormState = {
 function validateVacancyForm(formData: FormData) {
   // Automatically collects all key-value pairs from the form into a single object
   const raw = Object.fromEntries(formData.entries());
-  console.log(raw);
 
   if (!raw.currency) raw.currency = 'USD';
 
@@ -106,7 +105,7 @@ export async function createVacancyAction(_prev: VacancyFormState, formData: For
     user.id
   );
 
-  revalidateTag('vacancies', 'default');
+  revalidateTag('vacancies', { expire: 0 });
 
   return { success: true }
 }
@@ -135,8 +134,8 @@ export async function updateVacancyAction(id: number, _prev: VacancyFormState, f
 
   if (!updated) return { error: 'Vacancy not found or access denied' };
 
-  revalidateTag('vacancies', 'default');
-  revalidateTag(`vacancy-${id}`, 'default');
+  revalidateTag('vacancies', { expire: 0 });
+  revalidateTag(`vacancy-${id}`, { expire: 0 });
   return { success: true };
 }
 
@@ -153,6 +152,6 @@ export async function deleteVacancyAction(id: number): Promise<VacancyFormState>
   const deleted = await deleteVacancy(id, teamId, user.id);
   if (!deleted) return { error: 'Vacancy not found or access denied' };
 
-  revalidateTag('vacancies', 'default');
+  revalidateTag('vacancies', { expire: 0 });
   redirect('/vacancies');
 }
