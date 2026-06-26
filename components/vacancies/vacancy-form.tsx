@@ -182,6 +182,7 @@ export function VacancyForm({
                 <SelectValue placeholder="Select seniority" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">Not specified</SelectItem>
                 <SelectItem value="intern">Intern</SelectItem>
                 <SelectItem value="junior">Junior</SelectItem>
                 <SelectItem value="middle">Middle</SelectItem>

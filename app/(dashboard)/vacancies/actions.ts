@@ -51,7 +51,7 @@ const vacancySchema = z.object({
   description: nullableString.pipe(z.string().max(5000).nullable()),
   techStack: nullableString.pipe(z.string().max(500).nullable()),
   seniority: z.preprocess(
-    (value) => (value === '' ? null : value),
+    (value) => ((value === '' || value === 'none') ? null : value),
     z.enum(['intern', 'junior', 'middle', 'senior', 'lead', 'principal']).nullable()
   ),
   salaryMin: nullableNumber,
