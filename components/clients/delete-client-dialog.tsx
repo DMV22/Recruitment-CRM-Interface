@@ -36,7 +36,7 @@ export function DeleteClientDialog({ open, onClose, clientId, clientName }: Prop
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete client?</AlertDialogTitle>
-          <AlertDialogDescription className="text-sm text-muted-foreground block">
+          <AlertDialogDescription className="text-hint block">
             <span className="font-bold text-foreground">{clientName}</span> will be permanently deleted along
             with all associated data. This action cannot be undone.
           </AlertDialogDescription>
@@ -46,9 +46,9 @@ export function DeleteClientDialog({ open, onClose, clientId, clientName }: Prop
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="btn-danger"
           >
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isPending && <Loader2 className="spinner" />}
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -39,14 +39,14 @@ export function ClientForm({ open, onClose, client }: Props) {
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+      <SheetContent className="form-wrapper">
         <SheetHeader>
           <SheetTitle>{isEdit ? 'Edit Client' : 'New Client'}</SheetTitle>
         </SheetHeader>
 
-        <form action={formAction} className="mt-6 space-y-5">
+        <form action={formAction} className="form-body">
           {/* Name */}
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="name">
               Company name <span className="text-destructive">*</span>
             </Label>
@@ -58,12 +58,12 @@ export function ClientForm({ open, onClose, client }: Props) {
               aria-invalid={!!state.fieldErrors?.name}
             />
             {state.fieldErrors?.name && (
-              <p className="text-xs text-destructive">{state.fieldErrors.name[0]}</p>
+              <p className="form-error">{state.fieldErrors.name[0]}</p>
             )}
           </div>
 
           {/* Industry */}
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="industry">Industry</Label>
             <Input
               id="industry"
@@ -74,7 +74,7 @@ export function ClientForm({ open, onClose, client }: Props) {
           </div>
 
           {/* Website */}
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="website">Website</Label>
             <Input
               id="website"
@@ -85,12 +85,12 @@ export function ClientForm({ open, onClose, client }: Props) {
               aria-invalid={!!state.fieldErrors?.website}
             />
             {state.fieldErrors?.website && (
-              <p className="text-xs text-destructive">{state.fieldErrors.website[0]}</p>
+              <p className="form-error">{state.fieldErrors.website[0]}</p>
             )}
           </div>
 
           {/* Status */}
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="status">Status</Label>
             <Select name="status" defaultValue={client?.status ?? 'prospect'}>
               <SelectTrigger id="status">
@@ -105,7 +105,7 @@ export function ClientForm({ open, onClose, client }: Props) {
           </div>
 
           {/* Notes */}
-          <div className="space-y-1.5">
+          <div className="form-field">
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
@@ -118,13 +118,13 @@ export function ClientForm({ open, onClose, client }: Props) {
 
           {/* Error */}
           {state.error && (
-            <p className="text-sm text-destructive">{state.error}</p>
+            <p className="form-error-block">{state.error}</p>
           )}
 
           {/* Actions */}
-          <div className="flex gap-3 pt-2">
+          <div className="form-footer">
             <Button type="submit" disabled={isPending} className="flex-1">
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending && <Loader2 className="spinner" />}
               {isEdit ? 'Save changes' : 'Create client'}
             </Button>
             <Button type="button" variant="outline" onClick={onClose}>

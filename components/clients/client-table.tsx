@@ -80,7 +80,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
       header: 'Company',
       cell: (info) => (
         <button
-          className="font-medium text-foreground hover:text-primary transition-colors text-left"
+          className="table-link"
           onClick={() => router.push(`/clients/${info.row.original.id}`)}
         >
           {info.getValue()}
@@ -94,7 +94,6 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
     col.accessor('status', {
       header: 'Status',
       cell: (info) => {
-        // console.log('status value:', info.getValue(), typeof info.getValue());
         return <ClientStatusBadge status={info.getValue()} />;
       },
     }),
@@ -111,9 +110,9 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
             href={info.getValue()!}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-primary hover:underline text-sm"
+            className="table-external-link"
           >
-            Visit <ExternalLink className="h-3 w-3" />
+            Visit <ExternalLink className="icon-xs" />
           </a>
         ) : (
           <span className="text-muted-foreground">—</span>
@@ -123,7 +122,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
       id: 'actions',
       header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }) => (
-        <div className="flex items-center gap-1 justify-end">
+        <div className="table-actions">
           {canEdit && (
             <Button
               variant="ghost"
@@ -134,7 +133,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
                 setFormOpen(true);
               }}
             >
-              <Pencil className="h-3.5 w-3.5" />
+              <Pencil className="icon-sm" />
             </Button>
           )}
           {canDelete && (
@@ -145,7 +144,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
               className="text-destructive hover:text-destructive"
               onClick={() => setDeleteTarget(row.original)}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="icon-sm" />
             </Button>
           )}
         </div>
@@ -164,7 +163,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
   return (
     <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="toolbar">
         <Input
           placeholder="Search by name or industry..."
           defaultValue={searchParams.get('search') ?? ''}
@@ -187,8 +186,8 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
           </SelectContent>
         </Select>
 
-        <div className="ml-auto flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">{total} clients</span>
+        <div className="toolbar-actions">
+          <span className="toolbar-count">{total} clients</span>
           {canCreate && (
             <Button
               size="sm"
@@ -197,7 +196,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
                 setFormOpen(true);
               }}
             >
-              <Plus className="mr-1.5 h-4 w-4" />
+              <Plus className="mr-1.5 icon-md" />
               New client
             </Button>
           )}
@@ -205,7 +204,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
       </div>
 
       {/* Table */}
-      <div className="rounded-md border border-border overflow-hidden">
+      <div className="table-wrapper">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
@@ -221,8 +220,8 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
           <TableBody>
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-32 text-center">
-                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                <TableCell colSpan={columns.length} className="table-empty-cell">
+                  <div className="table-empty-content">
                     <span className="text-2xl">🏢</span>
                     <p className="font-medium">No clients yet</p>
                     <p className="text-sm">Add your first client to get started.</p>
@@ -257,18 +256,18 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="pagination">
           <span>
             Page {page} of {totalPages}
           </span>
-          <div className="flex gap-2">
+          <div className="pagination-buttons">
             <Button
               variant="outline"
               size="sm"
               disabled={page <= 1}
               onClick={() => setPage(page - 1)}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="icon-md" />
             </Button>
             <Button
               variant="outline"
@@ -276,7 +275,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
               disabled={page >= totalPages}
               onClick={() => setPage(page + 1)}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="icon-md" />
             </Button>
           </div>
         </div>

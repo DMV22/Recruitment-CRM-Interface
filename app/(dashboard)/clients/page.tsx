@@ -42,10 +42,10 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
   const params = await searchParams;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Clients</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+    <div className="page-content">
+      <div className="page-header">
+        <h1 className="page-title">Clients</h1>
+        <p className="page-subtitle">
           Manage client companies and contacts
         </p>
       </div>

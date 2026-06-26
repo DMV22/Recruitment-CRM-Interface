@@ -24,36 +24,36 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   if (!client) notFound();
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="detail-page">
       {/* Back */}
       <Link
         href="/clients"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="back-link"
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ArrowLeft className="icon-md" />
         Back to clients
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold">{client.name}</h1>
+      <div className="detail-header">
+        <div className="page-title">
+          <div className="detail-title">
+            <h1 className="page-title">{client.name}</h1>
             <ClientStatusBadge status={client.status} />
           </div>
           {client.industry && (
-            <p className="text-sm text-muted-foreground">{client.industry}</p>
+            <p className="text-hint">{client.industry}</p>
           )}
         </div>
       </div>
 
       {/* Details card */}
-      <div className="rounded-lg border border-border bg-card p-5 space-y-4">
-        <h2 className="text-sm font-medium">Details</h2>
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+      <div className="detail-card">
+        <h2 className="card-label">Details</h2>
+        <dl className="detail-grid">
           <div>
-            <dt className="text-muted-foreground flex items-center gap-1.5 mb-1">
-              <Globe className="h-3.5 w-3.5" /> Website
+            <dt className="detail-label">
+              <Globe className="icon-sm" /> Website
             </dt>
             <dd>
               {client.website ? (
@@ -61,9 +61,9 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                   href={client.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary hover:underline inline-flex items-center gap-1"
+                  className="detail-link"
                 >
-                  {client.website} <ExternalLink className="h-3 w-3" />
+                  {client.website} <ExternalLink className="icon-xs" />
                 </a>
               ) : (
                 <span className="text-muted-foreground">—</span>
@@ -71,8 +71,8 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground flex items-center gap-1.5 mb-1">
-              <Building2 className="h-3.5 w-3.5" /> Assigned to
+            <dt className="detail-label">
+              <Building2 className="icon-sm" /> Assigned to
             </dt>
             <dd>{client.assignedUser?.name ?? <span className="text-muted-foreground">Unassigned</span>}</dd>
           </div>
@@ -80,31 +80,31 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
 
         {client.notes && (
           <div>
-            <dt className="text-muted-foreground flex items-center gap-1.5 mb-1 text-sm">
-              <FileText className="h-3.5 w-3.5" /> Notes
+            <dt className="detail-label">
+              <FileText className="icon-sm" /> Notes
             </dt>
-            <p className="text-sm whitespace-pre-wrap">{client.notes}</p>
+            <p className="text-hint whitespace-pre-wrap">{client.notes}</p>
           </div>
         )}
       </div>
 
       {/* Contacts */}
       {contacts.length > 0 && (
-        <div className="rounded-lg border border-border bg-card p-5 space-y-3">
-          <h2 className="text-sm font-medium">Contacts ({contacts.length})</h2>
-          <ul className="divide-y divide-border">
+        <div className="detail-card-sm">
+          <h2 className="card-label">Contacts ({contacts.length})</h2>
+          <ul className="contact-list">
             {contacts.map((c) => (
-              <li key={c.id} className="py-3 flex items-start justify-between gap-4">
+              <li key={c.id} className="contact-item">
                 <div>
-                  <p className="text-sm font-medium">
+                  <p className="card-label">
                     {c.name}
                     {c.isPrimary && (
-                      <span className="ml-2 text-xs text-muted-foreground">(Primary)</span>
+                      <span className="contact-badge">(Primary)</span>
                     )}
                   </p>
-                  {c.position && <p className="text-xs text-muted-foreground">{c.position}</p>}
+                  {c.position && <p className="text-meta">{c.position}</p>}
                 </div>
-                <div className="text-right text-xs text-muted-foreground space-y-0.5">
+                <div className="contact-meta">
                   {c.email && <p>{c.email}</p>}
                   {c.phone && <p>{c.phone}</p>}
                 </div>
