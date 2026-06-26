@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -80,9 +80,12 @@ export function VacancyForm({
     initialState
   );
 
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
+
   useEffect(() => {
-    if (state.success) onClose();
-  }, [state.success, onClose]);
+    if (state.success) onCloseRef.current();
+  }, [state.success]);
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
