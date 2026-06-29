@@ -69,7 +69,7 @@ export function DeleteVacancyDialog({ open, onOpenChange, vacancy }: Props) {
             onClick={handleDelete}
             className="btn-danger"
           >
-            {isPending ?? <Loader2 className="spinner" />}
+            {isPending && <Loader2 className="spinner" />}
             Archive
           </AlertDialogAction>
         </AlertDialogFooter>
