@@ -19,8 +19,8 @@ function formatSalary(min: number | null, max: number | null, currency: string) 
   if (min == null && max == null) return '—';
   if (min != null && max != null) {
     if (min > max) return `${min} ${currency}`;
-    return `${min} - ${max} ${currency}`
-  };
+    return `${min} - ${max} ${currency}`;
+  }
   if (min != null) return `From ${min} ${currency}`;
   return `Up to ${max} ${currency}`;
 }
@@ -65,10 +65,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
 
   return (
     <div className="page-content">
-      <Link
-        href="/vacancies"
-        className="back-link"
-      >
+      <Link href="/vacancies" className="back-link">
         <ArrowLeft className="icon-md" />
         Back to vacancies
       </Link>

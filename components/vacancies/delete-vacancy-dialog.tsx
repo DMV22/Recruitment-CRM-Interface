@@ -28,12 +28,15 @@ export function DeleteVacancyDialog({ open, onOpenChange, vacancy }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    if (!open) setError(null);
-  }, [open]);
+  function handleOpenChange(isOpen: boolean) {
+    if (!isOpen) {
+      setError(null);
+    }
+    onOpenChange(isOpen);
+  }
 
   async function handleDelete(e: React.MouseEvent<HTMLButtonElement>) {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!vacancy) return;
 
@@ -50,13 +53,13 @@ export function DeleteVacancyDialog({ open, onOpenChange, vacancy }: Props) {
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Archive vacancy?</AlertDialogTitle>
           <AlertDialogDescription>
-            Vacancy <span className="font-bold text-foreground">{vacancy?.title}</span> will be moved to
-            status <span className="font-bold text-foreground">closed</span>.
+            Vacancy <span className="font-bold text-foreground">{vacancy?.title}</span> will be
+            moved to status <span className="font-bold text-foreground">closed</span>.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -64,11 +67,7 @@ export function DeleteVacancyDialog({ open, onOpenChange, vacancy }: Props) {
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            disabled={isPending}
-            onClick={handleDelete}
-            className="btn-danger"
-          >
+          <AlertDialogAction disabled={isPending} onClick={handleDelete} className="btn-danger">
             {isPending && <Loader2 className="spinner" />}
             Archive
           </AlertDialogAction>

@@ -5,7 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 import { createClientAction, updateClientAction } from '@/app/(dashboard)/clients/actions';
@@ -57,9 +63,7 @@ export function ClientForm({ open, onClose, client }: Props) {
               placeholder="Acme Corp"
               aria-invalid={!!state.fieldErrors?.name}
             />
-            {state.fieldErrors?.name && (
-              <p className="form-error">{state.fieldErrors.name[0]}</p>
-            )}
+            {state.fieldErrors?.name && <p className="form-error">{state.fieldErrors.name[0]}</p>}
           </div>
 
           {/* Industry */}
@@ -117,9 +121,7 @@ export function ClientForm({ open, onClose, client }: Props) {
           </div>
 
           {/* Error */}
-          {state.error && (
-            <p className="form-error-block">{state.error}</p>
-          )}
+          {state.error && <p className="form-error-block">{state.error}</p>}
 
           {/* Actions */}
           <div className="form-footer">

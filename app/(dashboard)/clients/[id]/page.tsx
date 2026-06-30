@@ -8,7 +8,7 @@ import { ClientStatusBadge } from '@/components/clients/client-status-badge';
 
 import { ArrowLeft, ExternalLink, Building2, Globe, FileText } from 'lucide-react';
 
-export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }>; }) {
+export default async function ClientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await getUser();
   if (!user) redirect('/sign-in');
@@ -26,10 +26,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
   return (
     <div className="detail-page">
       {/* Back */}
-      <Link
-        href="/clients"
-        className="back-link"
-      >
+      <Link href="/clients" className="back-link">
         <ArrowLeft className="icon-md" />
         Back to clients
       </Link>
@@ -41,9 +38,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             <h1 className="page-title">{client.name}</h1>
             <ClientStatusBadge status={client.status} />
           </div>
-          {client.industry && (
-            <p className="text-hint">{client.industry}</p>
-          )}
+          {client.industry && <p className="text-hint">{client.industry}</p>}
         </div>
       </div>
 
@@ -74,7 +69,11 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             <dt className="detail-label">
               <Building2 className="icon-sm" /> Assigned to
             </dt>
-            <dd>{client.assignedUser?.name ?? <span className="text-muted-foreground">Unassigned</span>}</dd>
+            <dd>
+              {client.assignedUser?.name ?? (
+                <span className="text-muted-foreground">Unassigned</span>
+              )}
+            </dd>
           </div>
         </dl>
 
@@ -98,9 +97,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                 <div>
                   <p className="card-label">
                     {c.name}
-                    {c.isPrimary && (
-                      <span className="contact-badge">(Primary)</span>
-                    )}
+                    {c.isPrimary && <span className="contact-badge">(Primary)</span>}
                   </p>
                   {c.position && <p className="text-meta">{c.position}</p>}
                 </div>

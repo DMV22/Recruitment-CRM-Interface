@@ -10,21 +10,19 @@ import { Loader2 } from 'lucide-react';
 import { signIn, signUp } from './actions';
 import type { ActionState } from '@/lib/auth/middleware';
 
-import Image from 'next/image'
+import Image from 'next/image';
 
 export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const isSignIn = mode === 'signin';
   const router = useRouter();
 
-  const [signinState, signinAction, signinPending] = useActionState<ActionState, FormData>(
-    signIn,
-    { error: '' }
-  );
+  const [signinState, signinAction, signinPending] = useActionState<ActionState, FormData>(signIn, {
+    error: '',
+  });
 
-  const [signupState, signupAction, signupPending] = useActionState<ActionState, FormData>(
-    signUp,
-    { error: '' }
-  );
+  const [signupState, signupAction, signupPending] = useActionState<ActionState, FormData>(signUp, {
+    error: '',
+  });
 
   const state = isSignIn ? signinState : signupState;
   const action = isSignIn ? signinAction : signupAction;
@@ -48,7 +46,9 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             {isSignIn ? 'Sign in to your account' : 'Create your account'}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {isSignIn ? 'Recruitment CRM — manage your hiring pipeline' : 'Get started with Recruitment CRM'}
+            {isSignIn
+              ? 'Recruitment CRM — manage your hiring pipeline'
+              : 'Get started with Recruitment CRM'}
           </p>
         </div>
 
@@ -90,8 +90,10 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 {isSignIn ? 'Signing in...' : 'Creating account...'}
               </>
+            ) : isSignIn ? (
+              'Sign in'
             ) : (
-              isSignIn ? 'Sign in' : 'Create account'
+              'Create account'
             )}
           </Button>
         </form>

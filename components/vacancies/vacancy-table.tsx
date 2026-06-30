@@ -1,15 +1,33 @@
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
-import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from '@tanstack/react-table';
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  createColumnHelper,
+} from '@tanstack/react-table';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { formatDistanceToNowStrict, format } from 'date-fns';
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 import { VacancyStatusBadge } from '@/components/vacancies/vacancy-status-badge';
 import { VacancyPriorityBadge } from '@/components/vacancies/vacancy-priority-badge';
@@ -75,7 +93,16 @@ function getDaysOpen(createdAt: Date) {
   return formatDistanceToNowStrict(new Date(createdAt), { addSuffix: false });
 }
 
-export function VacancyTable({ data, total, page, totalPages, currentUser, clients, recruiters = [], hiringManagers = [] }: Props) {
+export function VacancyTable({
+  data,
+  total,
+  page,
+  totalPages,
+  currentUser,
+  clients,
+  recruiters = [],
+  hiringManagers = [],
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -124,8 +151,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
 
       col.accessor('client', {
         header: 'Client',
-        cell: (info) =>
-          info.getValue()?.name ?? <span className="text-muted-foreground">—</span>,
+        cell: (info) => info.getValue()?.name ?? <span className="text-muted-foreground">—</span>,
       }),
 
       col.accessor('status', {
@@ -156,11 +182,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
       col.accessor('createdAt', {
         id: 'daysOpen',
         header: 'Days open',
-        cell: (info) => (
-          <span className="text-meta">
-            {getDaysOpen(info.getValue())}
-          </span>
-        ),
+        cell: (info) => <span className="text-meta">{getDaysOpen(info.getValue())}</span>,
       }),
 
       col.display({
@@ -200,6 +222,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
     [router, canEdit, canDelete]
   );
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,
@@ -288,9 +311,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
                   <div className="table-empty-content">
                     <span className="text-2xl">📋</span>
                     <p className="font-medium">No vacancies yet</p>
-                    <p className="text-sm">
-                      Add your first vacancy to get started.
-                    </p>
+                    <p className="text-sm">Add your first vacancy to get started.</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -366,9 +387,7 @@ export function VacancyTable({ data, total, page, totalPages, currentUser, clien
         onOpenChange={(open) => {
           if (!open) setDeleteTarget(null);
         }}
-        vacancy={
-          deleteTarget ? { id: deleteTarget.id, title: deleteTarget.title } : null
-        }
+        vacancy={deleteTarget ? { id: deleteTarget.id, title: deleteTarget.title } : null}
       />
     </div>
   );

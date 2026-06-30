@@ -24,10 +24,9 @@ export async function getClients(teamId: number, filter: ClientsFilter = {}) {
   const where = and(
     eq(clients.teamId, teamId),
     status ? eq(clients.status, status) : undefined,
-    search ? or(
-      ilike(clients.name, `%${search}%`),
-      ilike(clients.industry, `%${search}%`)
-    ) : undefined
+    search
+      ? or(ilike(clients.name, `%${search}%`), ilike(clients.industry, `%${search}%`))
+      : undefined
   );
 
   const [rows, [{ total }]] = await Promise.all([
@@ -55,10 +54,7 @@ export async function getClients(teamId: number, filter: ClientsFilter = {}) {
       .limit(perPage)
       .offset(offset),
 
-    db
-      .select({ total: count() })
-      .from(clients)
-      .where(where),
+    db.select({ total: count() }).from(clients).where(where),
   ]);
 
   return {
@@ -111,10 +107,7 @@ export async function createClient(
   data: Omit<NewClient, 'id' | 'createdAt' | 'updatedAt'>,
   userId: number
 ) {
-  const [client] = await db
-    .insert(clients)
-    .values(data)
-    .returning();
+  const [client] = await db.insert(clients).values(data).returning();
 
   await db.insert(activityLogs).values({
     teamId: data.teamId,
@@ -159,13 +152,12 @@ export async function updateClient(
 export async function deleteClient(id: number, teamId: number, userId: number) {
   try {
     return await db.transaction(async (tx) => {
-
       // Instead of .delete(), use .update()
       const [updated] = await tx
         .update(clients)
         .set({
           status: 'inactive',
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(and(eq(clients.id, id), eq(clients.teamId, teamId)))
         .returning();
@@ -183,7 +175,7 @@ export async function deleteClient(id: number, teamId: number, userId: number) {
       return updated;
     });
   } catch (error) {
-    console.error("Error while archiving the client:", error);
+    console.error('Error while archiving the client:', error);
     return null;
   }
 }

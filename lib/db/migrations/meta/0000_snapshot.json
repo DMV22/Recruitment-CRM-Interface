@@ -64,12 +64,8 @@
           "name": "activity_logs_team_id_teams_id_fk",
           "tableFrom": "activity_logs",
           "tableTo": "teams",
-          "columnsFrom": [
-            "team_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["team_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -77,12 +73,8 @@
           "name": "activity_logs_user_id_users_id_fk",
           "tableFrom": "activity_logs",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -218,12 +210,8 @@
           "name": "candidates_team_id_teams_id_fk",
           "tableFrom": "candidates",
           "tableTo": "teams",
-          "columnsFrom": [
-            "team_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["team_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -295,12 +283,8 @@
           "name": "client_contacts_client_id_clients_id_fk",
           "tableFrom": "client_contacts",
           "tableTo": "clients",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -386,12 +370,8 @@
           "name": "clients_team_id_teams_id_fk",
           "tableFrom": "clients",
           "tableTo": "teams",
-          "columnsFrom": [
-            "team_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["team_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -399,12 +379,8 @@
           "name": "clients_assigned_user_id_users_id_fk",
           "tableFrom": "clients",
           "tableTo": "users",
-          "columnsFrom": [
-            "assigned_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["assigned_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -464,12 +440,8 @@
           "name": "entity_notes_created_by_users_id_fk",
           "tableFrom": "entity_notes",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -543,12 +515,8 @@
           "name": "invitations_team_id_teams_id_fk",
           "tableFrom": "invitations",
           "tableTo": "teams",
-          "columnsFrom": [
-            "team_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["team_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -556,12 +524,8 @@
           "name": "invitations_invited_by_users_id_fk",
           "tableFrom": "invitations",
           "tableTo": "users",
-          "columnsFrom": [
-            "invited_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invited_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -628,12 +592,8 @@
           "name": "pipeline_history_submission_id_submissions_id_fk",
           "tableFrom": "pipeline_history",
           "tableTo": "submissions",
-          "columnsFrom": [
-            "submission_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["submission_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -641,12 +601,8 @@
           "name": "pipeline_history_changed_by_users_id_fk",
           "tableFrom": "pipeline_history",
           "tableTo": "users",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["changed_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -726,12 +682,8 @@
           "name": "submissions_vacancy_id_vacancies_id_fk",
           "tableFrom": "submissions",
           "tableTo": "vacancies",
-          "columnsFrom": [
-            "vacancy_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["vacancy_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -739,12 +691,8 @@
           "name": "submissions_candidate_id_candidates_id_fk",
           "tableFrom": "submissions",
           "tableTo": "candidates",
-          "columnsFrom": [
-            "candidate_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["candidate_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -752,12 +700,8 @@
           "name": "submissions_submitted_by_users_id_fk",
           "tableFrom": "submissions",
           "tableTo": "users",
-          "columnsFrom": [
-            "submitted_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["submitted_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -810,12 +754,8 @@
           "name": "team_members_user_id_users_id_fk",
           "tableFrom": "team_members",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -823,12 +763,8 @@
           "name": "team_members_team_id_teams_id_fk",
           "tableFrom": "team_members",
           "tableTo": "teams",
-          "columnsFrom": [
-            "team_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["team_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -949,9 +885,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -1093,12 +1027,8 @@
           "name": "vacancies_team_id_teams_id_fk",
           "tableFrom": "vacancies",
           "tableTo": "teams",
-          "columnsFrom": [
-            "team_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["team_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1106,12 +1036,8 @@
           "name": "vacancies_client_id_clients_id_fk",
           "tableFrom": "vacancies",
           "tableTo": "clients",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1119,12 +1045,8 @@
           "name": "vacancies_assigned_recruiter_id_users_id_fk",
           "tableFrom": "vacancies",
           "tableTo": "users",
-          "columnsFrom": [
-            "assigned_recruiter_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["assigned_recruiter_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1132,12 +1054,8 @@
           "name": "vacancies_hiring_manager_id_users_id_fk",
           "tableFrom": "vacancies",
           "tableTo": "users",
-          "columnsFrom": [
-            "hiring_manager_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["hiring_manager_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1153,41 +1071,22 @@
     "public.candidate_status": {
       "name": "candidate_status",
       "schema": "public",
-      "values": [
-        "active",
-        "passive",
-        "placed",
-        "blacklisted"
-      ]
+      "values": ["active", "passive", "placed", "blacklisted"]
     },
     "public.client_status": {
       "name": "client_status",
       "schema": "public",
-      "values": [
-        "prospect",
-        "active",
-        "inactive"
-      ]
+      "values": ["prospect", "active", "inactive"]
     },
     "public.crm_role": {
       "name": "crm_role",
       "schema": "public",
-      "values": [
-        "admin",
-        "recruiter",
-        "hiring_manager",
-        "viewer"
-      ]
+      "values": ["admin", "recruiter", "hiring_manager", "viewer"]
     },
     "public.note_entity_type": {
       "name": "note_entity_type",
       "schema": "public",
-      "values": [
-        "client",
-        "vacancy",
-        "candidate",
-        "submission"
-      ]
+      "values": ["client", "vacancy", "candidate", "submission"]
     },
     "public.pipeline_stage": {
       "name": "pipeline_stage",
@@ -1206,42 +1105,22 @@
     "public.seniority": {
       "name": "seniority",
       "schema": "public",
-      "values": [
-        "intern",
-        "junior",
-        "middle",
-        "senior",
-        "lead",
-        "principal"
-      ]
+      "values": ["intern", "junior", "middle", "senior", "lead", "principal"]
     },
     "public.vacancy_priority": {
       "name": "vacancy_priority",
       "schema": "public",
-      "values": [
-        "low",
-        "medium",
-        "high"
-      ]
+      "values": ["low", "medium", "high"]
     },
     "public.vacancy_status": {
       "name": "vacancy_status",
       "schema": "public",
-      "values": [
-        "open",
-        "on_hold",
-        "closed",
-        "filled"
-      ]
+      "values": ["open", "on_hold", "closed", "filled"]
     },
     "public.work_type": {
       "name": "work_type",
       "schema": "public",
-      "values": [
-        "remote",
-        "hybrid",
-        "onsite"
-      ]
+      "values": ["remote", "hybrid", "onsite"]
     }
   },
   "schemas": {},

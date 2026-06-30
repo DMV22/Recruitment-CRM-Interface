@@ -24,10 +24,7 @@ export default function VacanciesLoadingPage() {
           {Array.from({ length: 6 }).map((_, row) => (
             <div key={row} className="skeleton-body-row">
               {Array.from({ length: 7 }).map((_, cell) => (
-                <div
-                  key={cell}
-                  className="h-5 animate-pulse rounded bg-muted"
-                />
+                <div key={cell} className="h-5 animate-pulse rounded bg-muted" />
               ))}
             </div>
           ))}

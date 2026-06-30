@@ -26,25 +26,22 @@ export async function getVacancies(
   const offset = (page - 1) * perPage;
 
   // Scope rule: Hiring Manager can only see their own vacancies
-  const scopeFilter = crmRole === 'hiring_manager'
-    ? eq(vacancies.hiringManagerId, userId)
-    : undefined;
+  const scopeFilter =
+    crmRole === 'hiring_manager' ? eq(vacancies.hiringManagerId, userId) : undefined;
 
   const where = and(
     eq(vacancies.teamId, teamId),
     scopeFilter,
     status ? eq(vacancies.status, status) : undefined,
     priority ? eq(vacancies.priority, priority) : undefined,
-    assignedRecruiterId
-      ? eq(vacancies.assignedRecruiterId, assignedRecruiterId)
-      : undefined,
+    assignedRecruiterId ? eq(vacancies.assignedRecruiterId, assignedRecruiterId) : undefined,
     search ? ilike(vacancies.title, `%${search}%`) : undefined
   );
 
   // Creating a CTE (Common Table Expression) for a recruiter
-  const recruiter = db.$with('recruiter').as(
-    db.select({ id: users.id, name: users.name }).from(users)
-  );
+  const recruiter = db
+    .$with('recruiter')
+    .as(db.select({ id: users.id, name: users.name }).from(users));
 
   const [rows, [{ total }]] = await Promise.all([
     db
@@ -204,7 +201,7 @@ export async function deleteVacancy(id: number, teamId: number, userId: number) 
         .update(vacancies)
         .set({
           status: 'closed',
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(and(eq(vacancies.id, id), eq(vacancies.teamId, teamId)))
         .returning();
@@ -222,7 +219,7 @@ export async function deleteVacancy(id: number, teamId: number, userId: number) 
       return updated;
     });
   } catch (error) {
-    console.error("Error while archiving the vacancy:", error);
+    console.error('Error while archiving the vacancy:', error);
     return null;
   }
 }

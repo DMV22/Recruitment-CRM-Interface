@@ -7,10 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
-import { createVacancyAction, updateVacancyAction, type VacancyFormState } from '@/app/(dashboard)/vacancies/actions';
+import {
+  createVacancyAction,
+  updateVacancyAction,
+  type VacancyFormState,
+} from '@/app/(dashboard)/vacancies/actions';
 
 type VacancyFormClient = {
   id: number;
@@ -71,9 +81,7 @@ export function VacancyForm({
 }: Props) {
   const isEdit = !!vacancy;
 
-  const action = isEdit
-    ? updateVacancyAction.bind(null, vacancy.id)
-    : createVacancyAction;
+  const action = isEdit ? updateVacancyAction.bind(null, vacancy.id) : createVacancyAction;
 
   const [state, formAction, isPending] = useActionState<VacancyFormState, FormData>(
     action,
@@ -81,7 +89,9 @@ export function VacancyForm({
   );
 
   const onCloseRef = useRef(onClose);
-  useEffect(() => { onCloseRef.current = onClose; });
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     if (state.success) onCloseRef.current();
@@ -106,17 +116,22 @@ export function VacancyForm({
               placeholder="Senior Frontend Engineer"
               aria-invalid={!!state.fieldErrors?.title}
             />
-            {state.fieldErrors?.title && (
-              <p className="form-error">{state.fieldErrors.title[0]}</p>
-            )}
+            {state.fieldErrors?.title && <p className="form-error">{state.fieldErrors.title[0]}</p>}
           </div>
 
           <div className="form-field">
             <Label htmlFor="clientId">
               Client <span className="text-destructive">*</span>
             </Label>
-            <Select name="clientId" defaultValue={vacancy?.clientId ? String(vacancy.clientId) : undefined}>
-              <SelectTrigger id="clientId" className="w-full" aria-invalid={!!state.fieldErrors?.clientId}>
+            <Select
+              name="clientId"
+              defaultValue={vacancy?.clientId ? String(vacancy.clientId) : undefined}
+            >
+              <SelectTrigger
+                id="clientId"
+                className="w-full"
+                aria-invalid={!!state.fieldErrors?.clientId}
+              >
                 <SelectValue placeholder="Select client" />
               </SelectTrigger>
               <SelectContent>
@@ -315,9 +330,7 @@ export function VacancyForm({
             />
           </div>
 
-          {state.error && (
-            <p className="form-error-block form-field-wide">{state.error}</p>
-          )}
+          {state.error && <p className="form-error-block form-field-wide">{state.error}</p>}
 
           <div className="form-footer form-field-wide">
             <Button type="submit" disabled={isPending} className="flex-1">

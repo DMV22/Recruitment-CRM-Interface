@@ -38,16 +38,18 @@ async function ClientsContent({ searchParams }: { searchParams: SearchParams }) 
   );
 }
 
-export default async function ClientsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function ClientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const params = await searchParams;
 
   return (
     <div className="page-content">
       <div className="page-header">
         <h1 className="page-title">Clients</h1>
-        <p className="page-subtitle">
-          Manage client companies and contacts
-        </p>
+        <p className="page-subtitle">Manage client companies and contacts</p>
       </div>
 
       <ClientsContent searchParams={params} />

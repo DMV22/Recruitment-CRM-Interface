@@ -41,11 +41,7 @@ export function getAssignedScope(user: User): 'all' | 'assigned' | 'none' {
  * hiring_manager can only move: tech_interview -> offer | rejected
  * admin & recruiter can move between any stages
  */
-export function canTransitionStage(
-  user: User,
-  fromStage: string,
-  toStage: string
-): boolean {
+export function canTransitionStage(user: User, fromStage: string, toStage: string): boolean {
   const role = user.crmRole as CrmRole;
 
   if (!hasPermission(user, 'pipeline.update')) return false;

@@ -45,12 +45,8 @@ async function setupLocalPostgres() {
     await execAsync('docker --version');
     console.log('Docker is installed.');
   } catch (error) {
-    console.error(
-      'Docker is not installed. Please install Docker and try again.'
-    );
-    console.log(
-      'To install Docker, visit: https://docs.docker.com/get-docker/'
-    );
+    console.error('Docker is not installed. Please install Docker and try again.');
+    console.log('To install Docker, visit: https://docs.docker.com/get-docker/');
     process.exit(1);
   }
 
@@ -73,10 +69,7 @@ volumes:
   postgres_data:
 `;
 
-  await fs.writeFile(
-    path.join(process.cwd(), 'docker-compose.yml'),
-    dockerComposeContent
-  );
+  await fs.writeFile(path.join(process.cwd(), 'docker-compose.yml'), dockerComposeContent);
   console.log('docker-compose.yml file created.');
 
   console.log('Starting Docker container with `docker compose up -d`...');

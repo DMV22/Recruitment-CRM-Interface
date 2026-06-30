@@ -15,9 +15,5 @@ const STATUS_LABELS: Record<Status, string> = {
 };
 
 export function ClientStatusBadge({ status }: { status: Status }) {
-  return (
-    <span className={cn('status-badge', STATUS_STYLES[status])}>
-      {STATUS_LABELS[status]}
-    </span>
-  );
+  return <span className={cn('status-badge', STATUS_STYLES[status])}>{STATUS_LABELS[status]}</span>;
 }

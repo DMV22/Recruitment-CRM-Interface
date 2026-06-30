@@ -19,7 +19,10 @@ type PageProps = {
   }>;
 };
 
-async function getVacanciesPageData(userId: number, crmRole: string, teamId: number,
+async function getVacanciesPageData(
+  userId: number,
+  crmRole: string,
+  teamId: number,
   params: {
     search?: string;
     status?: 'open' | 'on_hold' | 'closed' | 'filled';
@@ -82,16 +85,18 @@ export default async function VacanciesPage({ searchParams }: PageProps) {
   const teamId = await getUserTeamId(user.id);
   if (!teamId) notFound();
 
-  const { vacanciesResult, clients, recruiters, hiringManagers } =
-    await getVacanciesPageData(user.id, user.crmRole, teamId, params);
+  const { vacanciesResult, clients, recruiters, hiringManagers } = await getVacanciesPageData(
+    user.id,
+    user.crmRole,
+    teamId,
+    params
+  );
 
   return (
     <div className="page-content">
       <div className="page-header">
         <h1 className="page-title-lg">Vacancies</h1>
-        <p className="page-subtitle">
-          Manage open roles, priorities, assignments, and deadlines.
-        </p>
+        <p className="page-subtitle">Manage open roles, priorities, assignments, and deadlines.</p>
       </div>
 
       <VacancyTable

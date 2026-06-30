@@ -1,13 +1,31 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useReactTable, getCoreRowModel, flexRender, createColumnHelper, } from '@tanstack/react-table';
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  createColumnHelper,
+} from '@tanstack/react-table';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 import { ClientStatusBadge } from '@/components/clients/client-status-badge';
 import { ClientForm } from '@/components/clients/client-form';
@@ -152,6 +170,7 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
     }),
   ];
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,
@@ -239,7 +258,9 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
                     <TableCell
                       key={cell.id}
                       onClick={
-                        cell.column.id === 'actions' || cell.column.id === 'name' || cell.column.id === 'website'
+                        cell.column.id === 'actions' ||
+                        cell.column.id === 'name' ||
+                        cell.column.id === 'website'
                           ? (e) => e.stopPropagation()
                           : undefined
                       }
@@ -285,7 +306,10 @@ export function ClientTable({ data, total, page, totalPages, currentUser }: Prop
       <ClientForm
         key={editClient ? `edit-${editClient.id}` : 'create'}
         open={formOpen}
-        onClose={() => { setFormOpen(false); setEditClient(null) }}
+        onClose={() => {
+          setFormOpen(false);
+          setEditClient(null);
+        }}
         client={editClient}
       />
 

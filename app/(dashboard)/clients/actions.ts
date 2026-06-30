@@ -27,7 +27,10 @@ export type ClientFormState = {
 
 // ----- Create -----
 
-export async function createClientAction(_prev: ClientFormState, formData: FormData): Promise<ClientFormState> {
+export async function createClientAction(
+  _prev: ClientFormState,
+  formData: FormData
+): Promise<ClientFormState> {
   const user = await getUser();
   if (!user) return { error: 'Unauthorized' };
   if (!hasPermission(user, 'clients.create')) return { error: 'Forbidden' };
@@ -69,7 +72,11 @@ export async function createClientAction(_prev: ClientFormState, formData: FormD
 
 // ----- Update -----
 
-export async function updateClientAction(id: number, _prev: ClientFormState, formData: FormData): Promise<ClientFormState> {
+export async function updateClientAction(
+  id: number,
+  _prev: ClientFormState,
+  formData: FormData
+): Promise<ClientFormState> {
   const user = await getUser();
   if (!user) return { error: 'Unauthorized' };
   if (!hasPermission(user, 'clients.update')) return { error: 'Forbidden' };

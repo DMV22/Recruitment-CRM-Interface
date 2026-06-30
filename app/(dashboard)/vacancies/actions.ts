@@ -16,9 +16,7 @@ const nullableString = z.preprocess((value) => {
     return null;
   }
   return value;
-},
-  z.string().nullable()
-);
+}, z.string().nullable());
 
 const nullableNumber = z.preprocess((value) => {
   if (value === '' || value === undefined || value === null || value === 'unassigned') {
@@ -27,9 +25,7 @@ const nullableNumber = z.preprocess((value) => {
   const num = Number(value);
 
   return Number.isNaN(num) ? null : num;
-},
-  z.number().min(0).nullable()
-);
+}, z.number().min(0).nullable());
 
 const nullableDate = z.preprocess((value) => {
   if (value === '' || value === undefined || value === null) {
@@ -38,42 +34,42 @@ const nullableDate = z.preprocess((value) => {
   const date = new Date(value as string);
 
   return Number.isNaN(date.getTime()) ? null : date;
-},
-  z.date().nullable()
-);
+}, z.date().nullable());
 
 // ----- Schema -----
 
-const vacancySchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200),
-  clientId: z.coerce.number({ invalid_type_error: 'Client is required' })
-    .min(1, 'Client is required'),
-  description: nullableString.pipe(z.string().max(5000).nullable()),
-  techStack: nullableString.pipe(z.string().max(500).nullable()),
-  seniority: z.preprocess(
-    (value) => ((value === '' || value === 'none') ? null : value),
-    z.enum(['intern', 'junior', 'middle', 'senior', 'lead', 'principal']).nullable()
-  ),
-  salaryMin: nullableNumber,
-  salaryMax: nullableNumber,
-  currency: z.string().max(10).default('USD'),
-  location: nullableString.pipe(z.string().max(100).nullable()),
-  workType: z.enum(['remote', 'hybrid', 'onsite']).default('remote'),
-  status: z.enum(['open', 'on_hold', 'closed', 'filled']).default('open'),
-  priority: z.enum(['low', 'medium', 'high']).default('medium'),
-  assignedRecruiterId: nullableNumber,
-  hiringManagerId: nullableNumber,
-  deadlineAt: nullableDate,
-}).superRefine((data, ctx) => {
-  if (data.salaryMin !== null && data.salaryMax !== null && data.salaryMin > data.salaryMax) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Minimum salary cannot be greater than maximum salary',
-      path: ['salaryMin'],
-    });
-  }
-});
-
+const vacancySchema = z
+  .object({
+    title: z.string().min(1, 'Title is required').max(200),
+    clientId: z.coerce
+      .number({ invalid_type_error: 'Client is required' })
+      .min(1, 'Client is required'),
+    description: nullableString.pipe(z.string().max(5000).nullable()),
+    techStack: nullableString.pipe(z.string().max(500).nullable()),
+    seniority: z.preprocess(
+      (value) => (value === '' || value === 'none' ? null : value),
+      z.enum(['intern', 'junior', 'middle', 'senior', 'lead', 'principal']).nullable()
+    ),
+    salaryMin: nullableNumber,
+    salaryMax: nullableNumber,
+    currency: z.string().max(10).default('USD'),
+    location: nullableString.pipe(z.string().max(100).nullable()),
+    workType: z.enum(['remote', 'hybrid', 'onsite']).default('remote'),
+    status: z.enum(['open', 'on_hold', 'closed', 'filled']).default('open'),
+    priority: z.enum(['low', 'medium', 'high']).default('medium'),
+    assignedRecruiterId: nullableNumber,
+    hiringManagerId: nullableNumber,
+    deadlineAt: nullableDate,
+  })
+  .superRefine((data, ctx) => {
+    if (data.salaryMin !== null && data.salaryMax !== null && data.salaryMin > data.salaryMax) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Minimum salary cannot be greater than maximum salary',
+        path: ['salaryMin'],
+      });
+    }
+  });
 
 export type VacancyFormState = {
   error?: string;
@@ -92,7 +88,10 @@ function validateVacancyForm(formData: FormData) {
 
 // ----- Create -----
 
-export async function createVacancyAction(_prev: VacancyFormState, formData: FormData): Promise<VacancyFormState> {
+export async function createVacancyAction(
+  _prev: VacancyFormState,
+  formData: FormData
+): Promise<VacancyFormState> {
   const user = await getUser();
   if (!user) return { error: 'Unauthorized' };
   if (!hasPermission(user, 'vacancies.create')) return { error: 'Forbidden' };
@@ -115,12 +114,16 @@ export async function createVacancyAction(_prev: VacancyFormState, formData: For
 
   revalidateTag('vacancies', { expire: 0 });
 
-  return { success: true }
+  return { success: true };
 }
 
 // ----- Update -----
 
-export async function updateVacancyAction(id: number, _prev: VacancyFormState, formData: FormData): Promise<VacancyFormState> {
+export async function updateVacancyAction(
+  id: number,
+  _prev: VacancyFormState,
+  formData: FormData
+): Promise<VacancyFormState> {
   const user = await getUser();
   if (!user) return { error: 'Unauthorized' };
   if (!hasPermission(user, 'vacancies.update')) return { error: 'Forbidden' };

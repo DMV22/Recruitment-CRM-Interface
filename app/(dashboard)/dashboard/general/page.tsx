@@ -25,11 +25,7 @@ type AccountFormProps = {
   emailValue?: string;
 };
 
-function AccountForm({
-  state,
-  nameValue = '',
-  emailValue = ''
-}: AccountFormProps) {
+function AccountForm({ state, nameValue = '', emailValue = '' }: AccountFormProps) {
   return (
     <>
       <div>
@@ -63,26 +59,15 @@ function AccountForm({
 
 function AccountFormWithData({ state }: { state: ActionState }) {
   const { data: user } = useSWR<User>('/api/user', fetcher);
-  return (
-    <AccountForm
-      state={state}
-      nameValue={user?.name ?? ''}
-      emailValue={user?.email ?? ''}
-    />
-  );
+  return <AccountForm state={state} nameValue={user?.name ?? ''} emailValue={user?.email ?? ''} />;
 }
 
 export default function GeneralPage() {
-  const [state, formAction, isPending] = useActionState<ActionState, FormData>(
-    updateAccount,
-    {}
-  );
+  const [state, formAction, isPending] = useActionState<ActionState, FormData>(updateAccount, {});
 
   return (
     <section className="flex-1 p-4 lg:p-8">
-      <h1 className="text-lg lg:text-2xl font-medium text-gray-900 mb-6">
-        General Settings
-      </h1>
+      <h1 className="text-lg lg:text-2xl font-medium text-gray-900 mb-6">General Settings</h1>
 
       <Card>
         <CardHeader>
@@ -93,12 +78,8 @@ export default function GeneralPage() {
             <Suspense fallback={<AccountForm state={state} />}>
               <AccountFormWithData state={state} />
             </Suspense>
-            {state.error && (
-              <p className="text-red-500 text-sm">{state.error}</p>
-            )}
-            {state.success && (
-              <p className="text-green-500 text-sm">{state.success}</p>
-            )}
+            {state.error && <p className="text-red-500 text-sm">{state.error}</p>}
+            {state.success && <p className="text-green-500 text-sm">{state.success}</p>}
             <Button
               type="submit"
               className="bg-orange-500 hover:bg-orange-600 text-white"
