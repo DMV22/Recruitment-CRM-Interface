@@ -15,7 +15,6 @@ const clientSchema = z.object({
   industry: z.string().max(100).optional().or(z.literal('')),
   website: z.string().url('Invalid URL').optional().or(z.literal('')),
   status: z.enum(['prospect', 'active', 'inactive']).default('prospect'),
-  assignedUserId: z.coerce.number().optional(),
   notes: z.string().max(2000).optional().or(z.literal('')),
 });
 
@@ -52,7 +51,7 @@ export async function createClientAction(
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
-  const { industry, website, notes, assignedUserId, ...rest } = parsed.data;
+  const { industry, website, notes, ...rest } = parsed.data;
 
   await createClient(
     {
@@ -61,7 +60,7 @@ export async function createClientAction(
       industry: industry || null,
       website: website || null,
       notes: notes || null,
-      assignedUserId: assignedUserId ?? null,
+      assignedUserId: null,
     },
     user.id
   );
@@ -98,7 +97,7 @@ export async function updateClientAction(
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
-  const { industry, website, notes, assignedUserId, ...rest } = parsed.data;
+  const { industry, website, notes, ...rest } = parsed.data;
 
   const updated = await updateClient(
     id,
@@ -108,7 +107,7 @@ export async function updateClientAction(
       industry: industry || null,
       website: website || null,
       notes: notes || null,
-      assignedUserId: assignedUserId ?? null,
+      assignedUserId: null,
     },
     user.id
   );
