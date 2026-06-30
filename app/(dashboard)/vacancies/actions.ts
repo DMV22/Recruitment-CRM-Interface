@@ -52,7 +52,9 @@ const vacancySchema = z
     ),
     salaryMin: nullableNumber,
     salaryMax: nullableNumber,
-    currency: z.string().max(10).default('USD'),
+    currency: z.preprocess(
+      (value) => (value === '' || value == null ? 'USD' : value),
+      z.string().max(10)),
     location: nullableString.pipe(z.string().max(100).nullable()),
     workType: z.enum(['remote', 'hybrid', 'onsite']).default('remote'),
     status: z.enum(['open', 'on_hold', 'closed', 'filled']).default('open'),
@@ -80,8 +82,6 @@ export type VacancyFormState = {
 function validateVacancyForm(formData: FormData) {
   // Automatically collects all key-value pairs from the form into a single object
   const raw = Object.fromEntries(formData.entries());
-
-  if (!raw.currency) raw.currency = 'USD';
 
   return vacancySchema.safeParse(raw);
 }
