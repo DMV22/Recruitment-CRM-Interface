@@ -66,6 +66,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -158,6 +159,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -269,7 +271,212 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* @layer components — спільні UI-патерни проекту */
+
+@layer components {
+
+  /* --- Сторінки / layout --- */
+  .page-header {
+    @apply space-y-1;
+  }
+
+  .page-title {
+    @apply text-xl font-semibold;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-muted-foreground mt-1;
+  }
+
+  .page-content {
+    @apply space-y-6;
+  }
+
+  .back-link {
+    @apply inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors;
+  }
+
+  /* --- Detail / card-layout --- */
+  .detail-page {
+    @apply max-w-3xl space-y-6;
+  }
+
+  .detail-header {
+    @apply flex items-start justify-between gap-4;
+  }
+
+  .detail-title {
+    @apply flex items-center gap-3;
+  }
+
+  .detail-card {
+    @apply rounded-lg border border-border bg-card p-5 space-y-4;
+  }
+
+  .detail-card-sm {
+    @apply rounded-lg border border-border bg-card p-5 space-y-3;
+  }
+
+  .detail-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm;
+  }
+
+  .detail-label {
+    @apply flex items-center gap-1.5 mb-1 text-sm text-muted-foreground;
+  }
+
+  .detail-link {
+    @apply inline-flex items-center gap-1 text-primary hover:underline;
+  }
+
+  /* --- Toolbar (фільтри + кнопки над таблицею) --- */
+  .toolbar {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .toolbar-actions {
+    @apply ml-auto flex items-center gap-2;
+  }
+
+  .toolbar-count {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* --- Таблиця --- */
+  .table-wrapper {
+    @apply rounded-md border border-border overflow-hidden;
+  }
+
+  .table-actions {
+    @apply flex items-center justify-end gap-1;
+  }
+
+  .table-link {
+    @apply font-medium text-foreground hover:text-primary transition-colors text-left;
+  }
+
+  .table-external-link {
+    @apply inline-flex items-center gap-1 text-sm text-primary hover:underline;
+  }
+
+  .table-empty-cell {
+    @apply h-32 text-center;
+  }
+
+  .table-empty-content {
+    @apply flex flex-col items-center gap-2 text-muted-foreground;
+  }
+
+  /* --- Пагінація --- */
+  .pagination {
+    @apply flex items-center justify-between text-sm text-muted-foreground;
+  }
+
+  .pagination-buttons {
+    @apply flex gap-2;
+  }
+
+  /* --- Форма --- */
+  .form-wrapper {
+    @apply w-full sm:max-w-md overflow-y-auto;
+  }
+
+  .form-body {
+    @apply mt-6 space-y-5;
+  }
+
+  .form-field {
+    @apply space-y-1.5;
+  }
+
+  .form-error {
+    @apply text-xs text-destructive;
+  }
+
+  .form-error-block {
+    @apply text-sm text-destructive;
+  }
+
+  .form-footer {
+    @apply flex gap-3 pt-2;
+  }
+
+  /* --- Status badges --- */
+  .status-badge {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+  }
+
+  .status-badge-prospect {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
+  }
+
+  .status-badge-active {
+    @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
+  }
+
+  .status-badge-inactive {
+    @apply bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400;
+  }
+
+  /* --- Кнопки / іконки --- */
+  .btn-danger {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  }
+
+  .icon-xs {
+    @apply h-3 w-3;
+  }
+
+  .icon-sm {
+    @apply h-3.5 w-3.5;
+  }
+
+  .icon-md {
+    @apply h-4 w-4;
+  }
+
+  .spinner {
+    @apply mr-2 h-4 w-4 animate-spin;
+  }
+
+  /* --- Контакти (detail-page) --- */
+  .contact-list {
+    @apply divide-y divide-border;
+  }
+
+  .contact-item {
+    @apply py-3 flex items-start justify-between gap-4;
+  }
+
+  .contact-meta {
+    @apply text-right text-xs text-muted-foreground space-y-0.5;
+  }
+
+  .contact-badge {
+    @apply ml-2 text-xs text-muted-foreground;
+  }
+
+  /* --- Loading skeleton --- */
+  .skeleton-row {
+    @apply h-14 border-t border-border px-4 flex items-center gap-4;
+  }
+
+  /* --- Типографіка --- */
+  .card-label {
+    @apply text-sm font-medium;
+  }
+
+  .text-hint {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .text-meta {
+    @apply text-xs text-muted-foreground;
   }
 }

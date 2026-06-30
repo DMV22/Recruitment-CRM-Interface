@@ -100,3 +100,12 @@ export async function getTeamForUser() {
 
   return result?.team || null;
 }
+
+export async function getUserTeamId(userId: number): Promise<number | null> {
+  const [member] = await db
+    .select({ teamId: teamMembers.teamId })
+    .from(teamMembers)
+    .where(eq(teamMembers.userId, userId))
+    .limit(1);
+  return member?.teamId ?? null;
+}
