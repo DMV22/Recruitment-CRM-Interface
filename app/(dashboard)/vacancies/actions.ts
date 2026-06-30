@@ -8,6 +8,10 @@ import { getUser } from '@/lib/db/queries';
 import { getUserTeamId } from '@/lib/db/queries';
 import { hasPermission } from '@/lib/rbac';
 import { createVacancy, updateVacancy, deleteVacancy } from '@/lib/db/queries/vacancies';
+import { clients, teamMembers } from '@/lib/db/schema';
+import { db } from '@/lib/db/drizzle';
+
+import { and, eq } from 'drizzle-orm';
 
 // ----- Helpers -----
 
@@ -104,6 +108,42 @@ export async function createVacancyAction(
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
+  const { assignedRecruiterId, hiringManagerId, clientId } = parsed.data;
+
+  // Verifying that a `client` belongs to a team
+  const client = await db.query.clients.findFirst({
+    where: and(eq(clients.id, clientId), eq(clients.teamId, teamId)),
+    columns: { id: true },
+  });
+
+  if (!client) return { error: 'Client not found or access denied' };
+
+  // Verifying that a `recruiter` belongs to a team
+  if (assignedRecruiterId !== null) {
+    const member = await db.query.teamMembers.findFirst({
+      where: and(
+        eq(teamMembers.userId, assignedRecruiterId),
+        eq(teamMembers.teamId, teamId)
+      ),
+      columns: { userId: true },
+    });
+
+    if (!member) return { fieldErrors: { assignedRecruiterId: ['Recruiter does not belong to this team'] } };
+  }
+
+  // Similarly, for `hiringManagerId`
+  if (hiringManagerId !== null) {
+    const member = await db.query.teamMembers.findFirst({
+      where: and(
+        eq(teamMembers.userId, hiringManagerId),
+        eq(teamMembers.teamId, teamId)
+      ),
+      columns: { userId: true },
+    });
+
+    if (!member) return { fieldErrors: { hiringManagerId: ['Hiring manager does not belong to this team'] } };
+  }
+
   await createVacancy(
     {
       teamId,
@@ -134,6 +174,39 @@ export async function updateVacancyAction(
   const parsed = validateVacancyForm(formData);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const { assignedRecruiterId, hiringManagerId, clientId } = parsed.data;
+
+  const client = await db.query.clients.findFirst({
+    where: and(eq(clients.id, clientId), eq(clients.teamId, teamId)),
+    columns: { id: true },
+  });
+  
+  if (!client) return { error: 'Client not found or access denied' };
+
+  if (assignedRecruiterId !== null) {
+    const member = await db.query.teamMembers.findFirst({
+      where: and(
+        eq(teamMembers.userId, assignedRecruiterId),
+        eq(teamMembers.teamId, teamId)
+      ),
+      columns: { userId: true },
+    });
+
+    if (!member) return { fieldErrors: { assignedRecruiterId: ['Recruiter does not belong to this team'] } };
+  }
+
+  if (hiringManagerId !== null) {
+    const member = await db.query.teamMembers.findFirst({
+      where: and(
+        eq(teamMembers.userId, hiringManagerId),
+        eq(teamMembers.teamId, teamId)
+      ),
+      columns: { userId: true },
+    });
+
+    if (!member) return { fieldErrors: { hiringManagerId: ['Hiring manager does not belong to this team'] } };
   }
 
   const updated = await updateVacancy(
