@@ -53,10 +53,7 @@ export function validatedActionWithUser<S extends z.ZodType<any, any>, T>(
   };
 }
 
-type ActionWithTeamFunction<T> = (
-  formData: FormData,
-  team: TeamDataWithMembers
-) => Promise<T>;
+type ActionWithTeamFunction<T> = (formData: FormData, team: TeamDataWithMembers) => Promise<T>;
 
 export function withTeam<T>(action: ActionWithTeamFunction<T>) {
   return async (formData: FormData): Promise<T> => {

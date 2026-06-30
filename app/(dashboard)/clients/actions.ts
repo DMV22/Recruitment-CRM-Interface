@@ -15,7 +15,6 @@ const clientSchema = z.object({
   industry: z.string().max(100).optional().or(z.literal('')),
   website: z.string().url('Invalid URL').optional().or(z.literal('')),
   status: z.enum(['prospect', 'active', 'inactive']).default('prospect'),
-  assignedUserId: z.coerce.number().optional(),
   notes: z.string().max(2000).optional().or(z.literal('')),
 });
 
@@ -27,7 +26,10 @@ export type ClientFormState = {
 
 // ----- Create -----
 
-export async function createClientAction(_prev: ClientFormState, formData: FormData): Promise<ClientFormState> {
+export async function createClientAction(
+  _prev: ClientFormState,
+  formData: FormData
+): Promise<ClientFormState> {
   const user = await getUser();
   if (!user) return { error: 'Unauthorized' };
   if (!hasPermission(user, 'clients.create')) return { error: 'Forbidden' };
@@ -49,7 +51,7 @@ export async function createClientAction(_prev: ClientFormState, formData: FormD
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
-  const { industry, website, notes, assignedUserId, ...rest } = parsed.data;
+  const { industry, website, notes, ...rest } = parsed.data;
 
   await createClient(
     {
@@ -58,7 +60,7 @@ export async function createClientAction(_prev: ClientFormState, formData: FormD
       industry: industry || null,
       website: website || null,
       notes: notes || null,
-      assignedUserId: assignedUserId ?? null,
+      assignedUserId: null,
     },
     user.id
   );
@@ -69,7 +71,11 @@ export async function createClientAction(_prev: ClientFormState, formData: FormD
 
 // ----- Update -----
 
-export async function updateClientAction(id: number, _prev: ClientFormState, formData: FormData): Promise<ClientFormState> {
+export async function updateClientAction(
+  id: number,
+  _prev: ClientFormState,
+  formData: FormData
+): Promise<ClientFormState> {
   const user = await getUser();
   if (!user) return { error: 'Unauthorized' };
   if (!hasPermission(user, 'clients.update')) return { error: 'Forbidden' };
@@ -91,7 +97,7 @@ export async function updateClientAction(id: number, _prev: ClientFormState, for
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
 
-  const { industry, website, notes, assignedUserId, ...rest } = parsed.data;
+  const { industry, website, notes, ...rest } = parsed.data;
 
   const updated = await updateClient(
     id,
@@ -101,7 +107,7 @@ export async function updateClientAction(id: number, _prev: ClientFormState, for
       industry: industry || null,
       website: website || null,
       notes: notes || null,
-      assignedUserId: assignedUserId ?? null,
+      assignedUserId: null,
     },
     user.id
   );

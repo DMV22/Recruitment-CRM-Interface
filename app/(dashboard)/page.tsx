@@ -24,12 +24,13 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 py-20 text-center space-y-6">
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-          Manage your entire<br />
+          Manage your entire
+          <br />
           <span className="text-primary">recruitment pipeline</span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-          One interface for your clients, vacancies, candidates and submissions.
-          Built for recruitment agencies that move fast.
+          One interface for your clients, vacancies, candidates and submissions. Built for
+          recruitment agencies that move fast.
         </p>
         <div className="flex items-center justify-center gap-3 pt-2">
           <Button size="lg" asChild>
@@ -51,17 +52,20 @@ export default function LandingPage() {
             {
               icon: Building2,
               title: 'Manage Clients',
-              description: 'Track your client companies, contacts, and assigned job orders in one place.',
+              description:
+                'Track your client companies, contacts, and assigned job orders in one place.',
             },
             {
               icon: Briefcase,
               title: 'Track Vacancies',
-              description: 'Manage open roles by priority, deadline and recruiter — see where each job stands.',
+              description:
+                'Manage open roles by priority, deadline and recruiter — see where each job stands.',
             },
             {
               icon: Users,
               title: 'Build Candidate Pipeline',
-              description: 'Submit candidates to vacancies and track every stage from sourcing to hire.',
+              description:
+                'Submit candidates to vacancies and track every stage from sourcing to hire.',
             },
           ].map(({ icon: Icon, title, description }) => (
             <div key={title} className="rounded-lg border border-border p-6 space-y-3">
@@ -81,9 +85,23 @@ export default function LandingPage() {
           <h2 className="text-2xl font-bold text-center">How it works</h2>
           <div className="grid sm:grid-cols-3 gap-8 text-center">
             {[
-              { step: '01', title: 'Add Job Order', description: 'Create a vacancy linked to a client with role details, stack and priority.' },
-              { step: '02', title: 'Submit Candidates', description: 'Match candidates to open vacancies and submit them with one click.' },
-              { step: '03', title: 'Track to Hire', description: 'Move candidates through pipeline stages and log every action automatically.' },
+              {
+                step: '01',
+                title: 'Add Job Order',
+                description:
+                  'Create a vacancy linked to a client with role details, stack and priority.',
+              },
+              {
+                step: '02',
+                title: 'Submit Candidates',
+                description: 'Match candidates to open vacancies and submit them with one click.',
+              },
+              {
+                step: '03',
+                title: 'Track to Hire',
+                description:
+                  'Move candidates through pipeline stages and log every action automatically.',
+              },
             ].map(({ step, title, description }) => (
               <div key={step} className="space-y-3">
                 <span className="text-3xl font-bold text-primary/30">{step}</span>
@@ -100,8 +118,12 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex items-center justify-between text-sm text-muted-foreground">
           <span>Recruitment CRM</span>
           <div className="flex gap-4">
-            <Link href="/sign-in" className="hover:text-foreground transition-colors">Sign In</Link>
-            <Link href="/sign-up" className="hover:text-foreground transition-colors">Sign Up</Link>
+            <Link href="/sign-in" className="hover:text-foreground transition-colors">
+              Sign In
+            </Link>
+            <Link href="/sign-up" className="hover:text-foreground transition-colors">
+              Sign Up
+            </Link>
           </div>
         </div>
       </footer>

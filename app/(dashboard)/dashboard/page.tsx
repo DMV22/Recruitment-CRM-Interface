@@ -43,10 +43,10 @@ function TeamMembersSkeleton() {
 
 function TeamMembers() {
   const { data: teamData } = useSWR<TeamDataWithMembers>('/api/team', fetcher);
-  const [removeState, removeAction, isRemovePending] = useActionState<
-    ActionState,
-    FormData
-  >(removeTeamMember, {});
+  const [removeState, removeAction, isRemovePending] = useActionState<ActionState, FormData>(
+    removeTeamMember,
+    {}
+  );
 
   const getUserDisplayName = (user: Pick<User, 'id' | 'name' | 'email'>) => {
     return user.name || user.email || 'Unknown User';
@@ -93,23 +93,14 @@ function TeamMembers() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">
-                    {getUserDisplayName(member.user)}
-                  </p>
-                  <p className="text-sm text-muted-foreground capitalize">
-                    {member.role}
-                  </p>
+                  <p className="font-medium">{getUserDisplayName(member.user)}</p>
+                  <p className="text-sm text-muted-foreground capitalize">{member.role}</p>
                 </div>
               </div>
               {index > 1 ? (
                 <form action={removeAction}>
                   <input type="hidden" name="memberId" value={member.id} />
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    size="sm"
-                    disabled={isRemovePending}
-                  >
+                  <Button type="submit" variant="outline" size="sm" disabled={isRemovePending}>
                     {isRemovePending ? 'Removing...' : 'Remove'}
                   </Button>
                 </form>
@@ -117,9 +108,7 @@ function TeamMembers() {
             </li>
           ))}
         </ul>
-        {removeState?.error && (
-          <p className="text-red-500 mt-4">{removeState.error}</p>
-        )}
+        {removeState?.error && <p className="text-red-500 mt-4">{removeState.error}</p>}
       </CardContent>
     </Card>
   );
@@ -138,10 +127,10 @@ function InviteTeamMemberSkeleton() {
 function InviteTeamMember() {
   const { data: user } = useSWR<User>('/api/user', fetcher);
   const isOwner = user?.role === 'owner';
-  const [inviteState, inviteAction, isInvitePending] = useActionState<
-    ActionState,
-    FormData
-  >(inviteTeamMember, {});
+  const [inviteState, inviteAction, isInvitePending] = useActionState<ActionState, FormData>(
+    inviteTeamMember,
+    {}
+  );
 
   return (
     <Card>
@@ -181,12 +170,8 @@ function InviteTeamMember() {
               </div>
             </RadioGroup>
           </div>
-          {inviteState?.error && (
-            <p className="text-red-500">{inviteState.error}</p>
-          )}
-          {inviteState?.success && (
-            <p className="text-green-500">{inviteState.success}</p>
-          )}
+          {inviteState?.error && <p className="text-red-500">{inviteState.error}</p>}
+          {inviteState?.success && <p className="text-green-500">{inviteState.success}</p>}
           <Button
             type="submit"
             className="bg-orange-500 hover:bg-orange-600 text-white"

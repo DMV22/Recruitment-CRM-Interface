@@ -8,15 +8,15 @@ const PROTECTED_ROUTES = [
   '/vacancies',
   '/candidates',
   '/submissions',
-  '/team'
+  '/team',
 ];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route));
+  const isProtected = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 
-  // Secure protected routes -> redirect to /sign-in if not authenticated 
+  // Secure protected routes -> redirect to /sign-in if not authenticated
   if (isProtected) {
     const session = await getSession();
 

@@ -5,11 +5,29 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { LayoutDashboard, Building2, Briefcase, Users, GitPullRequest, UsersRound, Settings, LogOut, Menu, X, ChevronDown } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Building2,
+  Briefcase,
+  Users,
+  GitPullRequest,
+  UsersRound,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  ChevronDown,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import { signOut } from '@/app/(login)/actions';
 
@@ -32,7 +50,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, permission: 'dashboard.read' },
   { label: 'Clients', href: '/clients', icon: Building2, permission: 'clients.read' },
-  { label: 'Vacancies', href: '#', icon: Briefcase, permission: 'vacancies.read' },
+  { label: 'Vacancies', href: '/vacancies', icon: Briefcase, permission: 'vacancies.read' },
   { label: 'Candidates', href: '#', icon: Users, permission: 'candidates.read' },
   { label: 'Submissions', href: '#', icon: GitPullRequest, permission: 'submissions.read' },
   { label: 'Team', href: '#', icon: UsersRound, permission: 'team.read' },
@@ -48,7 +66,12 @@ function SidebarContent({ user, onNavigate }: { user: User; onNavigate?: () => v
   const visibleItems = NAV_ITEMS.filter((item) => hasPermission(user, item.permission));
 
   const initials = user.name
-    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+    ? user.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
     : user.email.slice(0, 2).toUpperCase();
 
   async function handleSignOut() {
@@ -112,7 +135,9 @@ function SidebarContent({ user, onNavigate }: { user: User; onNavigate?: () => v
               </Avatar>
               <div className="flex-1 text-left overflow-hidden">
                 <p className="text-xs font-medium truncate">{user.name || user.email}</p>
-                <p className="text-xs text-muted-foreground capitalize">{user.crmRole?.replace('_', ' ')}</p>
+                <p className="text-xs text-muted-foreground capitalize">
+                  {user.crmRole?.replace('_', ' ')}
+                </p>
               </div>
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             </button>

@@ -1,5 +1,15 @@
 import { db } from './drizzle';
-import { users, teams, teamMembers, clients, clientContacts, vacancies, candidates, submissions, pipelineHistory } from './schema';
+import {
+  users,
+  teams,
+  teamMembers,
+  clients,
+  clientContacts,
+  vacancies,
+  candidates,
+  submissions,
+  pipelineHistory,
+} from './schema';
 import { hashPassword } from '@/lib/auth/session';
 
 async function seed() {
@@ -7,10 +17,7 @@ async function seed() {
 
   // Team
 
-  const [team] = await db
-    .insert(teams)
-    .values({ name: 'Alpha Recruit Agency' })
-    .returning();
+  const [team] = await db.insert(teams).values({ name: 'Alpha Recruit Agency' }).returning();
 
   // Users
 
@@ -400,8 +407,19 @@ async function seed() {
   await db.insert(pipelineHistory).values([
     { submissionId: sub1.id, fromStage: null, toStage: 'sourced', changedBy: recruiter.id },
     { submissionId: sub1.id, fromStage: 'sourced', toStage: 'screening', changedBy: recruiter.id },
-    { submissionId: sub1.id, fromStage: 'screening', toStage: 'hr_interview', changedBy: recruiter.id },
-    { submissionId: sub1.id, fromStage: 'hr_interview', toStage: 'tech_interview', changedBy: recruiter.id, notes: 'HR approved, moving to tech round' },
+    {
+      submissionId: sub1.id,
+      fromStage: 'screening',
+      toStage: 'hr_interview',
+      changedBy: recruiter.id,
+    },
+    {
+      submissionId: sub1.id,
+      fromStage: 'hr_interview',
+      toStage: 'tech_interview',
+      changedBy: recruiter.id,
+      notes: 'HR approved, moving to tech round',
+    },
   ]);
 
   // Submission 2: Inna -> Senior React Dev @ Acme - at screening
@@ -434,9 +452,24 @@ async function seed() {
 
   await db.insert(pipelineHistory).values([
     { submissionId: sub3.id, fromStage: null, toStage: 'sourced', changedBy: recruiter.id },
-    { submissionId: sub3.id, fromStage: 'sourced', toStage: 'hr_interview', changedBy: recruiter.id },
-    { submissionId: sub3.id, fromStage: 'hr_interview', toStage: 'tech_interview', changedBy: recruiter.id },
-    { submissionId: sub3.id, fromStage: 'tech_interview', toStage: 'client_interview', changedBy: hiringManager.id },
+    {
+      submissionId: sub3.id,
+      fromStage: 'sourced',
+      toStage: 'hr_interview',
+      changedBy: recruiter.id,
+    },
+    {
+      submissionId: sub3.id,
+      fromStage: 'hr_interview',
+      toStage: 'tech_interview',
+      changedBy: recruiter.id,
+    },
+    {
+      submissionId: sub3.id,
+      fromStage: 'tech_interview',
+      toStage: 'client_interview',
+      changedBy: hiringManager.id,
+    },
   ]);
 
   // Submission 4: Maria -> Backend Engineer @ Acme - rejected
@@ -454,7 +487,13 @@ async function seed() {
   await db.insert(pipelineHistory).values([
     { submissionId: sub4.id, fromStage: null, toStage: 'sourced', changedBy: recruiter.id },
     { submissionId: sub4.id, fromStage: 'sourced', toStage: 'screening', changedBy: recruiter.id },
-    { submissionId: sub4.id, fromStage: 'screening', toStage: 'rejected', changedBy: recruiter.id, notes: 'Salary mismatch' },
+    {
+      submissionId: sub4.id,
+      fromStage: 'screening',
+      toStage: 'rejected',
+      changedBy: recruiter.id,
+      notes: 'Salary mismatch',
+    },
   ]);
 
   // Submission 5: Olena -> Product Manager @ Nova - at offer
@@ -472,10 +511,31 @@ async function seed() {
   await db.insert(pipelineHistory).values([
     { submissionId: sub5.id, fromStage: null, toStage: 'sourced', changedBy: recruiter.id },
     { submissionId: sub5.id, fromStage: 'sourced', toStage: 'screening', changedBy: recruiter.id },
-    { submissionId: sub5.id, fromStage: 'screening', toStage: 'hr_interview', changedBy: recruiter.id },
-    { submissionId: sub5.id, fromStage: 'hr_interview', toStage: 'tech_interview', changedBy: recruiter.id },
-    { submissionId: sub5.id, fromStage: 'tech_interview', toStage: 'client_interview', changedBy: recruiter.id },
-    { submissionId: sub5.id, fromStage: 'client_interview', toStage: 'offer', changedBy: admin.id, notes: 'Client approved!' },
+    {
+      submissionId: sub5.id,
+      fromStage: 'screening',
+      toStage: 'hr_interview',
+      changedBy: recruiter.id,
+    },
+    {
+      submissionId: sub5.id,
+      fromStage: 'hr_interview',
+      toStage: 'tech_interview',
+      changedBy: recruiter.id,
+    },
+    {
+      submissionId: sub5.id,
+      fromStage: 'tech_interview',
+      toStage: 'client_interview',
+      changedBy: recruiter.id,
+    },
+    {
+      submissionId: sub5.id,
+      fromStage: 'client_interview',
+      toStage: 'offer',
+      changedBy: admin.id,
+      notes: 'Client approved!',
+    },
   ]);
 
   // Submission 6: Andrii -> DevOps @ Nova - at hr_interview
@@ -492,7 +552,12 @@ async function seed() {
   await db.insert(pipelineHistory).values([
     { submissionId: sub6.id, fromStage: null, toStage: 'sourced', changedBy: recruiter.id },
     { submissionId: sub6.id, fromStage: 'sourced', toStage: 'screening', changedBy: recruiter.id },
-    { submissionId: sub6.id, fromStage: 'screening', toStage: 'hr_interview', changedBy: recruiter.id },
+    {
+      submissionId: sub6.id,
+      fromStage: 'screening',
+      toStage: 'hr_interview',
+      changedBy: recruiter.id,
+    },
   ]);
 
   // Submission 7: Vira -> Junior QA @ Bright Future - hired
@@ -510,9 +575,20 @@ async function seed() {
   await db.insert(pipelineHistory).values([
     { submissionId: sub7.id, fromStage: null, toStage: 'sourced', changedBy: admin.id },
     { submissionId: sub7.id, fromStage: 'sourced', toStage: 'hr_interview', changedBy: admin.id },
-    { submissionId: sub7.id, fromStage: 'hr_interview', toStage: 'client_interview', changedBy: admin.id },
+    {
+      submissionId: sub7.id,
+      fromStage: 'hr_interview',
+      toStage: 'client_interview',
+      changedBy: admin.id,
+    },
     { submissionId: sub7.id, fromStage: 'client_interview', toStage: 'offer', changedBy: admin.id },
-    { submissionId: sub7.id, fromStage: 'offer', toStage: 'hired', changedBy: admin.id, notes: 'Candidate accepted offer' },
+    {
+      submissionId: sub7.id,
+      fromStage: 'offer',
+      toStage: 'hired',
+      changedBy: admin.id,
+      notes: 'Candidate accepted offer',
+    },
   ]);
 
   // Submission 8: Ruslan -> Senior React Dev @ Acme - sourced
@@ -526,9 +602,11 @@ async function seed() {
     })
     .returning();
 
-  await db.insert(pipelineHistory).values([
-    { submissionId: sub8.id, fromStage: null, toStage: 'sourced', changedBy: recruiter.id },
-  ]);
+  await db
+    .insert(pipelineHistory)
+    .values([
+      { submissionId: sub8.id, fromStage: null, toStage: 'sourced', changedBy: recruiter.id },
+    ]);
 
   console.log('DONE: Submissions & pipeline history created');
   console.log('');

@@ -1,38 +1,25 @@
-import { pgTable, pgEnum, serial, varchar, text, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  pgEnum,
+  serial,
+  varchar,
+  text,
+  timestamp,
+  integer,
+  boolean,
+} from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Enums
-export const crmRoleEnum = pgEnum('crm_role', [
-  'admin',
-  'recruiter',
-  'hiring_manager',
-  'viewer',
-]);
+export const crmRoleEnum = pgEnum('crm_role', ['admin', 'recruiter', 'hiring_manager', 'viewer']);
 
-export const clientStatusEnum = pgEnum('client_status', [
-  'prospect',
-  'active',
-  'inactive',
-]);
+export const clientStatusEnum = pgEnum('client_status', ['prospect', 'active', 'inactive']);
 
-export const vacancyStatusEnum = pgEnum('vacancy_status', [
-  'open',
-  'on_hold',
-  'closed',
-  'filled',
-]);
+export const vacancyStatusEnum = pgEnum('vacancy_status', ['open', 'on_hold', 'closed', 'filled']);
 
-export const vacancyPriorityEnum = pgEnum('vacancy_priority', [
-  'low',
-  'medium',
-  'high',
-]);
+export const vacancyPriorityEnum = pgEnum('vacancy_priority', ['low', 'medium', 'high']);
 
-export const workTypeEnum = pgEnum('work_type', [
-  'remote',
-  'hybrid',
-  'onsite',
-]);
+export const workTypeEnum = pgEnum('work_type', ['remote', 'hybrid', 'onsite']);
 
 export const seniorityEnum = pgEnum('seniority', [
   'intern',
@@ -129,7 +116,7 @@ export const invitations = pgTable('invitations', {
   status: varchar('status', { length: 20 }).notNull().default('pending'),
 });
 
-// CRM Tables 
+// CRM Tables
 
 export const clients = pgTable('clients', {
   id: serial('id').primaryKey(),
@@ -178,9 +165,7 @@ export const vacancies = pgTable('vacancies', {
   workType: workTypeEnum('work_type').notNull().default('remote'),
   status: vacancyStatusEnum('status').notNull().default('open'),
   priority: vacancyPriorityEnum('priority').notNull().default('medium'),
-  assignedRecruiterId: integer('assigned_recruiter_id').references(
-    () => users.id
-  ),
+  assignedRecruiterId: integer('assigned_recruiter_id').references(() => users.id),
   hiringManagerId: integer('hiring_manager_id').references(() => users.id),
   deadlineAt: timestamp('deadline_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -221,9 +206,7 @@ export const submissions = pgTable('submissions', {
   submittedBy: integer('submitted_by')
     .notNull()
     .references(() => users.id),
-  currentStage: pipelineStageEnum('current_stage')
-    .notNull()
-    .default('sourced'),
+  currentStage: pipelineStageEnum('current_stage').notNull().default('sourced'),
   rejectionReason: text('rejection_reason'),
   notes: text('notes'),
   submittedAt: timestamp('submitted_at').notNull().defaultNow(),
@@ -313,7 +296,7 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
 export const clientsRelations = relations(clients, ({ one, many }) => ({
   team: one(teams, {
     fields: [clients.teamId],
-    references: [teams.id]
+    references: [teams.id],
   }),
   assignedUser: one(users, {
     fields: [clients.assignedUserId],
@@ -328,13 +311,12 @@ export const clientContactsRelations = relations(clientContacts, ({ one }) => ({
     fields: [clientContacts.clientId],
     references: [clients.id],
   }),
-})
-);
+}));
 
 export const vacanciesRelations = relations(vacancies, ({ one, many }) => ({
   team: one(teams, {
     fields: [vacancies.teamId],
-    references: [teams.id]
+    references: [teams.id],
   }),
   client: one(clients, {
     fields: [vacancies.clientId],
@@ -356,7 +338,7 @@ export const vacanciesRelations = relations(vacancies, ({ one, many }) => ({
 export const candidatesRelations = relations(candidates, ({ one, many }) => ({
   team: one(teams, {
     fields: [candidates.teamId],
-    references: [teams.id]
+    references: [teams.id],
   }),
   submissions: many(submissions),
 }));
@@ -386,8 +368,7 @@ export const pipelineHistoryRelations = relations(pipelineHistory, ({ one }) => 
     fields: [pipelineHistory.changedBy],
     references: [users.id],
   }),
-})
-);
+}));
 
 export const entityNotesRelations = relations(entityNotes, ({ one }) => ({
   createdBy: one(users, {

@@ -37,17 +37,13 @@ export function DeleteClientDialog({ open, onClose, clientId, clientName }: Prop
         <AlertDialogHeader>
           <AlertDialogTitle>Delete client?</AlertDialogTitle>
           <AlertDialogDescription className="text-hint block">
-            <span className="font-bold text-foreground">{clientName}</span> will be permanently deleted along
-            with all associated data. This action cannot be undone.
+            <span className="font-bold text-foreground">{clientName}</span> will be permanently
+            deleted along with all associated data. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleConfirm}
-            disabled={isPending}
-            className="btn-danger"
-          >
+          <AlertDialogAction onClick={handleConfirm} disabled={isPending} className="btn-danger">
             {isPending && <Loader2 className="spinner" />}
             Delete
           </AlertDialogAction>

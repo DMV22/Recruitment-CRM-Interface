@@ -16,9 +16,7 @@ async function AuthenticatedLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen bg-background">
       <Sidebar user={user} />
       <main className="lg:pl-56 flex flex-col min-h-screen">
-        <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          {children}
-        </div>
+        <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</div>
       </main>
     </div>
   );
