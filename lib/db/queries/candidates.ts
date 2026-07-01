@@ -1,5 +1,5 @@
 import { db } from '@/lib/db/drizzle';
-import { candidates, submissions, vacancies } from '@/lib/db/schema';
+import { candidates, submissions, vacancies, type NewCandidate, activityLogs, ActivityType } from '@/lib/db/schema';
 import { eq, and, ilike, desc, count, inArray } from 'drizzle-orm';
 
 // ----- Types -----
@@ -81,4 +81,15 @@ export async function getCandidates(
     perPage,
     totalPages: Math.ceil(total / perPage),
   };
+}
+
+// ----- Single -----
+
+export async function getCandidateById(id: number, teamId: number) {
+  const [candidate] = await db
+    .select()
+    .from(candidates)
+    .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId)));
+
+  return candidate ?? null;
 }
