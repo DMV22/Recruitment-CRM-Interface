@@ -27,24 +27,17 @@ export async function getCandidates(
   let allowedCandidateIds: number[] | undefined;
 
   if (crmRole === 'hiring_manager') {
-    const assignedVacancies = await db
-      .select({ id: vacancies.id })
+    // INNER JOIN garantees that we only get candidates that have been submitted to the hiring manager's vacancies
+    const submittedCandidates = await db
+      .selectDistinct({ candidateId: submissions.candidateId })
       .from(vacancies)
+      .innerJoin(submissions, eq(submissions.vacancyId, vacancies.id))
       .where(and(eq(vacancies.teamId, teamId), eq(vacancies.hiringManagerId, userId)));
 
-    const vacancyIds = assignedVacancies.map((v) => v.id);
+    // Since innerJoin does not return null, we can map the raw numbers directly
+    allowedCandidateIds = submittedCandidates.map((s) => s.candidateId);
 
-    if (vacancyIds.length === 0) {
-      return { data: [], total: 0, page, perPage, totalPages: 0 };
-    }
-
-    const submittedCandidates = await db
-      .select({ candidateId: submissions.candidateId })
-      .from(submissions)
-      .where(inArray(submissions.vacancyId, vacancyIds));
-
-    allowedCandidateIds = [...new Set(submittedCandidates.map((s) => s.candidateId))];
-
+    // If the hiring manager has no vacancies or no candidates submitted to their vacancies
     if (allowedCandidateIds.length === 0) {
       return { data: [], total: 0, page, perPage, totalPages: 0 };
     }
