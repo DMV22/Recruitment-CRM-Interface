@@ -1,5 +1,10 @@
 'use server';
 
+import { getUser, getUserTeamId } from '@/lib/db/queries';
+import { createCandidate, deleteCandidate, updateCandidate } from '@/lib/db/queries/candidates';
+import { hasPermission } from '@/lib/rbac';
+import { revalidateTag } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 // ----- Helpers -----
@@ -59,4 +64,79 @@ export type CandidateFormState = {
 function validateCandidateForm(formData: FormData) {
   const raw = Object.fromEntries(formData.entries());
   return candidateSchema.safeParse(raw);
+}
+
+// ----- Create -----
+
+export async function createCandidateAction(
+  _prev: CandidateFormState,
+  formData: FormData
+): Promise<CandidateFormState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'candidates.create')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const parsed = validateCandidateForm(formData);
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  await createCandidate(
+    {
+      teamId,
+      ...parsed.data,
+    },
+    user.id
+  );
+
+  revalidateTag('candidates', { expire: 0 });
+
+  return { success: true };
+}
+
+// ----- Update -----
+
+export async function updateCandidateAction(
+  id: number,
+  _prev: CandidateFormState,
+  formData: FormData
+): Promise<CandidateFormState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'candidates.update')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const parsed = validateCandidateForm(formData);
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const updated = await updateCandidate(id, teamId, parsed.data, user.id);
+  if (!updated) return { error: 'Candidate not found or access denied' };
+
+  revalidateTag('candidates', { expire: 0 });
+  revalidateTag(`candidate-${id}`, { expire: 0 });
+  return { success: true };
+}
+
+// ----- Delete -----
+
+export async function deleteCandidateAction(id: number): Promise<CandidateFormState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'candidates.archive')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const deleted = await deleteCandidate(id, teamId, user.id);
+  if (!deleted) return { error: 'Candidate not found or access denied' };
+
+  revalidateTag('candidates', { expire: 0 });
+  redirect('/candidates');
 }
