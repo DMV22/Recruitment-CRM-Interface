@@ -8,7 +8,10 @@
     "db:seed": "npx tsx lib/db/seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "lint": "eslint . --fix",
+    "format": "prettier . --write",
+    "validate": "pnpm format && pnpm lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

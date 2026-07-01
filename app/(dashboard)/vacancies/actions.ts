@@ -58,7 +58,8 @@ const vacancySchema = z
     salaryMax: nullableNumber,
     currency: z.preprocess(
       (value) => (value === '' || value == null ? 'USD' : value),
-      z.string().max(10)),
+      z.string().max(10)
+    ),
     location: nullableString.pipe(z.string().max(100).nullable()),
     workType: z.enum(['remote', 'hybrid', 'onsite']).default('remote'),
     status: z.enum(['open', 'on_hold', 'closed', 'filled']).default('open'),
@@ -121,27 +122,23 @@ export async function createVacancyAction(
   // Verifying that a `recruiter` belongs to a team
   if (assignedRecruiterId !== null) {
     const member = await db.query.teamMembers.findFirst({
-      where: and(
-        eq(teamMembers.userId, assignedRecruiterId),
-        eq(teamMembers.teamId, teamId)
-      ),
+      where: and(eq(teamMembers.userId, assignedRecruiterId), eq(teamMembers.teamId, teamId)),
       columns: { userId: true },
     });
 
-    if (!member) return { fieldErrors: { assignedRecruiterId: ['Recruiter does not belong to this team'] } };
+    if (!member)
+      return { fieldErrors: { assignedRecruiterId: ['Recruiter does not belong to this team'] } };
   }
 
   // Similarly, for `hiringManagerId`
   if (hiringManagerId !== null) {
     const member = await db.query.teamMembers.findFirst({
-      where: and(
-        eq(teamMembers.userId, hiringManagerId),
-        eq(teamMembers.teamId, teamId)
-      ),
+      where: and(eq(teamMembers.userId, hiringManagerId), eq(teamMembers.teamId, teamId)),
       columns: { userId: true },
     });
 
-    if (!member) return { fieldErrors: { hiringManagerId: ['Hiring manager does not belong to this team'] } };
+    if (!member)
+      return { fieldErrors: { hiringManagerId: ['Hiring manager does not belong to this team'] } };
   }
 
   await createVacancy(
@@ -182,31 +179,27 @@ export async function updateVacancyAction(
     where: and(eq(clients.id, clientId), eq(clients.teamId, teamId)),
     columns: { id: true },
   });
-  
+
   if (!client) return { error: 'Client not found or access denied' };
 
   if (assignedRecruiterId !== null) {
     const member = await db.query.teamMembers.findFirst({
-      where: and(
-        eq(teamMembers.userId, assignedRecruiterId),
-        eq(teamMembers.teamId, teamId)
-      ),
+      where: and(eq(teamMembers.userId, assignedRecruiterId), eq(teamMembers.teamId, teamId)),
       columns: { userId: true },
     });
 
-    if (!member) return { fieldErrors: { assignedRecruiterId: ['Recruiter does not belong to this team'] } };
+    if (!member)
+      return { fieldErrors: { assignedRecruiterId: ['Recruiter does not belong to this team'] } };
   }
 
   if (hiringManagerId !== null) {
     const member = await db.query.teamMembers.findFirst({
-      where: and(
-        eq(teamMembers.userId, hiringManagerId),
-        eq(teamMembers.teamId, teamId)
-      ),
+      where: and(eq(teamMembers.userId, hiringManagerId), eq(teamMembers.teamId, teamId)),
       columns: { userId: true },
     });
 
-    if (!member) return { fieldErrors: { hiringManagerId: ['Hiring manager does not belong to this team'] } };
+    if (!member)
+      return { fieldErrors: { hiringManagerId: ['Hiring manager does not belong to this team'] } };
   }
 
   const updated = await updateVacancy(
