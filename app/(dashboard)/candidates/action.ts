@@ -4,45 +4,50 @@ import { z } from 'zod';
 
 // ----- Helpers -----
 
-const nullableString = z.preprocess((value) => {
-  if (value === '' || value === undefined || value === null) {
-    return null;
-  }
-  return value;
-}, z.string().nullable());
+// Сonverts the variable into a function that accepts a custom pattern
+function createNullableString(customSchema: z.ZodTypeAny) {
+  return z.preprocess((value) => {
+    if (value === '' || value === undefined || value === null) {
+      return null;
+    }
+    return value;
+  }, customSchema.nullable());
+}
 
-const nullableNumber = z.preprocess((value) => {
-  if (value === '' || value === undefined || value === null || value === 'unassigned') {
-    return null;
-  }
-  const num = Number(value);
+function createNullableNumber(customSchema: z.ZodTypeAny) {
+  return z.preprocess((value) => {
+    if (value === '' || value === undefined || value === null || value === 'unassigned') {
+      return null;
+    }
+    const num = Number(value);
 
-  return Number.isNaN(num) ? null : num;
-}, z.number().min(0).nullable());
+    return Number.isNaN(num) ? null : num;
+  }, customSchema.nullable());
+}
 
 // ----- Schema -----
 
 const candidateSchema = z.object({
   firstName: z.string().min(1, 'First name is required').max(100),
   lastName: z.string().min(1, 'Last name is required').max(100),
-  email: nullableString.pipe(z.string().email('Invalid email').nullable()),
-  phone: nullableString.pipe(z.string().max(50).nullable()),
-  location: nullableString.pipe(z.string().max(100).nullable()),
-  techStack: nullableString.pipe(z.string().max(500).nullable()),
+  email: createNullableString(z.string().email('Invalid email')),
+  phone: createNullableString(z.string().max(50)),
+  location: createNullableString(z.string().max(100)),
+  techStack: createNullableString(z.string().max(500)),
   seniority: z.preprocess(
     (value) => (value === '' || value === 'none' ? null : value),
-    z.enum(['intern', 'junior', 'middle', 'senior', 'lead', 'principal']).nullable()
+    z.enum(['intern', 'junior', 'middle', 'senior', 'lead', 'principal'])
   ),
-  salaryExpectation: nullableNumber,
+  salaryExpectation: createNullableNumber(z.number().min(0)),
   currency: z.preprocess(
     (value) => (value === '' || value == null ? 'USD' : value),
     z.string().max(10)
   ),
-  noticePeriod: nullableString.pipe(z.string().max(50).nullable()),
-  linkedinUrl: nullableString.pipe(z.string().max(255).nullable()),
+  noticePeriod: createNullableString(z.string().max(50)),
+  linkedinUrl: createNullableString(z.string().max(255)),
   status: z.enum(['active', 'passive', 'placed', 'blacklisted']).default('active'),
-  source: nullableString.pipe(z.string().max(100).nullable()),
-  notes: nullableString.pipe(z.string().max(2000).nullable()),
+  source: createNullableString(z.string().max(100)),
+  notes: createNullableString(z.string().max(2000)),
 });
 
 export type CandidateFormState = {
