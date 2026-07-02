@@ -7,7 +7,7 @@ import {
   activityLogs,
   ActivityType,
 } from '@/lib/db/schema';
-import { eq, and, ilike, desc, count, inArray } from 'drizzle-orm';
+import { eq, and, ilike, desc, count, inArray, or } from 'drizzle-orm';
 
 // ----- Types -----
 
@@ -55,7 +55,9 @@ export async function getCandidates(
     allowedCandidateIds ? inArray(candidates.id, allowedCandidateIds) : undefined,
     status ? eq(candidates.status, status) : undefined,
     seniority ? eq(candidates.seniority, seniority) : undefined,
-    search ? ilike(candidates.firstName, `%${search}%`) : undefined
+    search
+      ? or(ilike(candidates.firstName, `%${search}%`), ilike(candidates.lastName, `%${search}%`))
+      : undefined
   );
 
   const [rows, [{ total }]] = await Promise.all([
@@ -68,6 +70,14 @@ export async function getCandidates(
         phone: candidates.phone,
         status: candidates.status,
         seniority: candidates.seniority,
+        techStack: candidates.techStack,
+        salaryExpectation: candidates.salaryExpectation,
+        currency: candidates.currency,
+        location: candidates.location,
+        noticePeriod: candidates.noticePeriod,
+        linkedinUrl: candidates.linkedinUrl,
+        source: candidates.source,
+        notes: candidates.notes,
         teamId: candidates.teamId,
         createdAt: candidates.createdAt,
         updatedAt: candidates.updatedAt,
