@@ -207,22 +207,6 @@ export function CandidateForm({ open, onClose, candidate }: Props) {
             </Select>
           </div>
 
-          {/* Status */}
-          <div className="form-field">
-            <Label htmlFor="status">Status</Label>
-            <Select name="status" defaultValue={candidate?.status ?? 'active'}>
-              <SelectTrigger className="w-full" id="status">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="passive">Passive</SelectItem>
-                <SelectItem value="placed">Placed</SelectItem>
-                <SelectItem value="blacklisted">Blacklisted</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Salary Expectation */}
           <div className="form-field">
             <Label htmlFor="salaryExpectation">Salary expectation</Label>
