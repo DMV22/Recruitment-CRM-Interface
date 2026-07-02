@@ -135,7 +135,7 @@ export async function createCandidate(
 export async function updateCandidate(
   id: number,
   teamId: number,
-  data: Partial<Omit<NewCandidate, 'id' | 'teamId' | 'createAt'>>,
+  data: Partial<Omit<NewCandidate, 'id' | 'teamId' | 'createdAt'>>,
   userId: number
 ) {
   const [updated] = await db

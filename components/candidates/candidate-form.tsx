@@ -218,6 +218,9 @@ export function CandidateForm({ open, onClose, candidate }: Props) {
               defaultValue={candidate?.currency ?? 'USD'}
               placeholder="USD"
             />
+            {state.fieldErrors?.currency && (
+              <p className="form-error">{state.fieldErrors.currency[0]}</p>
+            )}
           </div>
 
           {/* Notice Period */}
