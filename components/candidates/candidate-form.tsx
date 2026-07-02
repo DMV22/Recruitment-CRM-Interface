@@ -22,6 +22,8 @@ import {
   type CandidateFormState,
 } from '@/app/(dashboard)/candidates/actions';
 
+import { SENIORITY_OPTIONS, STATUS_OPTIONS } from '@/lib/constants/candidates';
+
 type CandidateFormData = {
   id: number;
   firstName: string;
@@ -47,22 +49,6 @@ type Props = {
 };
 
 const initialState: CandidateFormState = {};
-
-export const SENIORITY_OPTIONS = [
-  { value: 'intern', label: 'Intern' },
-  { value: 'junior', label: 'Junior' },
-  { value: 'middle', label: 'Middle' },
-  { value: 'senior', label: 'Senior' },
-  { value: 'lead', label: 'Lead' },
-  { value: 'principal', label: 'Principal' },
-];
-
-export const STATUS_OPTIONS = [
-  { value: 'active', label: 'Active' },
-  { value: 'passive', label: 'Passive' },
-  { value: 'placed', label: 'Placed' },
-  { value: 'blacklisted', label: 'Blacklisted' },
-];
 
 export function CandidateForm({ open, onClose, candidate }: Props) {
   const isEdit = !!candidate;

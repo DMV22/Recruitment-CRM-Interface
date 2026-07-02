@@ -1,12 +1,10 @@
-'use client';
-
 import { MapPin, Linkedin, Coins, Clock, User2, FileText } from 'lucide-react';
 
 import type { Candidate } from '@/lib/db/schema';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CandidateStatusBadge } from '@/components/candidates/candidate-status-badge';
-import { SENIORITY_OPTIONS } from '@/components/candidates/candidate-form';
+import { SENIORITY_OPTIONS } from '@/lib/constants/candidates';
 
 type Props = {
   candidate: Omit<Candidate, 'id' | 'teamId'>;

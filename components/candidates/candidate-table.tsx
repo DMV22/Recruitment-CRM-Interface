@@ -31,10 +31,10 @@ import {
 import { CandidateStatusBadge } from '@/components/candidates/candidate-status-badge';
 import { CandidateForm } from '@/components/candidates/candidate-form';
 import { DeleteCandidateDialog } from '@/components/candidates/delete-candidate-dialog';
-import { SENIORITY_OPTIONS, STATUS_OPTIONS } from '@/components/candidates/candidate-form';
 
 import type { User } from '@/lib/db/schema';
 import { hasPermission } from '@/lib/rbac';
+import { SENIORITY_OPTIONS, STATUS_OPTIONS } from '@/lib/constants/candidates';
 
 export type CandidateRow = {
   id: number;
