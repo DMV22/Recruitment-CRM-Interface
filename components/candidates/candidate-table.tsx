@@ -36,7 +36,7 @@ import { SENIORITY_OPTIONS, STATUS_OPTIONS } from '@/components/candidates/candi
 import type { User } from '@/lib/db/schema';
 import { hasPermission } from '@/lib/rbac';
 
-type CandidateRow = {
+export type CandidateRow = {
   id: number;
   firstName: string;
   lastName: string;
