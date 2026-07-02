@@ -51,7 +51,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, permission: 'dashboard.read' },
   { label: 'Clients', href: '/clients', icon: Building2, permission: 'clients.read' },
   { label: 'Vacancies', href: '/vacancies', icon: Briefcase, permission: 'vacancies.read' },
-  { label: 'Candidates', href: '#', icon: Users, permission: 'candidates.read' },
+  { label: 'Candidates', href: '/candidates', icon: Users, permission: 'candidates.read' },
   { label: 'Submissions', href: '#', icon: GitPullRequest, permission: 'submissions.read' },
   { label: 'Team', href: '#', icon: UsersRound, permission: 'team.read' },
   { label: 'Settings', href: '#', icon: Settings, permission: 'settings.read' },
