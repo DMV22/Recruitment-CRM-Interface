@@ -7,7 +7,7 @@ import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getCandidateById } from '@/lib/db/queries/candidates';
 import { hasPermission } from '@/lib/rbac';
 
-import { CandidateDetail } from '@/components/candidates/candidate-detai';
+import { CandidateDetail } from '@/components/candidates/candidate-detail';
 
 type PageProps = {
   params: Promise<{ id: string }>;
