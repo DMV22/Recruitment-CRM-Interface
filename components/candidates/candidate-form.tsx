@@ -48,7 +48,7 @@ type Props = {
 
 const initialState: CandidateFormState = {};
 
-const SENIORITY_OPTIONS = [
+export const SENIORITY_OPTIONS = [
   { value: 'intern', label: 'Intern' },
   { value: 'junior', label: 'Junior' },
   { value: 'middle', label: 'Middle' },
@@ -57,7 +57,7 @@ const SENIORITY_OPTIONS = [
   { value: 'principal', label: 'Principal' },
 ];
 
-const STATUS_OPTIONS = [
+export const STATUS_OPTIONS = [
   { value: 'active', label: 'Active' },
   { value: 'passive', label: 'Passive' },
   { value: 'placed', label: 'Placed' },
