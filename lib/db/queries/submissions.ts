@@ -65,6 +65,8 @@ function mapSubmissionRow(r: Record<string, any>): SubmissionRow {
       lastName: r.candidateLastName,
       email: r.candidateEmail,
       seniority: r.candidateSeniority,
+      // Add dynamic support for techStack (if the field is present in the request)
+      ...(r.candidateTechStack !== undefined && { techStack: r.candidateTechStack }),
     },
     submittedBy: { id: r.submittedById, name: r.submittedByName },
   };
@@ -310,20 +312,5 @@ export async function getSubmissionsByVacancy(vacancyId: number, teamId: number)
     .where(and(eq(submissions.vacancyId, vacancyId), eq(vacancies.teamId, teamId)))
     .orderBy(submissions.currentStage, desc(submissions.submittedAt));
 
-  return rows.map((r) => ({
-    id: r.id,
-    currentStage: r.currentStage,
-    rejectionReason: r.rejectionReason,
-    notes: r.notes,
-    submittedAt: r.submittedAt,
-    candidate: {
-      id: r.candidateId,
-      firstName: r.candidateFirstName,
-      lastName: r.candidateLastName,
-      email: r.candidateEmail,
-      seniority: r.candidateSeniority,
-      techStack: r.candidateTechStack,
-    },
-    submittedBy: { id: r.submittedById, name: r.submittedByName },
-  }));
+  return rows.map(mapSubmissionRow);
 }
