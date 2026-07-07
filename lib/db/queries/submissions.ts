@@ -41,6 +41,31 @@ export type SubmissionRow = {
   submittedBy: { id: number; name: string | null };
 };
 
+// Creating a Universal Mapper
+function mapSubmissionRow(r: Record<string, any>): SubmissionRow {
+  return {
+    id: r.id,
+    currentStage: r.currentStage,
+    rejectionReason: r.rejectionReason,
+    notes: r.notes,
+    submittedAt: r.submittedAt,
+    updatedAt: r.updatedAt,
+    vacancy: {
+      id: r.vacancyId,
+      title: r.vacancyTitle,
+      client: { id: r.clientId, name: r.clientName },
+    },
+    candidate: {
+      id: r.candidateId,
+      firstName: r.candidateFirstName,
+      lastName: r.candidateLastName,
+      email: r.candidateEmail,
+      seniority: r.candidateSeniority,
+    },
+    submittedBy: { id: r.submittedById, name: r.submittedByName },
+  };
+}
+
 // ----- List -----
 
 export async function getSubmissions(
@@ -106,33 +131,10 @@ export async function getSubmissions(
       .where(whereClause),
   ]);
 
-  // 3. Format the structured output array of objects
-  const data: SubmissionRow[] = rows.map((r) => ({
-    id: r.id,
-    currentStage: r.currentStage,
-    rejectionReason: r.rejectionReason,
-    notes: r.notes,
-    submittedAt: r.submittedAt,
-    updatedAt: r.updatedAt,
-    vacancy: {
-      id: r.vacancyId,
-      title: r.vacancyTitle,
-      client: { id: r.clientId, name: r.clientName },
-    },
-    candidate: {
-      id: r.candidateId,
-      firstName: r.candidateFirstName,
-      lastName: r.candidateLastName,
-      email: r.candidateEmail,
-      seniority: r.candidateSeniority,
-    },
-    submittedBy: { id: r.submittedById, name: r.submittedByName },
-  }));
-
   const total = countResult[0]?.total ?? 0;
 
   return {
-    data,
+    data: rows.map(mapSubmissionRow),
     total,
     page,
     perPage,
@@ -172,25 +174,5 @@ export async function getSubmissionById(id: number, teamId: number) {
 
   if (!row) return null;
 
-  return {
-    id: row.id,
-    currentStage: row.currentStage,
-    rejectionReason: row.rejectionReason,
-    notes: row.notes,
-    submittedAt: row.submittedAt,
-    updatedAt: row.updatedAt,
-    vacancy: {
-      id: row.vacancyId,
-      title: row.vacancyTitle,
-      client: { id: row.clientId, name: row.clientName },
-    },
-    candidate: {
-      id: row.candidateId,
-      firstName: row.candidateFirstName,
-      lastName: row.candidateLastName,
-      email: row.candidateEmail,
-      seniority: row.candidateSeniority,
-    },
-    submittedBy: { id: row.submittedById, name: row.submittedByName },
-  };
+  return mapSubmissionRow(row);
 }
