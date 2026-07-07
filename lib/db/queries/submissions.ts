@@ -11,7 +11,7 @@ import {
   NewSubmission,
   type PipelineStage,
 } from '@/lib/db/schema';
-import { eq, and, desc, count } from 'drizzle-orm';
+import { eq, and, desc, count, notInArray } from 'drizzle-orm';
 
 // ----- Types -----
 
@@ -313,4 +313,37 @@ export async function getSubmissionsByVacancy(vacancyId: number, teamId: number)
     .orderBy(submissions.currentStage, desc(submissions.submittedAt));
 
   return rows.map(mapSubmissionRow);
+}
+
+// ----- Candidates available for submission to a vacancy -----
+
+export async function getCandidatesForSubmit(teamId: number, vacancyId: number) {
+  // 1. Fetch candidates that have already been submitted for this vacancy
+  const alreadySubmitted = await db
+    .select({ candidateId: submissions.candidateId })
+    .from(submissions)
+    .where(eq(submissions.vacancyId, vacancyId));
+
+  const excludeIds = alreadySubmitted.map((s) => s.candidateId);
+
+  // 2. Dynamically set filtering conditions for candidates that belong to the team and are not already submitted
+  const conditions = [eq(candidates.teamId, teamId)];
+
+  // Add filter to exclude candidates that have already been submitted for this vacancy
+  if (excludeIds.length > 0) {
+    conditions.push(notInArray(candidates.id, excludeIds));
+  }
+
+  // 3. Make a single clean query with a mandatory await
+  return await db
+    .select({
+      id: candidates.id,
+      firstName: candidates.firstName,
+      lastName: candidates.lastName,
+      seniority: candidates.seniority,
+      techStack: candidates.techStack,
+    })
+    .from(candidates)
+    .where(and(...conditions))
+    .orderBy(candidates.firstName);
 }
