@@ -139,3 +139,58 @@ export async function getSubmissions(
     totalPages: Math.ceil(total / perPage),
   };
 }
+
+// ----- Single -----
+
+export async function getSubmissionById(id: number, teamId: number) {
+  const [row] = await db
+    .select({
+      id: submissions.id,
+      currentStage: submissions.currentStage,
+      rejectionReason: submissions.rejectionReason,
+      notes: submissions.notes,
+      submittedAt: submissions.submittedAt,
+      updatedAt: submissions.updatedAt,
+      vacancyId: vacancies.id,
+      vacancyTitle: vacancies.title,
+      clientId: clients.id,
+      clientName: clients.name,
+      candidateId: candidates.id,
+      candidateFirstName: candidates.firstName,
+      candidateLastName: candidates.lastName,
+      candidateEmail: candidates.email,
+      candidateSeniority: candidates.seniority,
+      submittedById: users.id,
+      submittedByName: users.name,
+    })
+    .from(submissions)
+    .innerJoin(vacancies, eq(submissions.vacancyId, vacancies.id))
+    .innerJoin(clients, eq(vacancies.clientId, clients.id))
+    .innerJoin(candidates, eq(submissions.candidateId, candidates.id))
+    .innerJoin(users, eq(submissions.submittedBy, users.id))
+    .where(and(eq(submissions.id, id), eq(vacancies.teamId, teamId)));
+
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    currentStage: row.currentStage,
+    rejectionReason: row.rejectionReason,
+    notes: row.notes,
+    submittedAt: row.submittedAt,
+    updatedAt: row.updatedAt,
+    vacancy: {
+      id: row.vacancyId,
+      title: row.vacancyTitle,
+      client: { id: row.clientId, name: row.clientName },
+    },
+    candidate: {
+      id: row.candidateId,
+      firstName: row.candidateFirstName,
+      lastName: row.candidateLastName,
+      email: row.candidateEmail,
+      seniority: row.candidateSeniority,
+    },
+    submittedBy: { id: row.submittedById, name: row.submittedByName },
+  };
+}
