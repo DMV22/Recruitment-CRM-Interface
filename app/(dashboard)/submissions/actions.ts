@@ -2,11 +2,16 @@
 
 import { z } from 'zod';
 import { candidates, type PipelineStage, pipelineStageEnum, vacancies } from '@/lib/db/schema';
-import { createNullableString, createNullableNumber } from '@/lib/zod-helpers';
+import { createNullableString } from '@/lib/zod-helpers';
 import { hasPermission } from '@/lib/rbac';
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { db } from '@/lib/db/drizzle';
-import { createSubmission } from '@/lib/db/queries/submissions';
+import {
+  createSubmission,
+  getSubmissionById,
+  updateSubmissionStage,
+} from '@/lib/db/queries/submissions';
+
 import { eq } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
 
@@ -127,6 +132,59 @@ export async function createSubmissionAction(
 
   revalidateTag('submissions', { expire: 0 });
   revalidateTag(`vacancy-${vacancyId}`, { expire: 0 });
+
+  return { success: true };
+}
+
+// ----- Update Stage -----
+
+export async function updateSubmissionStageAction(
+  submissionId: number,
+  _prev: SubmissionFormState,
+  formData: FormData
+): Promise<SubmissionFormState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'submissions.update')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const parsed = updateStageSchema.safeParse(Object.fromEntries(formData.entries()));
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const { stage, notes, rejectionReason } = parsed.data;
+
+  // Fetch current submission to validate transition
+  const submission = await getSubmissionById(submissionId, teamId);
+  if (!submission) return { error: 'Submission not found or access denied' };
+
+  const currentStage = submission.currentStage;
+  const isHiringManager = user.crmRole === 'hiring_manager';
+  const allowedNext = isHiringManager
+    ? (HIRING_MANAGER_ALLOWED_TRANSITIONS[currentStage] ?? [])
+    : (ALLOWED_STAGE_TRANSITIONS[currentStage] ?? []);
+
+  if (!allowedNext.includes(stage)) {
+    return { error: `Cannot move from ${currentStage} to ${stage}` };
+  }
+
+  const updated = await updateSubmissionStage(
+    submissionId,
+    teamId,
+    stage,
+    user.id,
+    notes,
+    rejectionReason
+  );
+
+  if (!updated) return { error: 'Failed to update stage' };
+
+  revalidateTag('submissions', { expire: 0 });
+  revalidateTag(`submission-${submissionId}`, { expire: 0 });
+  revalidateTag(`vacancy-${submission.vacancy.id}`, { expire: 0 });
 
   return { success: true };
 }
