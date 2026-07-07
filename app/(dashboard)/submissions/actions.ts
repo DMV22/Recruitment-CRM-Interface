@@ -1,8 +1,14 @@
 'use server';
 
 import { z } from 'zod';
-import { type PipelineStage, pipelineStageEnum } from '@/lib/db/schema';
+import { candidates, type PipelineStage, pipelineStageEnum, vacancies } from '@/lib/db/schema';
 import { createNullableString, createNullableNumber } from '@/lib/zod-helpers';
+import { hasPermission } from '@/lib/rbac';
+import { getUser, getUserTeamId } from '@/lib/db/queries';
+import { db } from '@/lib/db/drizzle';
+import { createSubmission } from '@/lib/db/queries/submissions';
+import { eq } from 'drizzle-orm';
+import { revalidateTag } from 'next/cache';
 
 // ----- Helpers -----
 
@@ -27,8 +33,8 @@ export const HIRING_MANAGER_ALLOWED_TRANSITIONS: Partial<Record<PipelineStage, P
 // ----- Schema -----
 
 export const createSubmissionSchema = z.object({
-  vacancyId: createNullableNumber(z.number().int().positive('Invalid vacancy ID')),
-  candidateId: createNullableNumber(z.number().int().positive('Invalid candidate ID')),
+  vacancyId: z.coerce.number().int().positive('Invalid vacancy ID'),
+  candidateId: z.coerce.number().int().positive('Invalid candidate ID'),
   notes: createNullableString(z.string().max(2000)),
 });
 
@@ -59,3 +65,68 @@ export type SubmissionFormState = {
   fieldErrors?: Partial<Record<string, string[]>>;
   success?: boolean;
 };
+
+function validateSubmissionsForm(formData: FormData) {
+  const raw = Object.fromEntries(formData.entries());
+
+  return createSubmissionSchema.safeParse(raw);
+}
+
+// ----- Create -----
+
+export async function createSubmissionAction(
+  _prev: SubmissionFormState,
+  formData: FormData
+): Promise<SubmissionFormState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'submissions.create')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const parsed = validateSubmissionsForm(formData);
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const { vacancyId, candidateId, notes } = parsed.data;
+
+  // 1. VACANCY VERIFICATION: We make sure it belongs to this team
+  const [vacancy] = await db
+    .select({ id: vacancies.id, teamId: vacancies.teamId })
+    .from(vacancies)
+    .where(eq(vacancies.id, vacancyId));
+
+  if (!vacancy || vacancy.teamId !== teamId) {
+    return { error: 'Vacancy not found' };
+  }
+
+  // 2. CANDIDATE VERIFICATION: We make sure it belongs to this team
+  const [candidate] = await db
+    .select({ id: candidates.id, teamId: candidates.teamId })
+    .from(candidates)
+    .where(eq(candidates.id, candidateId));
+
+  if (!candidate || candidate.teamId !== teamId) {
+    return { error: 'Candidate not found or access denied' };
+  }
+
+  await createSubmission(
+    {
+      vacancyId,
+      candidateId,
+      submittedBy: user.id,
+      currentStage: 'sourced',
+      notes,
+      rejectionReason: null,
+    },
+    teamId,
+    user.id
+  );
+
+  revalidateTag('submissions', { expire: 0 });
+  revalidateTag(`vacancy-${vacancyId}`, { expire: 0 });
+
+  return { success: true };
+}
