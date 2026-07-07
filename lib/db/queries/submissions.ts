@@ -1,10 +1,14 @@
 import { db } from '@/lib/db/drizzle';
 import {
   submissions,
+  pipelineHistory,
   vacancies,
   candidates,
   clients,
   users,
+  activityLogs,
+  ActivityType,
+  NewSubmission,
   type PipelineStage,
 } from '@/lib/db/schema';
 import { eq, and, desc, count } from 'drizzle-orm';
@@ -175,4 +179,37 @@ export async function getSubmissionById(id: number, teamId: number) {
   if (!row) return null;
 
   return mapSubmissionRow(row);
+}
+
+// ----- Create -----
+
+export async function createSubmission(
+  data: Omit<NewSubmission, 'id' | 'submittedAt' | 'updatedAt'>,
+  teamId: number,
+  userId: number
+) {
+  return await db.transaction(async (tx) => {
+    // 1. Insert the new submission
+    const [submission] = await tx.insert(submissions).values(data).returning();
+
+    // 2. Record the starting point in the recruitment pipeline history
+    await tx.insert(pipelineHistory).values({
+      submissionId: submission.id,
+      fromStage: null,
+      toStage: submission.currentStage,
+      changedBy: userId,
+      notes: 'Submission created',
+    });
+
+    // 3. Record the action in the company's general audit log
+    await tx.insert(activityLogs).values({
+      teamId,
+      userId,
+      action: ActivityType.CREATE_SUBMISSION,
+      entityType: 'submission',
+      entityId: submission.id,
+    });
+
+    return submission;
+  });
 }
