@@ -263,3 +263,67 @@ export async function updateSubmissionStage(
     return updated;
   });
 }
+
+// ----- Submission History -----
+
+export async function getSubmissionHistory(submissionId: number, teamId: number) {
+  return db
+    .select({
+      id: pipelineHistory.id,
+      fromStage: pipelineHistory.fromStage,
+      toStage: pipelineHistory.toStage,
+      notes: pipelineHistory.notes,
+      changedAt: pipelineHistory.changedAt,
+      changedByName: users.name,
+    })
+    .from(pipelineHistory)
+    .innerJoin(users, eq(pipelineHistory.changedBy, users.id))
+    .innerJoin(submissions, eq(pipelineHistory.submissionId, submissions.id))
+    .innerJoin(vacancies, eq(submissions.vacancyId, vacancies.id)) // Protecting history: We check the "submissions" => "vacancies" section to verify the teamId
+    .where(and(eq(pipelineHistory.submissionId, submissionId), eq(vacancies.teamId, teamId)))
+    .orderBy(desc(pipelineHistory.changedAt));
+}
+
+// ----- Candidates for vacancy (grouped by stage) -----
+
+export async function getSubmissionsByVacancy(vacancyId: number, teamId: number) {
+  const rows = await db
+    .select({
+      id: submissions.id,
+      currentStage: submissions.currentStage,
+      rejectionReason: submissions.rejectionReason,
+      notes: submissions.notes,
+      submittedAt: submissions.submittedAt,
+      candidateId: candidates.id,
+      candidateFirstName: candidates.firstName,
+      candidateLastName: candidates.lastName,
+      candidateEmail: candidates.email,
+      candidateSeniority: candidates.seniority,
+      candidateTechStack: candidates.techStack,
+      submittedById: users.id,
+      submittedByName: users.name,
+    })
+    .from(submissions)
+    .innerJoin(candidates, eq(submissions.candidateId, candidates.id))
+    .innerJoin(users, eq(submissions.submittedBy, users.id))
+    .innerJoin(vacancies, eq(submissions.vacancyId, vacancies.id)) // Validating the list: checking that the job opening itself belongs to this team
+    .where(and(eq(submissions.vacancyId, vacancyId), eq(vacancies.teamId, teamId)))
+    .orderBy(submissions.currentStage, desc(submissions.submittedAt));
+
+  return rows.map((r) => ({
+    id: r.id,
+    currentStage: r.currentStage,
+    rejectionReason: r.rejectionReason,
+    notes: r.notes,
+    submittedAt: r.submittedAt,
+    candidate: {
+      id: r.candidateId,
+      firstName: r.candidateFirstName,
+      lastName: r.candidateLastName,
+      email: r.candidateEmail,
+      seniority: r.candidateSeniority,
+      techStack: r.candidateTechStack,
+    },
+    submittedBy: { id: r.submittedById, name: r.submittedByName },
+  }));
+}
