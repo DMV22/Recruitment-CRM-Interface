@@ -7,15 +7,16 @@ import { getUser } from '@/lib/db/queries';
 import { getUserTeamId } from '@/lib/db/queries';
 import { hasPermission } from '@/lib/rbac';
 import { createClient, updateClient, deleteClient } from '@/lib/db/queries/clients';
+import { createNullableString } from '@/lib/zod-helpers';
 
 // ----- Schemas -----
 
 const clientSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200),
-  industry: z.string().max(100).optional().or(z.literal('')),
-  website: z.string().url('Invalid URL').optional().or(z.literal('')),
+  industry: createNullableString(z.string().max(100)),
+  website: createNullableString(z.string().url('Invalid URL')),
   status: z.enum(['prospect', 'active', 'inactive']).default('prospect'),
-  notes: z.string().max(2000).optional().or(z.literal('')),
+  notes: createNullableString(z.string().max(2000)),
 });
 
 export type ClientFormState = {

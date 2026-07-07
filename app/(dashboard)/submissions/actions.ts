@@ -2,15 +2,9 @@
 
 import { z } from 'zod';
 import { type PipelineStage, pipelineStageEnum } from '@/lib/db/schema';
+import { createNullableString, createNullableNumber } from '@/lib/zod-helpers';
 
 // ----- Helpers -----
-
-function createNullableString(customSchema: z.ZodType) {
-  return z.preprocess((value) => {
-    if (value === '' || value === undefined || value === null) return null;
-    return value;
-  }, customSchema.nullable());
-}
 
 export const ALLOWED_STAGE_TRANSITIONS: Record<PipelineStage, PipelineStage[]> = {
   sourced: ['screening', 'rejected'],
@@ -33,8 +27,8 @@ export const HIRING_MANAGER_ALLOWED_TRANSITIONS: Partial<Record<PipelineStage, P
 // ----- Schema -----
 
 export const createSubmissionSchema = z.object({
-  vacancyId: z.coerce.number().int().positive('Invalid vacancy ID'),
-  candidateId: z.coerce.number().int().positive('Invalid candidate ID'),
+  vacancyId: createNullableNumber(z.number().int().positive('Invalid vacancy ID')),
+  candidateId: createNullableNumber(z.number().int().positive('Invalid candidate ID')),
   notes: createNullableString(z.string().max(2000)),
 });
 

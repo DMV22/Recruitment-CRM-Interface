@@ -3,32 +3,11 @@
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { createCandidate, deleteCandidate, updateCandidate } from '@/lib/db/queries/candidates';
 import { hasPermission } from '@/lib/rbac';
+import { createNullableString, createNullableNumber } from '@/lib/zod-helpers';
+
 import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-
-// ----- Helpers -----
-
-// Сonverts the variable into a function that accepts a custom pattern
-function createNullableString(customSchema: z.ZodTypeAny) {
-  return z.preprocess((value) => {
-    if (value === '' || value === undefined || value === null) {
-      return null;
-    }
-    return value;
-  }, customSchema.nullable());
-}
-
-function createNullableNumber(customSchema: z.ZodTypeAny) {
-  return z.preprocess((value) => {
-    if (value === '' || value === undefined || value === null || value === 'unassigned') {
-      return null;
-    }
-    const num = Number(value);
-
-    return Number.isNaN(num) ? null : num;
-  }, customSchema.nullable());
-}
 
 // ----- Schema -----
 
