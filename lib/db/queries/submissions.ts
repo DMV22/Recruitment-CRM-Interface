@@ -213,3 +213,53 @@ export async function createSubmission(
     return submission;
   });
 }
+
+// ----- Update Stage -----
+
+export async function updateSubmissionStage(
+  id: number,
+  teamId: number,
+  toStage: PipelineStage,
+  userId: number,
+  notes?: string | null,
+  rejectionReason?: string | null
+) {
+  return await db.transaction(async (tx) => {
+    // Fetch current stage
+    const [current] = await tx
+      .select({ currentStage: submissions.currentStage })
+      .from(submissions)
+      .innerJoin(vacancies, eq(submissions.vacancyId, vacancies.id))
+      .where(and(eq(submissions.id, id), eq(vacancies.teamId, teamId)));
+
+    if (!current) return null;
+
+    const [updated] = await tx
+      .update(submissions)
+      .set({
+        currentStage: toStage,
+        rejectionReason: rejectionReason ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(submissions.id, id))
+      .returning();
+
+    await tx.insert(pipelineHistory).values({
+      submissionId: id,
+      fromStage: current.currentStage,
+      toStage,
+      changedBy: userId,
+      notes: notes ?? null,
+    });
+
+    await tx.insert(activityLogs).values({
+      teamId,
+      userId,
+      action: ActivityType.UPDATE_SUBMISSION_STAGE,
+      entityType: 'submission',
+      entityId: id,
+    });
+
+    return updated;
+  });
+}
