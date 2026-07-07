@@ -11,6 +11,7 @@ import {
   getSubmissionById,
   updateSubmissionStage,
 } from '@/lib/db/queries/submissions';
+import { validateForm } from '@/lib/form';
 
 import { eq } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
@@ -71,12 +72,6 @@ export type SubmissionFormState = {
   success?: boolean;
 };
 
-function validateSubmissionsForm(formData: FormData) {
-  const raw = Object.fromEntries(formData.entries());
-
-  return createSubmissionSchema.safeParse(raw);
-}
-
 // ----- Create -----
 
 export async function createSubmissionAction(
@@ -90,7 +85,7 @@ export async function createSubmissionAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const parsed = validateSubmissionsForm(formData);
+  const parsed = validateForm(formData, createSubmissionSchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
@@ -150,7 +145,7 @@ export async function updateSubmissionStageAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const parsed = updateStageSchema.safeParse(Object.fromEntries(formData.entries()));
+  const parsed = validateForm(formData, updateStageSchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }

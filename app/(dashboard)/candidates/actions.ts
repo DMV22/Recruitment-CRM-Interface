@@ -4,6 +4,7 @@ import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { createCandidate, deleteCandidate, updateCandidate } from '@/lib/db/queries/candidates';
 import { hasPermission } from '@/lib/rbac';
 import { createNullableString, createNullableNumber } from '@/lib/zod-helpers';
+import { validateForm } from '@/lib/form';
 
 import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -40,11 +41,6 @@ export type CandidateFormState = {
   success?: boolean;
 };
 
-function validateCandidateForm(formData: FormData) {
-  const raw = Object.fromEntries(formData.entries());
-  return candidateSchema.safeParse(raw);
-}
-
 // ----- Create -----
 
 export async function createCandidateAction(
@@ -58,7 +54,7 @@ export async function createCandidateAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const parsed = validateCandidateForm(formData);
+  const parsed = validateForm(formData, candidateSchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
@@ -90,7 +86,7 @@ export async function updateCandidateAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const parsed = validateCandidateForm(formData);
+  const parsed = validateForm(formData, candidateSchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }

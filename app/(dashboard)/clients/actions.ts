@@ -3,11 +3,13 @@
 import { z } from 'zod';
 import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
+
 import { getUser } from '@/lib/db/queries';
 import { getUserTeamId } from '@/lib/db/queries';
 import { hasPermission } from '@/lib/rbac';
 import { createClient, updateClient, deleteClient } from '@/lib/db/queries/clients';
 import { createNullableString } from '@/lib/zod-helpers';
+import { validateForm } from '@/lib/form';
 
 // ----- Schemas -----
 
@@ -38,16 +40,7 @@ export async function createClientAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const raw = {
-    name: formData.get('name'),
-    industry: formData.get('industry'),
-    website: formData.get('website'),
-    status: formData.get('status'),
-    assignedUserId: formData.get('assignedUserId') || undefined,
-    notes: formData.get('notes'),
-  };
-
-  const parsed = clientSchema.safeParse(raw);
+  const parsed = validateForm(formData, clientSchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
@@ -84,16 +77,7 @@ export async function updateClientAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const raw = {
-    name: formData.get('name'),
-    industry: formData.get('industry'),
-    website: formData.get('website'),
-    status: formData.get('status'),
-    assignedUserId: formData.get('assignedUserId') || undefined,
-    notes: formData.get('notes'),
-  };
-
-  const parsed = clientSchema.safeParse(raw);
+  const parsed = validateForm(formData, clientSchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }

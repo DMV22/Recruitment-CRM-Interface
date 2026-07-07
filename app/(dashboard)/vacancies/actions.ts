@@ -11,6 +11,7 @@ import { createVacancy, updateVacancy, deleteVacancy } from '@/lib/db/queries/va
 import { clients, teamMembers } from '@/lib/db/schema';
 import { db } from '@/lib/db/drizzle';
 import { createNullableString, createNullableNumber, createNullableDate } from '@/lib/zod-helpers';
+import { validateForm } from '@/lib/form';
 
 import { and, eq } from 'drizzle-orm';
 
@@ -58,13 +59,6 @@ export type VacancyFormState = {
   success?: boolean;
 };
 
-function validateVacancyForm(formData: FormData) {
-  // Automatically collects all key-value pairs from the form into a single object
-  const raw = Object.fromEntries(formData.entries());
-
-  return vacancySchema.safeParse(raw);
-}
-
 // ----- Create -----
 
 export async function createVacancyAction(
@@ -78,7 +72,7 @@ export async function createVacancyAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const parsed = validateVacancyForm(formData);
+  const parsed = validateForm(formData, vacancySchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
@@ -142,7 +136,7 @@ export async function updateVacancyAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const parsed = validateVacancyForm(formData);
+  const parsed = validateForm(formData, vacancySchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
