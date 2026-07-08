@@ -66,6 +66,7 @@ export const ROLE_PERMISSIONS: Record<CrmRole, Permission[]> = {
     'vacancies.read',
     'candidates.read',
     'submissions.read',
+    'submissions.update',
     'pipeline.read',
     'pipeline.update',
     'notes.read',
