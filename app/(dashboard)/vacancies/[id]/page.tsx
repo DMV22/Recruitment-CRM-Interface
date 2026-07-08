@@ -18,16 +18,20 @@ type PageProps = {
 };
 
 function formatSalary(min: number | null, max: number | null, currency: string) {
-  if (min == null && max == null) return '—';
-  if (min != null && max != null) {
-    if (min > max) return `${min} ${currency}`;
-    return `${min} - ${max} ${currency}`;
+  if (min === null && max === null) return '—';
+
+  const minStr = min?.toLocaleString();
+  const maxStr = max?.toLocaleString();
+
+  if (min !== null && max !== null) {
+    return min > max ? `${minStr} ${currency}` : `${minStr} - ${maxStr} ${currency}`;
   }
-  if (min != null) return `From ${min} ${currency}`;
-  return `Up to ${max} ${currency}`;
+
+  if (min !== null) return `From ${minStr} ${currency}`;
+  return `Up to ${maxStr} ${currency}`;
 }
 
-function formatDeadline(date: Date | null) {
+function formatDate(date: Date | null) {
   if (!date) return '—';
   return new Intl.DateTimeFormat('en-GB', {
     dateStyle: 'medium',
@@ -144,12 +148,12 @@ export default async function VacancyDetailPage({ params }: PageProps) {
 
               <div className="detail-field">
                 <p className="detail-field-label">Deadline</p>
-                <p className="font-medium">{formatDeadline(vacancy.deadlineAt)}</p>
+                <p className="font-medium">{formatDate(vacancy.deadlineAt)}</p>
               </div>
 
               <div className="detail-field">
                 <p className="detail-field-label">Created</p>
-                <p className="font-medium">{formatDeadline(vacancy.createdAt)}</p>
+                <p className="font-medium">{formatDate(vacancy.createdAt)}</p>
               </div>
             </div>
 
@@ -195,7 +199,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
 
               <div className="snapshot-item">
                 <CalendarDays className="icon-md" />
-                <span>Deadline: {formatDeadline(vacancy.deadlineAt)}</span>
+                <span>Deadline: {formatDate(vacancy.deadlineAt)}</span>
               </div>
 
               <div className="snapshot-item">
