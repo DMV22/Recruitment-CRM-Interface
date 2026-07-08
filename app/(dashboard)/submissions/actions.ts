@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { candidates, type PipelineStage, pipelineStageEnum, vacancies } from '@/lib/db/schema';
+import { candidates, pipelineStageEnum, vacancies } from '@/lib/db/schema';
 import { createNullableString } from '@/lib/zod-helpers';
 import { hasPermission } from '@/lib/rbac';
 import { getUser, getUserTeamId } from '@/lib/db/queries';
@@ -12,29 +12,13 @@ import {
   updateSubmissionStage,
 } from '@/lib/db/queries/submissions';
 import { validateForm } from '@/lib/form';
+import {
+  ALLOWED_STAGE_TRANSITIONS,
+  HIRING_MANAGER_ALLOWED_TRANSITIONS,
+} from '@/lib/constants/submissions';
 
 import { eq } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
-
-// ----- Helpers -----
-
-export const ALLOWED_STAGE_TRANSITIONS: Record<PipelineStage, PipelineStage[]> = {
-  sourced: ['screening', 'rejected'],
-  screening: ['hr_interview', 'rejected'],
-  hr_interview: ['tech_interview', 'rejected'],
-  tech_interview: ['client_interview', 'offer', 'rejected'],
-  client_interview: ['offer', 'rejected'],
-  offer: ['hired', 'rejected'],
-  hired: [],
-  rejected: [],
-};
-
-// Hiring Manager can only move between specific stages
-export const HIRING_MANAGER_ALLOWED_TRANSITIONS: Partial<Record<PipelineStage, PipelineStage[]>> = {
-  tech_interview: ['client_interview', 'offer', 'rejected'],
-  client_interview: ['offer', 'rejected'],
-  offer: ['hired', 'rejected'],
-};
 
 // ----- Schema -----
 

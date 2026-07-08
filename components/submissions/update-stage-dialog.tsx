@@ -1,14 +1,14 @@
 'use client';
 
 import { useActionState, useRef, useEffect, useState, useMemo } from 'react';
-import {
-  updateSubmissionStageAction,
-  ALLOWED_STAGE_TRANSITIONS,
-  HIRING_MANAGER_ALLOWED_TRANSITIONS,
-} from '@/app/(dashboard)/submissions/actions';
+import { updateSubmissionStageAction } from '@/app/(dashboard)/submissions/actions';
 import { PIPELINE_STAGE_LABELS } from '@/lib/db/schema';
 import type { User } from '@/lib/db/schema';
 import type { SubmissionRow } from '@/lib/db/queries/submissions';
+import {
+  ALLOWED_STAGE_TRANSITIONS,
+  HIRING_MANAGER_ALLOWED_TRANSITIONS,
+} from '@/lib/constants/submissions';
 import { SubmissionStageBadge } from './submission-stage-badge';
 
 type Props = {
