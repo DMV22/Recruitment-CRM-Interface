@@ -378,10 +378,6 @@
     @apply flex flex-wrap items-center gap-2;
   }
 
-  .table-count {
-    @apply text-sm text-muted-foreground;
-  }
-
   /* --- Таблиця --- */
   .table-wrapper {
     @apply overflow-x-auto rounded-md border border-border;
@@ -407,14 +403,6 @@
     @apply flex flex-col items-center gap-2 text-muted-foreground;
   }
 
-  .table-empty {
-    @apply h-32 p-0 text-center align-middle;
-  }
-
-  .table-row {
-    @apply border-b border-border transition-colors hover:bg-muted/40;
-  }
-
   /* --- Пагінація --- */
   .pagination {
     @apply flex items-center justify-between text-sm text-muted-foreground;
@@ -422,14 +410,6 @@
 
   .pagination-buttons {
     @apply flex gap-2;
-  }
-
-  .table-pagination {
-    @apply flex items-center justify-between border-x border-b border-border px-4 py-3 text-sm text-muted-foreground;
-  }
-
-  .pagination-info {
-    @apply text-sm text-muted-foreground;
   }
 
   /* --- Форма --- */
@@ -463,71 +443,6 @@
 
   .form-field-wide {
     @apply space-y-1.5 md:col-span-2;
-  }
-
-  /* --- Dialog / submission form helpers --- */
-  .dialog-overlay {
-    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm;
-  }
-
-  .dialog {
-    @apply w-full max-w-lg rounded-xl border border-border bg-background shadow-xl;
-  }
-
-  .dialog-header {
-    @apply flex items-start justify-between gap-4 border-b border-border px-6 py-4;
-  }
-
-  .dialog-title {
-    @apply text-lg font-semibold text-foreground;
-  }
-
-  .dialog-close {
-    @apply inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
-  }
-
-  .dialog-body {
-    @apply space-y-4 px-6 py-5;
-  }
-
-  .dialog-desc {
-    @apply text-sm text-foreground;
-  }
-
-  .dialog-desc-sub {
-    @apply text-sm text-muted-foreground;
-  }
-
-  .dialog-footer {
-    @apply flex flex-col-reverse gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-end;
-  }
-
-  .field-group {
-    @apply space-y-1.5;
-  }
-
-  .field-label {
-    @apply text-sm font-medium text-foreground;
-  }
-
-  .field-input {
-    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
-  }
-
-  .field-textarea {
-    @apply min-h-24 resize-y py-2;
-  }
-
-  .field-error {
-    @apply text-sm text-destructive;
-  }
-
-  .required {
-    @apply text-destructive;
-  }
-
-  .filter-select {
-    @apply h-9 min-w-40 rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring;
   }
 
   /* --- Status badges --- */

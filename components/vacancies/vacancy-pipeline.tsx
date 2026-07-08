@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 
+import { Button } from '@/components/ui/button';
 import { SubmissionStageBadge } from '@/components/submissions/submission-stage-badge';
 import { SubmitCandidateForm } from '@/components/submissions/submit-candidate-form';
 import { UpdateStageDialog } from '@/components/submissions/update-stage-dialog';
@@ -62,13 +63,13 @@ export function VacancyPipeline({
         <h2 className="detail-section-title">Pipeline</h2>
 
         {canCreate && (
-          <button
+          <Button
             type="button"
             className="btn btn-primary btn-sm"
             onClick={() => setSubmitOpen(true)}
           >
             + Submit candidate
-          </button>
+          </Button>
         )}
       </div>
 
@@ -103,7 +104,7 @@ export function VacancyPipeline({
                       <span className="pipeline-card-meta">{sub.candidate.seniority}</span>
                     )}
                     {canUpdate && (
-                      <button
+                      <Button
                         type="button"
                         className="btn-icon pipeline-card-action"
                         onClick={() =>
@@ -124,7 +125,7 @@ export function VacancyPipeline({
                         aria-label="Move stage"
                       >
                         →
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ))}

@@ -4,7 +4,16 @@ import { useState, useCallback, useTransition, useMemo } from 'react';
 import { useReactTable, getCoreRowModel, flexRender, type ColumnDef } from '@tanstack/react-table';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { ChevronLeft, ChevronRight, Pencil } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -14,15 +23,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-import { SubmissionStageBadge } from './submission-stage-badge';
-import { UpdateStageDialog } from './update-stage-dialog';
+import { SubmissionStageBadge } from '@/components/submissions/submission-stage-badge';
+import { UpdateStageDialog } from '@/components/submissions/update-stage-dialog';
 
 import type { SubmissionRow } from '@/lib/db/queries/submissions';
 import type { User } from '@/lib/db/schema';
 import { PIPELINE_STAGES, PIPELINE_STAGE_LABELS } from '@/lib/db/schema';
 import { hasPermission } from '@/lib/rbac';
-import { Button } from '../ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 type Props = {
   data: SubmissionRow[];
@@ -42,10 +49,10 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
   const canUpdate = hasPermission(currentUser, 'submissions.update');
 
   const updateFilterParam = useCallback(
-    (key: string, value: string | null) => {
+    (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
 
-      if (value) {
+      if (value && value !== 'all') {
         params.set(key, value);
       } else {
         params.delete(key);
@@ -133,25 +140,16 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
         header: '',
         cell: ({ row }) =>
           canUpdate ? (
-            <button
+            <Button
+              variant="ghost"
               type="button"
-              className="btn-icon"
+              size="icon"
               onClick={() => setStageTarget(row.original)}
               title="Move stage"
               aria-label="Move stage"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-              </svg>
-            </button>
+              <Pencil className="icon-sm" />
+            </Button>
           ) : null,
       },
     ],
@@ -165,34 +163,40 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const currentStage = searchParams.get('stage') ?? '';
-
   return (
     <>
-      <div className="card">
-        <div className="table-toolbar">
-          <div className="table-toolbar-filters">
-            <select
-              className="filter-select"
-              value={currentStage}
-              onChange={(e) => updateFilterParam('stage', e.target.value || null)}
+      <div className="space-y-4">
+        {/* Toolbar */}
+        <div className="toolbar">
+          <div className="toolbar-filters">
+            <Select
+              defaultValue={searchParams.get('stage') ?? 'all'}
+              onValueChange={(value) => updateFilterParam('stage', value)}
             >
-              <option value="">All stages</option>
-              {PIPELINE_STAGES.map((s) => (
-                <option key={s} value={s}>
-                  {PIPELINE_STAGE_LABELS[s]}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="h-9 w-44">
+                <SelectValue placeholder="All stages" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All stages</SelectItem>
+                {PIPELINE_STAGES.map((stage) => (
+                  <SelectItem key={stage} value={stage}>
+                    {PIPELINE_STAGE_LABELS[stage]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <span className="table-count">
-            {total} submission{total !== 1 ? 's' : ''}
-          </span>
+          <div className="toolbar-actions">
+            <span className="toolbar-count">
+              {total} submission{total !== 1 ? 's' : ''}
+            </span>
+          </div>
         </div>
 
+        {/* Table */}
         <div className="table-wrapper">
-          <Table className="data-table">
+          <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
@@ -210,16 +214,17 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
                 <TableRow>
                   <TableCell colSpan={columns.length} className="table-empty-cell">
                     <div className="table-empty-content">
+                      <span className="text-2xl">📋</span>
                       <p className="font-medium">No submissions yet</p>
-                      <p className="text-sm">
-                        Submit a candidate to a vacancy to start tracking pipeline stages.
+                      <p className="text-sm text-muted-foreground">
+                        Submit a candidate to a vacancy to start tracking the hiring pipeline.
                       </p>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} className="cursor-pointer hover:bg-muted/50">
+                  <TableRow key={row.id} className="hover:bg-muted/50 transition-colors">
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -232,6 +237,7 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
           </Table>
         </div>
 
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="pagination">
             <span>
@@ -261,6 +267,7 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
         )}
       </div>
 
+      {/* Stage dialog */}
       {stageTarget && (
         <UpdateStageDialog
           submission={stageTarget}

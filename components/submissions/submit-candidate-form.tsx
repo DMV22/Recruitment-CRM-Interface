@@ -1,7 +1,30 @@
 'use client';
 
 import { useActionState, useRef, useEffect } from 'react';
-import { createSubmissionAction } from '@/app/(dashboard)/submissions/actions';
+import { Loader2 } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+
+import {
+  createSubmissionAction,
+  type SubmissionFormState,
+} from '@/app/(dashboard)/submissions/actions';
 
 type CandidateOption = {
   id: number;
@@ -17,10 +40,13 @@ type Props = {
   onClose: () => void;
 };
 
-const initialState = { success: false, error: undefined, fieldErrors: undefined };
+const initialState: SubmissionFormState = {};
 
 export function SubmitCandidateForm({ vacancyId, candidates, onClose }: Props) {
-  const [state, formAction, isPending] = useActionState(createSubmissionAction, initialState);
+  const [state, formAction, isPending] = useActionState<SubmissionFormState, FormData>(
+    createSubmissionAction,
+    initialState
+  );
 
   const onCloseRef = useRef(onClose);
   useEffect(() => {
@@ -32,80 +58,91 @@ export function SubmitCandidateForm({ vacancyId, candidates, onClose }: Props) {
   }, [state.success]);
 
   return (
-    <div className="dialog-overlay" onClick={onClose}>
-      <div className="dialog" onClick={(e) => e.stopPropagation()}>
-        <div className="dialog-header">
-          <h2 className="dialog-title">Submit candidate</h2>
-          <button className="dialog-close" onClick={onClose} aria-label="Close">
-            ×
-          </button>
-        </div>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Submit Candidate</DialogTitle>
+
+          <DialogDescription>Select a candidate to submit to this vacancy.</DialogDescription>
+        </DialogHeader>
 
         {candidates.length === 0 ? (
-          <div className="dialog-body">
-            <p className="text-muted-foreground py-4 text-center">
+          <>
+            <p className="py-6 text-center text-sm text-muted-foreground">
               All candidates have already been submitted to this vacancy.
             </p>
-            <div className="dialog-footer mt-4 px-0 pb-0">
-              <button type="button" className="btn btn-secondary w-full" onClick={onClose}>
+
+            <div className="form-footer">
+              <Button type="button" variant="outline" className="w-full" onClick={onClose}>
                 Close
-              </button>
+              </Button>
             </div>
-          </div>
+          </>
         ) : (
-          <form action={formAction}>
+          <form action={formAction} className="space-y-5">
             <input type="hidden" name="vacancyId" value={vacancyId} />
 
-            <div className="dialog-body">
-              <div className="field-group">
-                <label htmlFor="candidateId" className="field-label">
-                  Candidate <span className="required">*</span>
-                </label>
-                <select id="candidateId" name="candidateId" className="field-input" required>
-                  <option value="">Select candidate...</option>
-                  {candidates.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.firstName} {c.lastName}
-                      {c.seniority ? ` — ${c.seniority}` : ''}
-                      {c.techStack ? ` (${c.techStack.split(',')[0].trim()})` : ''}
-                    </option>
+            {/* Candidate */}
+
+            <div className="form-field">
+              <Label htmlFor="candidateId">
+                Candidate
+                <span className="text-destructive">*</span>
+              </Label>
+
+              <Select name="candidateId">
+                <SelectTrigger id="candidateId">
+                  <SelectValue placeholder="Select candidate" />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {candidates.map((candidate) => (
+                    <SelectItem key={candidate.id} value={String(candidate.id)}>
+                      {candidate.firstName} {candidate.lastName}
+                      {candidate.seniority && ` — ${candidate.seniority}`}
+                      {candidate.techStack && ` (${candidate.techStack.split(',')[0].trim()})`}
+                    </SelectItem>
                   ))}
-                </select>
-                {state.fieldErrors?.candidateId && (
-                  <p className="field-error">{state.fieldErrors.candidateId[0]}</p>
-                )}
-              </div>
+                </SelectContent>
+              </Select>
 
-              <div className="field-group">
-                <label htmlFor="notes" className="field-label">
-                  Notes
-                </label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  className="field-input field-textarea"
-                  rows={3}
-                  placeholder="Optional submission notes..."
-                />
-                {state.fieldErrors?.notes && (
-                  <p className="field-error">{state.fieldErrors.notes[0]}</p>
-                )}
-              </div>
-
-              {state.error && <p className="field-error-block">{state.error}</p>}
+              {state.fieldErrors?.candidateId && (
+                <p className="form-error">{state.fieldErrors.candidateId[0]}</p>
+              )}
             </div>
 
-            <div className="dialog-footer">
-              <button type="submit" className="btn btn-primary" disabled={isPending}>
-                {isPending ? 'Submitting...' : 'Submit candidate'}
-              </button>
-              <button type="button" className="btn btn-ghost" onClick={onClose}>
+            {/* Notes */}
+
+            <div className="form-field">
+              <Label htmlFor="notes">Notes</Label>
+
+              <Textarea
+                id="notes"
+                name="notes"
+                rows={4}
+                placeholder="Optional submission notes..."
+              />
+
+              {state.fieldErrors?.notes && (
+                <p className="form-error">{state.fieldErrors.notes[0]}</p>
+              )}
+            </div>
+
+            {state.error && <p className="form-error-block">{state.error}</p>}
+
+            <div className="form-footer">
+              <Button type="submit" disabled={isPending} className="flex-1">
+                {isPending && <Loader2 className="spinner" />}
+                Submit Candidate
+              </Button>
+
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,7 +1,27 @@
 'use client';
 
 import { useActionState, useRef, useEffect, useState, useMemo } from 'react';
-import { updateSubmissionStageAction } from '@/app/(dashboard)/submissions/actions';
+import { Loader2 } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+
 import { PIPELINE_STAGE_LABELS } from '@/lib/db/schema';
 import type { User } from '@/lib/db/schema';
 import type { SubmissionRow } from '@/lib/db/queries/submissions';
@@ -9,7 +29,12 @@ import {
   ALLOWED_STAGE_TRANSITIONS,
   HIRING_MANAGER_ALLOWED_TRANSITIONS,
 } from '@/lib/constants/submissions';
-import { SubmissionStageBadge } from './submission-stage-badge';
+import { SubmissionStageBadge } from '@/components/submissions/submission-stage-badge';
+
+import {
+  updateSubmissionStageAction,
+  type SubmissionFormState,
+} from '@/app/(dashboard)/submissions/actions';
 
 type Props = {
   submission: SubmissionRow;
@@ -17,12 +42,14 @@ type Props = {
   onClose: () => void;
 };
 
-const initialState = { success: false, error: undefined, fieldErrors: undefined };
+const initialState: SubmissionFormState = {};
 
 export function UpdateStageDialog({ submission, currentUser, onClose }: Props) {
   const boundAction = updateSubmissionStageAction.bind(null, submission.id);
-  const [state, formAction, isPending] = useActionState(boundAction, initialState);
-
+  const [state, formAction, isPending] = useActionState<SubmissionFormState, FormData>(
+    boundAction,
+    initialState
+  );
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -45,103 +72,91 @@ export function UpdateStageDialog({ submission, currentUser, onClose }: Props) {
   });
 
   return (
-    <div className="dialog-overlay" onClick={onClose}>
-      <div className="dialog" onClick={(e) => e.stopPropagation()}>
-        <div className="dialog-header">
-          <h2 className="dialog-title">Move pipeline stage</h2>
-          <button className="dialog-close" onClick={onClose} aria-label="Close">
-            ×
-          </button>
-        </div>
-
-        <div className="dialog-body">
-          <p className="dialog-desc">
+    <Dialog open onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Move pipeline stage</DialogTitle>
+          <DialogDescription className="mt-2">
             <strong>
               {submission.candidate.firstName} {submission.candidate.lastName}
             </strong>
             {' — '}
             {submission.vacancy.title}
-          </p>
-          <p className="dialog-desc-sub">
-            Current stage: <SubmissionStageBadge stage={submission.currentStage} />
-          </p>
-        </div>
+          </DialogDescription>
+          <div className="text-sm text-muted-foreground">
+            Current stage <SubmissionStageBadge stage={submission.currentStage} />
+          </div>
+        </DialogHeader>
 
         {allowedStages.length === 0 ? (
-          <div className="dialog-body">
-            <p className="text-muted">No further stage transitions available.</p>
-          </div>
+          <>
+            <div className="py-4 text-sm text-muted-foreground">
+              No further stage transitions available.
+            </div>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+          </>
         ) : (
-          <form action={formAction}>
-            <div className="dialog-body">
-              <div className="field-group">
-                <label htmlFor="stage" className="field-label">
-                  Move to stage <span className="required">*</span>
-                </label>
-                <select
-                  id="stage"
-                  name="stage"
-                  className="field-input"
-                  value={selectedStage}
-                  onChange={(e) => setSelectedStage(e.target.value)}
-                  required
-                >
-                  {allowedStages.map((s) => (
-                    <option key={s} value={s}>
-                      {PIPELINE_STAGE_LABELS[s]}
-                    </option>
+          <form action={formAction} className="space-y-5">
+            <div className="form-field">
+              <Label htmlFor="stage">
+                Move to stage
+                <span className="text-destructive">*</span>
+              </Label>
+              <Select name="stage" defaultValue={selectedStage} onValueChange={setSelectedStage}>
+                <SelectTrigger id="stage">
+                  <SelectValue placeholder="Select stage" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allowedStages.map((stage) => (
+                    <SelectItem key={stage} value={stage}>
+                      {PIPELINE_STAGE_LABELS[stage]}
+                    </SelectItem>
                   ))}
-                </select>
-              </div>
-
-              <div className="field-group">
-                <label htmlFor="rejectionReason" className="field-label">
-                  Rejection reason{' '}
-                  {selectedStage === 'rejected' && <span className="required">*</span>}
-                </label>
-                <input
-                  id="rejectionReason"
-                  name="rejectionReason"
-                  className="field-input"
-                  placeholder={
-                    selectedStage === 'rejected' ? 'Specify reason (Required)' : 'Optional'
-                  }
-                />
-                {state.fieldErrors?.rejectionReason && (
-                  <p className="field-error">{state.fieldErrors.rejectionReason[0]}</p>
-                )}
-              </div>
-
-              <div className="field-group">
-                <label htmlFor="notes" className="field-label">
-                  Notes
-                </label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  className="field-input field-textarea"
-                  rows={3}
-                  placeholder="Optional notes about this stage change..."
-                />
-                {state.fieldErrors?.notes && (
-                  <p className="field-error">{state.fieldErrors.notes[0]}</p>
-                )}
-              </div>
-
-              {state.error && <p className="field-error">{state.error}</p>}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="dialog-footer">
-              <button type="submit" className="btn btn-primary" disabled={isPending}>
-                {isPending ? 'Saving...' : 'Move stage'}
-              </button>
-              <button type="button" className="btn btn-ghost" onClick={onClose}>
+            <div className="form-field">
+              <Label htmlFor="rejectionReason">
+                Rejection reason{' '}
+                {selectedStage === 'rejected' && <span className="text-destructive">*</span>}
+              </Label>
+              <Input
+                id="rejectionReason"
+                name="rejectionReason"
+                placeholder={
+                  selectedStage === 'rejected' ? 'Specify reason (Required)' : 'Optional'
+                }
+              />
+              {state.fieldErrors?.rejectionReason && (
+                <p className="form-error">{state.fieldErrors.rejectionReason[0]}</p>
+              )}
+            </div>
+
+            <div className="form-field">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea id="notes" name="notes" rows={4} placeholder="Optional notes..." />
+              {state.fieldErrors?.notes && (
+                <p className="form-error">{state.fieldErrors.notes[0]}</p>
+              )}
+            </div>
+
+            {state.error && <p className="form-error-block">{state.error}</p>}
+
+            <div className="form-footer">
+              <Button type="submit" disabled={isPending} className="flex-1">
+                {isPending && <Loader2 className="spinner" />}
+                Move stage
+              </Button>
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
