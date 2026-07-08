@@ -22,13 +22,13 @@ import { revalidateTag } from 'next/cache';
 
 // ----- Schema -----
 
-export const createSubmissionSchema = z.object({
+const createSubmissionSchema = z.object({
   vacancyId: z.coerce.number().int().positive('Invalid vacancy ID'),
   candidateId: z.coerce.number().int().positive('Invalid candidate ID'),
   notes: createNullableString(z.string().max(2000)),
 });
 
-export const updateStageSchema = z
+const updateStageSchema = z
   .object({
     stage: z.enum(pipelineStageEnum.enumValues),
     notes: createNullableString(z.string().max(2000)),
