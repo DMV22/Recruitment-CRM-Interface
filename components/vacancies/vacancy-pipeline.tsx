@@ -6,11 +6,10 @@ import Link from 'next/link';
 import { SubmissionStageBadge } from '@/components/submissions/submission-stage-badge';
 import { SubmitCandidateForm } from '@/components/submissions/submit-candidate-form';
 import { UpdateStageDialog } from '@/components/submissions/update-stage-dialog';
-
 import { hasPermission } from '@/lib/rbac';
 import { PIPELINE_STAGES } from '@/lib/db/schema';
 import type { User, PipelineStage } from '@/lib/db/schema';
-import { SubmissionRow } from '@/lib/db/queries/submissions';
+import type { SubmissionRow } from '@/lib/db/queries/submissions';
 
 type CandidateOption = {
   id: number;
@@ -43,7 +42,7 @@ export function VacancyPipeline({
   const canCreate = hasPermission(currentUser, 'submissions.create');
   const canUpdate = hasPermission(currentUser, 'submissions.update');
 
-  const { grouped, activeStages, rejectedCount } = useMemo(() => {
+  const { grouped } = useMemo(() => {
     const groupedData = PIPELINE_STAGES.reduce<Record<PipelineStage, SubmissionRow[]>>(
       (acc, stage) => {
         acc[stage] = submissions.filter((s) => s.currentStage === stage);
@@ -52,18 +51,22 @@ export function VacancyPipeline({
       {} as Record<PipelineStage, SubmissionRow[]>
     );
 
-    const stages = PIPELINE_STAGES.filter((s) => s !== 'rejected' && groupedData[s].length > 0);
-    const rejected = groupedData['rejected'].length;
-
-    return { grouped: groupedData, activeStages: stages, rejectedCount: rejected };
+    return { grouped: groupedData };
   }, [submissions]);
+
+  const visibleStages = PIPELINE_STAGES.filter((stage) => grouped[stage].length > 0);
 
   return (
     <div className="detail-section">
       <div className="detail-section-header">
         <h2 className="detail-section-title">Pipeline</h2>
+
         {canCreate && (
-          <button className="btn btn-primary btn-sm" onClick={() => setSubmitOpen(true)}>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => setSubmitOpen(true)}
+          >
             + Submit candidate
           </button>
         )}
@@ -76,8 +79,13 @@ export function VacancyPipeline({
         </div>
       ) : (
         <div className="pipeline-stages">
-          {activeStages.map((stage) => (
-            <div key={stage} className="pipeline-stage-group">
+          {visibleStages.map((stage) => (
+            <div
+              key={stage}
+              className={`pipeline-stage-group ${
+                stage === 'rejected' ? 'pipeline-stage-rejected' : ''
+              }`}
+            >
               <div className="pipeline-stage-header">
                 <SubmissionStageBadge stage={stage} />
                 <span className="pipeline-stage-count">{grouped[stage].length}</span>
@@ -96,18 +104,24 @@ export function VacancyPipeline({
                     )}
                     {canUpdate && (
                       <button
+                        type="button"
                         className="btn-icon pipeline-card-action"
                         onClick={() =>
                           setStageTarget({
                             ...sub,
                             vacancy: {
+                              ...sub.vacancy,
                               id: vacancyId,
                               title: vacancyTitle,
-                              client: { id: sub.vacancy.client?.id ?? 0, name: clientName },
+                              client: {
+                                id: sub.vacancy.client?.id ?? 0,
+                                name: clientName,
+                              },
                             },
                           })
                         }
                         title="Move stage"
+                        aria-label="Move stage"
                       >
                         →
                       </button>
@@ -117,15 +131,6 @@ export function VacancyPipeline({
               </div>
             </div>
           ))}
-
-          {rejectedCount > 0 && (
-            <div className="pipeline-stage-group pipeline-stage-rejected">
-              <div className="pipeline-stage-header">
-                <SubmissionStageBadge stage="rejected" />
-                <span className="pipeline-stage-count">{rejectedCount}</span>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -139,7 +144,7 @@ export function VacancyPipeline({
 
       {stageTarget && (
         <UpdateStageDialog
-          submission={stageTarget as any}
+          submission={stageTarget}
           currentUser={currentUser}
           onClose={() => setStageTarget(null)}
         />
