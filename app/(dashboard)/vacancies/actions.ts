@@ -117,7 +117,8 @@ export async function createVacancyAction(
     user.id
   );
 
-  revalidateTag('vacancies', { expire: 0 });
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
 
   return { success: true };
 }
@@ -179,8 +180,9 @@ export async function updateVacancyAction(
 
   if (!updated) return { error: 'Vacancy not found or access denied' };
 
-  revalidateTag('vacancies', { expire: 0 });
-  revalidateTag(`vacancy-${id}`, { expire: 0 });
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
+  revalidateTag(`vacancy-${id}`, 'max');
   return { success: true };
 }
 
@@ -197,6 +199,7 @@ export async function deleteVacancyAction(id: number): Promise<VacancyFormState>
   const deleted = await deleteVacancy(id, teamId, user.id);
   if (!deleted) return { error: 'Vacancy not found or access denied' };
 
-  revalidateTag('vacancies', { expire: 0 });
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
   redirect('/vacancies');
 }

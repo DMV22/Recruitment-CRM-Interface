@@ -67,7 +67,9 @@ export async function createCandidateAction(
     user.id
   );
 
-  revalidateTag('candidates', { expire: 0 });
+  revalidateTag('candidates', 'max');
+  revalidateTag('submissions', 'max');
+  revalidateTag('vacancies', 'max');
 
   return { success: true };
 }
@@ -94,8 +96,10 @@ export async function updateCandidateAction(
   const updated = await updateCandidate(id, teamId, parsed.data, user.id);
   if (!updated) return { error: 'Candidate not found or access denied' };
 
-  revalidateTag('candidates', { expire: 0 });
-  revalidateTag(`candidate-${id}`, { expire: 0 });
+  revalidateTag('candidates', 'max');
+  revalidateTag('submissions', 'max');
+  revalidateTag('vacancies', 'max');
+  revalidateTag(`candidate-${id}`, 'max');
   return { success: true };
 }
 
@@ -112,6 +116,8 @@ export async function deleteCandidateAction(id: number): Promise<CandidateFormSt
   const deleted = await deleteCandidate(id, teamId, user.id);
   if (!deleted) return { error: 'Candidate not found or access denied' };
 
-  revalidateTag('candidates', { expire: 0 });
+  revalidateTag('candidates', 'max');
+  revalidateTag('submissions', 'max');
+  revalidateTag('vacancies', 'max');
   redirect('/candidates');
 }

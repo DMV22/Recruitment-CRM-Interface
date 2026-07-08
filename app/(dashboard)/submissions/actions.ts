@@ -109,8 +109,8 @@ export async function createSubmissionAction(
     user.id
   );
 
-  revalidateTag('submissions', { expire: 0 });
-  revalidateTag(`vacancy-${vacancyId}`, { expire: 0 });
+  revalidateTag('submissions', 'max');
+  revalidateTag(`vacancy-${vacancyId}`, 'max');
 
   return { success: true };
 }
@@ -161,9 +161,9 @@ export async function updateSubmissionStageAction(
 
   if (!updated) return { error: 'Failed to update stage' };
 
-  revalidateTag('submissions', { expire: 0 });
-  revalidateTag(`submission-${submissionId}`, { expire: 0 });
-  revalidateTag(`vacancy-${submission.vacancy.id}`, { expire: 0 });
+  revalidateTag('submissions', 'max');
+  revalidateTag(`submission-${submissionId}`, 'max');
+  revalidateTag(`vacancy-${submission.vacancy.id}`, 'max');
 
   return { success: true };
 }

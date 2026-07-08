@@ -59,7 +59,10 @@ export async function createClientAction(
     user.id
   );
 
-  revalidateTag('clients', { expire: 0 });
+  revalidateTag('clients', 'max');
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
+
   return { success: true };
 }
 
@@ -99,8 +102,10 @@ export async function updateClientAction(
 
   if (!updated) return { error: 'Client not found or access denied' };
 
-  revalidateTag('clients', { expire: 0 });
-  revalidateTag(`client-${id}`, { expire: 0 });
+  revalidateTag('clients', 'max');
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
+  revalidateTag(`client-${id}`, 'max');
   return { success: true };
 }
 
@@ -117,6 +122,8 @@ export async function deleteClientAction(id: number): Promise<ClientFormState> {
   const deleted = await deleteClient(id, teamId, user.id);
   if (!deleted) return { error: 'Client not found or access denied' };
 
-  revalidateTag('clients', { expire: 0 });
+  revalidateTag('clients', 'max');
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
   redirect('/clients');
 }
