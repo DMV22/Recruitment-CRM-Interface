@@ -5,12 +5,24 @@ import { useReactTable, getCoreRowModel, flexRender, type ColumnDef } from '@tan
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+
 import { SubmissionStageBadge } from './submission-stage-badge';
 import { UpdateStageDialog } from './update-stage-dialog';
+
 import type { SubmissionRow } from '@/lib/db/queries/submissions';
 import type { User } from '@/lib/db/schema';
 import { PIPELINE_STAGES, PIPELINE_STAGE_LABELS } from '@/lib/db/schema';
 import { hasPermission } from '@/lib/rbac';
+import { Button } from '../ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 type Props = {
   data: SubmissionRow[];
@@ -24,24 +36,44 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
   const [stageTarget, setStageTarget] = useState<SubmissionRow | null>(null);
   const [, startTransition] = useTransition();
 
   const canUpdate = hasPermission(currentUser, 'submissions.update');
 
-  const updateParam = useCallback(
+  const updateFilterParam = useCallback(
     (key: string, value: string | null) => {
       const params = new URLSearchParams(searchParams.toString());
+
       if (value) {
         params.set(key, value);
       } else {
         params.delete(key);
       }
+
       params.delete('page');
 
       startTransition(() => {
-        router.push(`${pathname}?${params.toString()}`);
+        const query = params.toString();
+        router.push(query ? `${pathname}?${query}` : pathname);
+      });
+    },
+    [router, pathname, searchParams]
+  );
+
+  const updatePage = useCallback(
+    (nextPage: number) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      if (nextPage <= 1) {
+        params.delete('page');
+      } else {
+        params.set('page', String(nextPage));
+      }
+
+      startTransition(() => {
+        const query = params.toString();
+        router.push(query ? `${pathname}?${query}` : pathname);
       });
     },
     [router, pathname, searchParams]
@@ -70,7 +102,9 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
       {
         id: 'client',
         header: 'Client',
-        cell: ({ row }) => <span className="text-muted">{row.original.vacancy.client.name}</span>,
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{row.original.vacancy.client.name}</span>
+        ),
       },
       {
         accessorKey: 'currentStage',
@@ -81,7 +115,7 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
         id: 'submittedBy',
         header: 'Submitted by',
         cell: ({ row }) => (
-          <span className="text-muted">{row.original.submittedBy.name ?? '—'}</span>
+          <span className="text-muted-foreground">{row.original.submittedBy.name ?? '—'}</span>
         ),
       },
       {
@@ -100,9 +134,11 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
         cell: ({ row }) =>
           canUpdate ? (
             <button
+              type="button"
               className="btn-icon"
               onClick={() => setStageTarget(row.original)}
               title="Move stage"
+              aria-label="Move stage"
             >
               <svg
                 width="16"
@@ -119,11 +155,15 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
           ) : null,
       },
     ],
-    [canUpdate] // Depends only on changes to user permissions
+    [canUpdate]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() });
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
 
   const currentStage = searchParams.get('stage') ?? '';
 
@@ -135,7 +175,7 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
             <select
               className="filter-select"
               value={currentStage}
-              onChange={(e) => updateParam('stage', e.target.value || null)}
+              onChange={(e) => updateFilterParam('stage', e.target.value || null)}
             >
               <option value="">All stages</option>
               {PIPELINE_STAGES.map((s) => (
@@ -152,62 +192,71 @@ export function SubmissionTable({ data, total, page, totalPages, currentUser }: 
         </div>
 
         <div className="table-wrapper">
-          <table className="data-table">
-            <thead>
-              <tr>
-                {table.getFlatHeaders().map((header) => (
-                  <th key={header.id}>
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="data-table">
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+
+            <TableBody>
               {table.getRowModel().rows.length === 0 ? (
-                <tr>
-                  <td colSpan={columns.length} className="table-empty">
-                    <div className="empty-state">
-                      <p className="empty-state-title">No submissions yet</p>
-                      <p className="empty-state-desc">
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="table-empty-cell">
+                    <div className="table-empty-content">
+                      <p className="font-medium">No submissions yet</p>
+                      <p className="text-sm">
                         Submit a candidate to a vacancy to start tracking pipeline stages.
                       </p>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="table-row">
+                  <TableRow key={row.id} className="cursor-pointer hover:bg-muted/50">
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id}>
+                      <TableCell key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
+                      </TableCell>
                     ))}
-                  </tr>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
 
         {totalPages > 1 && (
-          <div className="table-pagination">
-            <button
-              className="btn btn-secondary btn-sm"
-              disabled={page <= 1}
-              onClick={() => updateParam('page', String(page - 1))}
-            >
-              Previous
-            </button>
-            <span className="pagination-info">
+          <div className="pagination">
+            <span>
               Page {page} of {totalPages}
             </span>
-            <button
-              className="btn btn-secondary btn-sm"
-              disabled={page >= totalPages}
-              onClick={() => updateParam('page', String(page + 1))}
-            >
-              Next
-            </button>
+
+            <div className="pagination-buttons">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => updatePage(page - 1)}
+              >
+                <ChevronLeft className="icon-md" />
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => updatePage(page + 1)}
+              >
+                <ChevronRight className="icon-md" />
+              </Button>
+            </div>
           </div>
         )}
       </div>
