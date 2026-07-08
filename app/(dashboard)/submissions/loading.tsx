@@ -1,40 +1,61 @@
-export default function SubmissionsLoading() {
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+
+export default function SubmissionsLoadingPage() {
   return (
-    <div className="page-content">
+    <div className="page-content animate-pulse">
+      {/* Header */}
       <div className="page-header">
-        <div className="skeleton skeleton-heading" />
-        <div className="skeleton skeleton-text" style={{ width: '320px' }} />
+        <div className="h-8 w-40 animate-pulse rounded-md bg-muted" />
+        <div className="h-4 w-80 animate-pulse rounded-md bg-muted" />
       </div>
 
-      <div className="card">
+      {/* Toolbar / Card Wrapper */}
+      <div className="card space-y-4">
         <div className="table-toolbar">
-          <div className="skeleton skeleton-text" style={{ width: '200px', height: '36px' }} />
-          <div className="skeleton skeleton-text" style={{ width: '140px', height: '36px' }} />
+          <div className="table-toolbar-filters">
+            <div className="h-9 w-44 animate-pulse rounded-md bg-muted" />
+          </div>
+          <div className="ml-auto h-4 w-28 animate-pulse rounded bg-muted" />
         </div>
 
+        {/* Shadcn UI Table Skeleton */}
         <div className="table-wrapper">
-          <table className="data-table">
-            <thead>
-              <tr>
+          <Table className="data-table">
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
                 {['Candidate', 'Vacancy', 'Client', 'Stage', 'Submitted by', 'Date', ''].map(
                   (col) => (
-                    <th key={col}>{col}</th>
+                    <TableHead key={col} className="h-10 font-medium">
+                      {col}
+                    </TableHead>
                   )
                 )}
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <tr key={i}>
-                  {Array.from({ length: 7 }).map((_, j) => (
-                    <td key={j}>
-                      <div className="skeleton skeleton-text" />
-                    </td>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {Array.from({ length: 6 }).map((_, row) => (
+                <TableRow key={row} className="hover:bg-transparent">
+                  {Array.from({ length: 7 }).map((_, cell) => (
+                    <TableCell key={cell} className="p-4">
+                      {cell === 6 ? (
+                        <div className="ml-auto h-8 w-8 animate-pulse rounded-md bg-muted" />
+                      ) : (
+                        <div className="h-5 animate-pulse rounded bg-muted" />
+                      )}
+                    </TableCell>
                   ))}
-                </tr>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>
