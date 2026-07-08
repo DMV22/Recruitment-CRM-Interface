@@ -6,9 +6,11 @@ import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VacancyStatusBadge } from '@/components/vacancies/vacancy-status-badge';
 import { VacancyPriorityBadge } from '@/components/vacancies/vacancy-priority-badge';
+import { VacancyPipeline } from '@/components/vacancies/vacancy-pipeline';
 
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getVacancyById } from '@/lib/db/queries/vacancies';
+import { getSubmissionsByVacancy, getCandidatesForSubmit } from '@/lib/db/queries/submissions';
 import { hasPermission } from '@/lib/rbac';
 
 type PageProps = {
@@ -36,10 +38,22 @@ async function getVacancyDetailPageData(id: number, teamId: number) {
   'use cache';
 
   cacheTag('vacancies');
+  cacheTag('submissions');
   cacheTag(`vacancy-${id}`);
 
-  const vacancy = await getVacancyById(id, teamId);
-  return vacancy ?? null;
+  const [vacancy, pipelineSubmissions, availableCandidates] = await Promise.all([
+    getVacancyById(id, teamId),
+    getSubmissionsByVacancy(id, teamId),
+    getCandidatesForSubmit(teamId, id),
+  ]);
+
+  if (!vacancy) return null;
+
+  return {
+    vacancy,
+    pipelineSubmissions,
+    availableCandidates,
+  };
 }
 
 export default async function VacancyDetailPage({ params }: PageProps) {
@@ -58,10 +72,14 @@ export default async function VacancyDetailPage({ params }: PageProps) {
   const teamId = await getUserTeamId(user.id);
   if (!teamId) notFound();
 
-  const vacancy = await getVacancyDetailPageData(vacancyId, teamId);
-  if (!vacancy) notFound();
+  const pageData = await getVacancyDetailPageData(vacancyId, teamId);
+  if (!pageData) notFound();
 
-  if (user.crmRole === 'hiring_manager' && vacancy.hiringManagerId !== user.id) notFound();
+  const { vacancy, pipelineSubmissions, availableCandidates } = pageData;
+
+  if (user.crmRole === 'hiring_manager' && vacancy.hiringManagerId !== user.id) {
+    notFound();
+  }
 
   return (
     <div className="page-content">
@@ -144,7 +162,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
           </CardContent>
         </Card>
 
-        <div className="page-content">
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Assignments</CardTitle>
@@ -180,13 +198,23 @@ export default async function VacancyDetailPage({ params }: PageProps) {
                 <span>Deadline: {formatDeadline(vacancy.deadlineAt)}</span>
               </div>
 
-              <div className="snapshot-placeholder">
-                Pipeline view will be added in the submissions module.
+              <div className="snapshot-item">
+                <Briefcase className="icon-md" />
+                <span>{pipelineSubmissions.length} submissions in pipeline</span>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <VacancyPipeline
+        vacancyId={vacancyId}
+        vacancyTitle={vacancy.title}
+        clientName={vacancy.client?.name ?? '—'}
+        submissions={pipelineSubmissions}
+        availableCandidates={availableCandidates}
+        currentUser={user}
+      />
     </div>
   );
 }
