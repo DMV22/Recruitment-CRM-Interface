@@ -6,8 +6,6 @@
 
 @import 'tw-animate-css';
 
-@variant dark (&:is(.dark *));
-
 @theme {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -66,6 +64,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -279,6 +278,7 @@
 /* @layer components — спільні UI-патерни проекту */
 
 @layer components {
+
   /* --- Сторінки / layout --- */
   .page-header {
     @apply space-y-1;
@@ -412,7 +412,8 @@
 
   .status-badge-prospect,
   .status-badge-on-hold,
-  .status-badge-medium {
+  .status-badge-medium,
+  .status-badge-passive {
     @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
   }
 
@@ -423,11 +424,13 @@
 
   .status-badge-inactive,
   .status-badge-closed,
-  .status-badge-low {
+  .status-badge-low,
+  .status-badge-blacklisted {
     @apply bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400;
   }
 
-  .status-badge-filled {
+  .status-badge-filled,
+  .status-badge-placed {
     @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400;
   }
 

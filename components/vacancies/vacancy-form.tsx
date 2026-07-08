@@ -253,6 +253,9 @@ export function VacancyForm({
               defaultValue={vacancy?.currency ?? 'USD'}
               placeholder="USD"
             />
+            {state.fieldErrors?.currency && (
+              <p className="form-error">{state.fieldErrors.currency[0]}</p>
+            )}
           </div>
 
           <div className="form-field">
