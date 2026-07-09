@@ -10,6 +10,7 @@ import { hasPermission } from '@/lib/rbac';
 import { createClient, updateClient, deleteClient } from '@/lib/db/queries/clients';
 import { createNullableString } from '@/lib/zod-helpers';
 import { validateForm } from '@/lib/form';
+import { cacheTags } from '@/lib/cache-tags';
 
 // ----- Schemas -----
 
@@ -59,9 +60,9 @@ export async function createClientAction(
     user.id
   );
 
-  revalidateTag('clients', 'max');
-  revalidateTag('vacancies', 'max');
-  revalidateTag('submissions', 'max');
+  revalidateTag(cacheTags.clients.list(teamId), 'max');
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
 
   return { success: true };
 }
@@ -102,10 +103,12 @@ export async function updateClientAction(
 
   if (!updated) return { error: 'Client not found or access denied' };
 
-  revalidateTag('clients', 'max');
-  revalidateTag('vacancies', 'max');
-  revalidateTag('submissions', 'max');
-  revalidateTag(`client-${id}`, 'max');
+  revalidateTag(cacheTags.clients.list(teamId), 'max');
+  revalidateTag(cacheTags.clients.detail(id), 'max');
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.byClient(id), 'max');
+
   return { success: true };
 }
 
@@ -122,8 +125,11 @@ export async function deleteClientAction(id: number): Promise<ClientFormState> {
   const deleted = await deleteClient(id, teamId, user.id);
   if (!deleted) return { error: 'Client not found or access denied' };
 
-  revalidateTag('clients', 'max');
-  revalidateTag('vacancies', 'max');
-  revalidateTag('submissions', 'max');
+  revalidateTag(cacheTags.clients.list(teamId), 'max');
+  revalidateTag(cacheTags.clients.detail(id), 'max');
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.byClient(id), 'max');
+
   redirect('/clients');
 }

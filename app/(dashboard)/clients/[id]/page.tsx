@@ -5,13 +5,14 @@ import { ArrowLeft } from 'lucide-react';
 
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getClientById, getClientContacts } from '@/lib/db/queries/clients';
+import { cacheTags } from '@/lib/cache-tags';
 
 import ClientDetail from '@/components/clients/client-detail';
 
 async function getClientDetailPageData(id: number, teamId: number) {
   'use cache';
 
-  cacheTag(`clients-${id}`);
+  cacheTag(cacheTags.clients.detail(id));
 
   const [client, contacts] = await Promise.all([getClientById(id, teamId), getClientContacts(id)]);
   if (!client) return null;

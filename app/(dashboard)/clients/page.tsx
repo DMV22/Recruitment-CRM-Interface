@@ -4,6 +4,7 @@ import { cacheTag } from 'next/cache';
 import { getUser } from '@/lib/db/queries';
 import { getUserTeamId } from '@/lib/db/queries';
 import { getClients } from '@/lib/db/queries/clients';
+import { cacheTags } from '@/lib/cache-tags';
 
 import { ClientTable } from '@/components/clients/client-table';
 
@@ -16,7 +17,7 @@ type SearchParams = {
 async function getClientsPageData(teamId: number, params: SearchParams) {
   'use cache';
 
-  cacheTag('clients');
+  cacheTag(cacheTags.clients.list(teamId));
 
   const page = Number(params.page ?? '1');
   const safePage = Number.isNaN(page) || page < 1 ? 1 : page;

@@ -12,6 +12,7 @@ import { clients, teamMembers } from '@/lib/db/schema';
 import { db } from '@/lib/db/drizzle';
 import { createNullableString, createNullableNumber, createNullableDate } from '@/lib/zod-helpers';
 import { validateForm } from '@/lib/form';
+import { cacheTags } from '@/lib/cache-tags';
 
 import { and, eq } from 'drizzle-orm';
 
@@ -117,8 +118,8 @@ export async function createVacancyAction(
     user.id
   );
 
-  revalidateTag('vacancies', 'max');
-  revalidateTag('submissions', 'max');
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
 
   return { success: true };
 }
@@ -180,9 +181,11 @@ export async function updateVacancyAction(
 
   if (!updated) return { error: 'Vacancy not found or access denied' };
 
-  revalidateTag('vacancies', 'max');
-  revalidateTag('submissions', 'max');
-  revalidateTag(`vacancy-${id}`, 'max');
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
+  revalidateTag(cacheTags.vacancies.detail(id), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.byVacancy(id), 'max');
+
   return { success: true };
 }
 
@@ -199,7 +202,10 @@ export async function deleteVacancyAction(id: number): Promise<VacancyFormState>
   const deleted = await deleteVacancy(id, teamId, user.id);
   if (!deleted) return { error: 'Vacancy not found or access denied' };
 
-  revalidateTag('vacancies', 'max');
-  revalidateTag('submissions', 'max');
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
+  revalidateTag(cacheTags.vacancies.detail(id), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.byVacancy(id), 'max');
+
   redirect('/vacancies');
 }

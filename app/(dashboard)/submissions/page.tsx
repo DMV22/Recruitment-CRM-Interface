@@ -6,6 +6,7 @@ import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getSubmissions } from '@/lib/db/queries/submissions';
 import { hasPermission } from '@/lib/rbac';
 import type { PipelineStage } from '@/lib/db/schema';
+import { cacheTags } from '@/lib/cache-tags';
 
 type PageProps = {
   searchParams: Promise<{
@@ -27,7 +28,7 @@ async function getSubmissionsPageData(
 ) {
   'use cache';
 
-  cacheTag('submissions');
+  cacheTag(cacheTags.submissions.list(teamId));
 
   const page = Number(params.page ?? '1');
   const safePage = Number.isNaN(page) || page < 1 ? 1 : page;

@@ -3,11 +3,12 @@ import { notFound, redirect } from 'next/navigation';
 import { cacheTag } from 'next/cache';
 import { ArrowLeft } from 'lucide-react';
 
+import { CandidateDetail } from '@/components/candidates/candidate-detail';
+
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getCandidateById } from '@/lib/db/queries/candidates';
 import { hasPermission } from '@/lib/rbac';
-
-import { CandidateDetail } from '@/components/candidates/candidate-detail';
+import { cacheTags } from '@/lib/cache-tags';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -21,8 +22,7 @@ async function getCandidateDetailPageData(
 ) {
   'use cache';
 
-  cacheTag('candidates');
-  cacheTag(`candidate-${id}`);
+  cacheTag(cacheTags.candidates.detail(id));
 
   const candidate = await getCandidateById(id, teamId, userId, crmRole);
   return candidate ?? null;

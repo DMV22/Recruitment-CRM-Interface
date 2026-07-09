@@ -6,6 +6,7 @@ import { CandidateTable } from '@/components/candidates/candidate-table';
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getCandidates } from '@/lib/db/queries/candidates';
 import { hasPermission } from '@/lib/rbac';
+import { cacheTags } from '@/lib/cache-tags';
 
 type PageProps = {
   searchParams: Promise<{
@@ -29,7 +30,7 @@ async function getCandidatesPageData(
 ) {
   'use cache';
 
-  cacheTag('candidates');
+  cacheTag(cacheTags.candidates.list(teamId));
 
   const page = Number(params.page ?? '1');
   const safePage = Number.isNaN(page) || page < 1 ? 1 : page;

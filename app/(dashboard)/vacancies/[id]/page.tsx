@@ -12,6 +12,7 @@ import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getVacancyById } from '@/lib/db/queries/vacancies';
 import { getSubmissionsByVacancy, getCandidatesForSubmit } from '@/lib/db/queries/submissions';
 import { hasPermission } from '@/lib/rbac';
+import { cacheTags } from '@/lib/cache-tags';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -41,9 +42,8 @@ function formatDate(date: Date | null) {
 async function getVacancyDetailPageData(id: number, teamId: number) {
   'use cache';
 
-  cacheTag('vacancies');
-  cacheTag('submissions');
-  cacheTag(`vacancy-${id}`);
+  cacheTag(cacheTags.vacancies.detail(id));
+  cacheTag(cacheTags.submissions.byVacancy(id));
 
   const [vacancy, pipelineSubmissions, availableCandidates] = await Promise.all([
     getVacancyById(id, teamId),
