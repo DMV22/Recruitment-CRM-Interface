@@ -152,17 +152,19 @@ export async function createVacancy(
   data: Omit<NewVacancy, 'id' | 'createdAt' | 'updatedAt'>,
   userId: number
 ) {
-  const [vacancy] = await db.insert(vacancies).values(data).returning();
+  return db.transaction(async (tx) => {
+    const [vacancy] = await tx.insert(vacancies).values(data).returning();
 
-  await db.insert(activityLogs).values({
-    teamId: data.teamId,
-    userId,
-    action: ActivityType.CREATE_VACANCY,
-    entityType: 'vacancies',
-    entityId: vacancy.id,
+    await tx.insert(activityLogs).values({
+      teamId: data.teamId,
+      userId,
+      action: ActivityType.CREATE_VACANCY,
+      entityType: 'vacancies',
+      entityId: vacancy.id,
+    });
+
+    return vacancy;
   });
-
-  return vacancy;
 }
 
 // ----- Update -----
@@ -173,23 +175,25 @@ export async function updateVacancy(
   data: Partial<Omit<NewVacancy, 'id' | 'teamId' | 'createdAt'>>,
   userId: number
 ) {
-  const [updated] = await db
-    .update(vacancies)
-    .set({ ...data, updatedAt: new Date() })
-    .where(and(eq(vacancies.id, id), eq(vacancies.teamId, teamId)))
-    .returning();
+  return db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(vacancies)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(vacancies.id, id), eq(vacancies.teamId, teamId)))
+      .returning();
 
-  if (!updated) return null;
+    if (!updated) return null;
 
-  await db.insert(activityLogs).values({
-    teamId,
-    userId,
-    action: ActivityType.UPDATE_VACANCY,
-    entityType: 'vacancy',
-    entityId: id,
+    await tx.insert(activityLogs).values({
+      teamId,
+      userId,
+      action: ActivityType.UPDATE_VACANCY,
+      entityType: 'vacancy',
+      entityId: id,
+    });
+
+    return updated;
   });
-
-  return updated;
 }
 
 // ----- Delete (soft via status=closed)  -----

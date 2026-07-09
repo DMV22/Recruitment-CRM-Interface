@@ -102,17 +102,19 @@ export async function createCandidate(
   data: Omit<NewCandidate, 'id' | 'createdAt' | 'updatedAt'>,
   userId: number
 ) {
-  const [candidate] = await db.insert(candidates).values(data).returning();
+  return db.transaction(async (tx) => {
+    const [candidate] = await tx.insert(candidates).values(data).returning();
 
-  await db.insert(activityLogs).values({
-    teamId: data.teamId,
-    userId,
-    action: ActivityType.CREATE_CANDIDATE,
-    entityType: 'candidate',
-    entityId: candidate.id,
+    await tx.insert(activityLogs).values({
+      teamId: data.teamId,
+      userId,
+      action: ActivityType.CREATE_CANDIDATE,
+      entityType: 'candidate',
+      entityId: candidate.id,
+    });
+
+    return candidate;
   });
-
-  return candidate;
 }
 
 // ----- Update -----
@@ -123,23 +125,25 @@ export async function updateCandidate(
   data: Partial<Omit<NewCandidate, 'id' | 'teamId' | 'createdAt'>>,
   userId: number
 ) {
-  const [updated] = await db
-    .update(candidates)
-    .set({ ...data, updatedAt: new Date() })
-    .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId)))
-    .returning();
+  return db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(candidates)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId)))
+      .returning();
 
-  if (!updated) return null;
+    if (!updated) return null;
 
-  await db.insert(activityLogs).values({
-    teamId,
-    userId,
-    action: ActivityType.UPDATE_CANDIDATE,
-    entityType: 'candidate',
-    entityId: id,
+    await tx.insert(activityLogs).values({
+      teamId,
+      userId,
+      action: ActivityType.UPDATE_CANDIDATE,
+      entityType: 'candidate',
+      entityId: id,
+    });
+
+    return updated;
   });
-
-  return updated;
 }
 
 // ----- Delete (soft via status=blacklisted)  -----
