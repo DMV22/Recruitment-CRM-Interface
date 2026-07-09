@@ -79,6 +79,28 @@ function formatAction(action: ActivityType): string {
       return 'You invited a team member';
     case ActivityType.ACCEPT_INVITATION:
       return 'You accepted an invitation';
+    case ActivityType.CREATE_CLIENT:
+      return 'You created a new client';
+    case ActivityType.UPDATE_CLIENT:
+      return 'You updated a client';
+    case ActivityType.ARCHIVE_CLIENT:
+      return 'You archived a client';
+    case ActivityType.CREATE_VACANCY:
+      return 'You created a new vacancy';
+    case ActivityType.UPDATE_VACANCY:
+      return 'You updated a vacancy';
+    case ActivityType.ARCHIVE_VACANCY:
+      return 'You archived a vacancy';
+    case ActivityType.CREATE_CANDIDATE:
+      return 'You created a new candidate';
+    case ActivityType.UPDATE_CANDIDATE:
+      return 'You updated a candidate';
+    case ActivityType.ARCHIVE_CANDIDATE:
+      return 'You archived a candidate';
+    case ActivityType.CREATE_SUBMISSION:
+      return 'You created a new submission';
+    case ActivityType.UPDATE_SUBMISSION_STAGE:
+      return 'You updated the stage of a submission';
     default:
       return 'Unknown action occurred';
   }
