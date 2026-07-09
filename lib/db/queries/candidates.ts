@@ -2,7 +2,7 @@ import { db } from '@/lib/db/drizzle';
 import { candidates, type NewCandidate, activityLogs, ActivityType } from '@/lib/db/schema';
 import { candidateScopeFilter } from '@/lib/rbac/candidate-scope';
 
-import { eq, and, desc, count, ilike, or } from 'drizzle-orm';
+import { eq, and, desc, count, sql } from 'drizzle-orm';
 
 // ----- Types -----
 
@@ -33,7 +33,7 @@ export async function getCandidates(
     status ? eq(candidates.status, status) : undefined,
     seniority ? eq(candidates.seniority, seniority) : undefined,
     search
-      ? or(ilike(candidates.firstName, `%${search}%`), ilike(candidates.lastName, `%${search}%`))
+      ? sql`concat(${candidates.firstName}, ' ', ${candidates.lastName}) ilike ${`%${search}%`}`
       : undefined
   );
 
