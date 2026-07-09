@@ -181,8 +181,11 @@ export default async function VacancyDetailPage({ params }: PageProps) {
               </div>
 
               <div className="detail-field">
-                <p className="detail-field-label">Hiring manager ID</p>
-                <p className="font-medium">{vacancy.hiringManagerId ?? '—'}</p>
+                <p className="detail-field-label">Hiring manager</p>
+                <p className="vacancy-meta-item font-medium">
+                  <User2 className="icon-md text-muted-foreground" />
+                  {vacancy.hiringManager?.name ?? 'Unassigned'}
+                </p>
               </div>
             </CardContent>
           </Card>
