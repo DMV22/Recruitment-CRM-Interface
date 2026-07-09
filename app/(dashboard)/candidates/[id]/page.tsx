@@ -1,12 +1,11 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
+import { cacheTag } from 'next/cache';
 import { ArrowLeft } from 'lucide-react';
 
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getCandidateById } from '@/lib/db/queries/candidates';
 import { hasPermission } from '@/lib/rbac';
-import { User } from '@/lib/db/schema';
 
 import { CandidateDetail } from '@/components/candidates/candidate-detail';
 

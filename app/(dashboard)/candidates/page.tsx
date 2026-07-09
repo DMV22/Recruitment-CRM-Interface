@@ -1,4 +1,4 @@
-import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
+import { cacheTag } from 'next/cache';
 import { notFound, redirect } from 'next/navigation';
 
 import { CandidateTable } from '@/components/candidates/candidate-table';

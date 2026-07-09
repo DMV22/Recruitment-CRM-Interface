@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { Building2, Briefcase, MapPin, Coins, CalendarDays, User2, ArrowLeft } from 'lucide-react';
-import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
+import { cacheTag } from 'next/cache';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VacancyStatusBadge } from '@/components/vacancies/vacancy-status-badge';
