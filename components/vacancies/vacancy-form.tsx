@@ -288,6 +288,9 @@ export function VacancyForm({
                 ))}
               </SelectContent>
             </Select>
+            {state.fieldErrors?.assignedRecruiterId && (
+              <p className="field-error">{state.fieldErrors.assignedRecruiterId[0]}</p>
+            )}
           </div>
 
           <div className="form-field">
@@ -310,6 +313,9 @@ export function VacancyForm({
                 ))}
               </SelectContent>
             </Select>
+            {state.fieldErrors?.hiringManagerId && (
+              <p className="field-error">{state.fieldErrors.hiringManagerId[0]}</p>
+            )}
           </div>
 
           <div className="form-field">

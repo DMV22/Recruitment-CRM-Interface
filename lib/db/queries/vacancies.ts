@@ -2,6 +2,7 @@ import { db } from '@/lib/db/drizzle';
 import { vacancies, clients, users, activityLogs, ActivityType } from '@/lib/db/schema';
 import type { NewVacancy } from '@/lib/db/schema';
 import { eq, and, ilike, desc, count } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 
 // ----- Types -----
 
@@ -97,6 +98,8 @@ export async function getVacancies(
 
 // ----- Single -----
 
+const hiringManagers = alias(users, 'hiring_managers');
+
 export async function getVacancyById(id: number, teamId: number) {
   const [vacancy] = await db
     .select({
@@ -127,10 +130,15 @@ export async function getVacancyById(id: number, teamId: number) {
         id: users.id,
         name: users.name,
       },
+      hiringManager: {
+        id: hiringManagers.id,
+        name: hiringManagers.name,
+      },
     })
     .from(vacancies)
     .leftJoin(clients, eq(vacancies.clientId, clients.id))
     .leftJoin(users, eq(vacancies.assignedRecruiterId, users.id))
+    .leftJoin(hiringManagers, eq(vacancies.hiringManagerId, hiringManagers.id))
     .where(and(eq(vacancies.id, id), eq(vacancies.teamId, teamId)));
 
   return vacancy ?? null;
