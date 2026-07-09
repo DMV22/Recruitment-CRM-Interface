@@ -1,13 +1,8 @@
 import { db } from '@/lib/db/drizzle';
-import {
-  candidates,
-  submissions,
-  vacancies,
-  type NewCandidate,
-  activityLogs,
-  ActivityType,
-} from '@/lib/db/schema';
-import { eq, and, ilike, desc, count, inArray, or } from 'drizzle-orm';
+import { candidates, type NewCandidate, activityLogs, ActivityType } from '@/lib/db/schema';
+import { candidateScopeFilter } from '@/lib/rbac/candidate-scope';
+
+import { eq, and, desc, count, ilike, or } from 'drizzle-orm';
 
 // ----- Types -----
 
@@ -30,29 +25,11 @@ export async function getCandidates(
   const { search, status, seniority, page = 1, perPage = 25 } = filter;
   const offset = (page - 1) * perPage;
 
-  // Scope rule: Hiring Manager can only see candidates submitted on their assigned vacancies
-  let allowedCandidateIds: number[] | undefined;
-
-  if (crmRole === 'hiring_manager') {
-    // INNER JOIN garantees that we only get candidates that have been submitted to the hiring manager's vacancies
-    const submittedCandidates = await db
-      .selectDistinct({ candidateId: submissions.candidateId })
-      .from(vacancies)
-      .innerJoin(submissions, eq(submissions.vacancyId, vacancies.id))
-      .where(and(eq(vacancies.teamId, teamId), eq(vacancies.hiringManagerId, userId)));
-
-    // Since innerJoin does not return null, we can map the raw numbers directly
-    allowedCandidateIds = submittedCandidates.map((s) => s.candidateId);
-
-    // If the hiring manager has no vacancies or no candidates submitted to their vacancies
-    if (allowedCandidateIds.length === 0) {
-      return { data: [], total: 0, page, perPage, totalPages: 0 };
-    }
-  }
+  const scopeFilter = candidateScopeFilter(userId, crmRole, teamId);
 
   const where = and(
     eq(candidates.teamId, teamId),
-    allowedCandidateIds ? inArray(candidates.id, allowedCandidateIds) : undefined,
+    scopeFilter,
     status ? eq(candidates.status, status) : undefined,
     seniority ? eq(candidates.seniority, seniority) : undefined,
     search
@@ -102,11 +79,19 @@ export async function getCandidates(
 
 // ----- Single -----
 
-export async function getCandidateById(id: number, teamId: number) {
+export async function getCandidateById(
+  id: number,
+  teamId: number,
+  userId: number,
+  crmRole: string
+) {
+  const scope = candidateScopeFilter(userId, crmRole, teamId);
+
   const [candidate] = await db
     .select()
     .from(candidates)
-    .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId)));
+    .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId), scope))
+    .limit(1);
 
   return candidate ?? null;
 }
