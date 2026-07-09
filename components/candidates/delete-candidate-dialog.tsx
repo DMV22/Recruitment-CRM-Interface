@@ -58,9 +58,9 @@ export function DeleteCandidateDialog({ open, onOpenChange, candidate }: Props) 
         <AlertDialogHeader>
           <AlertDialogTitle>Archive candidate?</AlertDialogTitle>
           <AlertDialogDescription>
-            <span className="font-bold text-foreground">{candidate?.name}</span> will be marked as
-            blacklisted and hidden from active pipeline. This action can be reversed by updating the
-            candidate status.
+            <span className="font-bold text-foreground">{candidate?.name}</span> will be archived
+            and hidden from the default candidates list. This action can be reversed later by
+            restoring the candidate.
           </AlertDialogDescription>
         </AlertDialogHeader>
 

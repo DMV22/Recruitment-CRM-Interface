@@ -193,6 +193,7 @@ export const candidates = pgTable('candidates', {
   notes: text('notes'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  deletedAt: timestamp('deleted_at'),
 });
 
 export const submissions = pgTable('submissions', {

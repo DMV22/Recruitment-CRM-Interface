@@ -2,7 +2,7 @@ import { db } from '@/lib/db/drizzle';
 import { candidates, type NewCandidate, activityLogs, ActivityType } from '@/lib/db/schema';
 import { candidateScopeFilter } from '@/lib/rbac/candidate-scope';
 
-import { eq, and, desc, count, sql } from 'drizzle-orm';
+import { eq, and, desc, count, sql, isNull } from 'drizzle-orm';
 
 // ----- Types -----
 
@@ -29,6 +29,7 @@ export async function getCandidates(
 
   const where = and(
     eq(candidates.teamId, teamId),
+    isNull(candidates.deletedAt),
     scopeFilter,
     status ? eq(candidates.status, status) : undefined,
     seniority ? eq(candidates.seniority, seniority) : undefined,
@@ -58,6 +59,7 @@ export async function getCandidates(
         teamId: candidates.teamId,
         createdAt: candidates.createdAt,
         updatedAt: candidates.updatedAt,
+        deletedAt: candidates.deletedAt,
       })
       .from(candidates)
       .where(where)
@@ -80,6 +82,28 @@ export async function getCandidates(
 // ----- Single -----
 
 export async function getCandidateById(
+  id: number,
+  teamId: number,
+  userId: number,
+  crmRole: string
+) {
+  const scope = candidateScopeFilter(userId, crmRole, teamId);
+
+  const [candidate] = await db
+    .select()
+    .from(candidates)
+    .where(
+      and(eq(candidates.id, id), eq(candidates.teamId, teamId), isNull(candidates.deletedAt), scope)
+    )
+    .limit(1);
+
+  return candidate ?? null;
+}
+
+// ----- Optional single (including archived) -----
+// It's convenient in case you need to perform a restore or view a specific archive later
+
+export async function getCandidateByIdIncludingArchived(
   id: number,
   teamId: number,
   userId: number,
@@ -129,7 +153,9 @@ export async function updateCandidate(
     const [updated] = await tx
       .update(candidates)
       .set({ ...data, updatedAt: new Date() })
-      .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId)))
+      .where(
+        and(eq(candidates.id, id), eq(candidates.teamId, teamId), isNull(candidates.deletedAt))
+      )
       .returning();
 
     if (!updated) return null;
@@ -146,7 +172,7 @@ export async function updateCandidate(
   });
 }
 
-// ----- Delete (soft via status=blacklisted)  -----
+// ----- Delete (soft via deletedAt) -----
 
 export async function deleteCandidate(id: number, teamId: number, userId: number) {
   try {
@@ -154,10 +180,12 @@ export async function deleteCandidate(id: number, teamId: number, userId: number
       const [updated] = await tx
         .update(candidates)
         .set({
-          status: 'blacklisted',
+          deletedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId)))
+        .where(
+          and(eq(candidates.id, id), eq(candidates.teamId, teamId), isNull(candidates.deletedAt))
+        )
         .returning();
 
       if (!updated) return null;
@@ -174,6 +202,38 @@ export async function deleteCandidate(id: number, teamId: number, userId: number
     });
   } catch (error) {
     console.error('Error while archiving the candidate:', error);
+    return null;
+  }
+}
+
+// ----- Optional restore -----
+
+export async function restoreCandidate(id: number, teamId: number, userId: number) {
+  try {
+    return await db.transaction(async (tx) => {
+      const [updated] = await tx
+        .update(candidates)
+        .set({
+          deletedAt: null,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId)))
+        .returning();
+
+      if (!updated) return null;
+
+      await tx.insert(activityLogs).values({
+        teamId,
+        userId,
+        action: ActivityType.UPDATE_CANDIDATE,
+        entityType: 'candidate',
+        entityId: id,
+      });
+
+      return updated;
+    });
+  } catch (error) {
+    console.error('Error while restoring the candidate:', error);
     return null;
   }
 }
