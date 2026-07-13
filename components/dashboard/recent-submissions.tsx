@@ -26,7 +26,7 @@ export function RecentSubmissions({ data }: Props) {
           <CardTitle className="panel-title">Recent Submissions</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted">
+          <p className="text-muted-sm">
             No submissions yet. Add your first submission to get started.
           </p>
         </CardContent>
