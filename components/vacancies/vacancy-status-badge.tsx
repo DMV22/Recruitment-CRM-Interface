@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-type Status = 'open' | 'on_hold' | 'closed' | 'filled';
+export type Status = 'open' | 'on_hold' | 'closed' | 'filled';
 
 const STATUS_STYLES: Record<Status, string> = {
   open: 'status-badge-open',
