@@ -6,7 +6,7 @@ import { PIPELINE_STAGE_LABELS } from '@/lib/db/schema';
 import { cn } from '@/lib/utils';
 
 type PipelineStageData = {
-  stage: PipelineStage;
+  stage: string;
   count: number;
 };
 
@@ -40,12 +40,14 @@ export function PipelineFunnel({ data }: Props) {
         {data.map((item) => {
           const width = Math.min(Math.max((item.count / max) * 100, item.count > 0 ? 2 : 0), 100);
 
+          const stageEnum = item.stage as PipelineStage;
+
           return (
             <div key={item.stage} className="dashboard-pipeline-row">
-              <span className="dashboard-pipeline-label">{PIPELINE_STAGE_LABELS[item.stage]}</span>
+              <span className="dashboard-pipeline-label">{PIPELINE_STAGE_LABELS[stageEnum]}</span>
               <div className="dashboard-pipeline-track">
                 <div
-                  className={cn('dashboard-pipeline-fill', STAGE_BAR_CLASS[item.stage])}
+                  className={cn('dashboard-pipeline-fill', STAGE_BAR_CLASS[stageEnum])}
                   style={{ width: `${width}%` }}
                 />
               </div>

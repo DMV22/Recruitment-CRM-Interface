@@ -10,7 +10,7 @@ type RecentSubmission = {
   candidateName: string;
   vacancyTitle: string;
   clientName: string;
-  stage: PipelineStage;
+  stage: string;
   submittedAt: Date;
 };
 
@@ -49,25 +49,29 @@ export function RecentSubmissions({ data }: Props) {
 
       <CardContent className="dashboard-list-content">
         <ul className="dashboard-list">
-          {data.map((submission) => (
-            <li key={submission.id} className="dashboard-list-item">
-              <div className="dashboard-list-main">
-                <p className="dashboard-list-title">{submission.candidateName}</p>
-                <p className="dashboard-list-subtitle">
-                  {submission.vacancyTitle}
-                  <span className="dashboard-list-separator">·</span>
-                  {submission.clientName}
-                </p>
-              </div>
+          {data.map((submission) => {
+            const stageEnum = submission.stage as PipelineStage;
 
-              <div className="dashboard-list-side">
-                <SubmissionStageBadge stage={submission.stage} />
-                <span className="dashboard-list-time">
-                  {formatRelativeTime(submission.submittedAt)}
-                </span>
-              </div>
-            </li>
-          ))}
+            return (
+              <li key={submission.id} className="dashboard-list-item">
+                <div className="dashboard-list-main">
+                  <p className="dashboard-list-title">{submission.candidateName}</p>
+                  <p className="dashboard-list-subtitle">
+                    {submission.vacancyTitle}
+                    <span className="dashboard-list-separator">·</span>
+                    {submission.clientName}
+                  </p>
+                </div>
+
+                <div className="dashboard-list-side">
+                  <SubmissionStageBadge stage={stageEnum} />
+                  <span className="dashboard-list-time">
+                    {formatRelativeTime(submission.submittedAt)}
+                  </span>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </CardContent>
     </Card>

@@ -7,7 +7,7 @@ import { VacancyStatusBadge, type Status } from '@/components/vacancies/vacancy-
 import { cn } from '@/lib/utils';
 
 type VacancyStatusData = {
-  status: Status;
+  status: string;
   count: number;
 };
 
