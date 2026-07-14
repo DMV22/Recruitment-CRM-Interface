@@ -705,35 +705,35 @@
   }
 
   .kpi-card {
-    @apply relative overflow-hidden;
+    @apply relative flex flex-col rounded-xl border border-border bg-card shadow-sm transition-colors;
   }
 
   .kpi-card-header {
-    @apply flex flex-row items-center justify-between space-y-0 pb-2;
+    @apply flex flex-col items-start gap-3 px-5;
   }
 
   .kpi-card-title {
-    @apply text-sm font-medium text-muted-foreground;
+    @apply min-h-[2.75rem] text-sm font-medium leading-5 text-muted-foreground;
   }
 
   .kpi-card-icon-wrap {
-    @apply flex h-8 w-8 items-center justify-center rounded-md bg-primary/10;
+    @apply flex h-9 w-9 items-center justify-center rounded-lg bg-muted;
   }
 
   .kpi-card-icon {
-    @apply h-4 w-4 text-primary;
+    @apply h-4 w-4 text-foreground;
   }
 
   .kpi-card-content {
-    @apply space-y-1;
+    @apply mt-auto flex flex-1 flex-col justify-end gap-2 px-5;
   }
 
   .kpi-card-value {
-    @apply text-2xl font-bold tabular-nums;
+    @apply text-[1.5rem] leading-none font-semibold tracking-tight tabular-nums;
   }
 
   .kpi-card-description {
-    @apply text-xs text-muted-foreground;
+    @apply min-h-[2.5rem] text-xs leading-5 text-muted-foreground;
   }
 
   .dashboard-pipeline {
