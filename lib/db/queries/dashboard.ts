@@ -9,7 +9,8 @@ import {
   PipelineStage,
   PIPELINE_STAGES,
 } from '@/lib/db/schema';
-import { eq, and, count, desc, gte } from 'drizzle-orm';
+import { candidateScopeFilter } from '@/lib/rbac/candidate-scope';
+import { eq, and, count, desc, gte, isNull } from 'drizzle-orm';
 
 export type DashboardStats = {
   kpi: {
@@ -49,6 +50,8 @@ export async function getDashboardStats(
 
   const isHiringManager = crmRole === 'hiring_manager';
 
+  const candidateScope = candidateScopeFilter(userId, crmRole, teamId);
+
   // Security: creating a single filter for the vacancies table
   const vacancyScopeFilter = isHiringManager
     ? and(eq(vacancies.teamId, teamId), eq(vacancies.hiringManagerId, userId))
@@ -77,7 +80,10 @@ export async function getDashboardStats(
       .from(vacancies)
       .where(and(vacancyScopeFilter, eq(vacancies.status, 'open'))),
 
-    db.select({ rawCandidates: count() }).from(candidates).where(eq(candidates.teamId, teamId)),
+    db
+      .select({ rawCandidates: count() })
+      .from(candidates)
+      .where(and(eq(candidates.teamId, teamId), isNull(candidates.deletedAt), candidateScope)),
 
     db
       .select({ rawSubmissions: count() })
@@ -137,13 +143,13 @@ export async function getDashboardStats(
       .leftJoin(users, eq(activityLogs.userId, users.id))
       .where(eq(activityLogs.teamId, teamId))
       .orderBy(desc(activityLogs.timestamp))
-      .limit(8),
+      .limit(5),
 
     // Vacancies by status
     db
       .select({ status: vacancies.status, count: count() })
       .from(vacancies)
-      .where(eq(vacancies.teamId, teamId))
+      .where(vacancyScopeFilter)
       .groupBy(vacancies.status),
   ]);
 
