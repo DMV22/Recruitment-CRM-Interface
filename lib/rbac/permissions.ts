@@ -19,6 +19,7 @@ export type Permission =
   | 'pipeline.update'
   | 'notes.read'
   | 'notes.create'
+  | 'notes.delete'
   | 'activity.read'
   | 'team.read'
   | 'team.manage'
