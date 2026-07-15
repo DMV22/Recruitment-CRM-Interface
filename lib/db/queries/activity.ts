@@ -58,3 +58,16 @@ export async function getActivityTimeline(
     totalPages: Math.ceil(total / perPage),
   };
 }
+
+export async function getActivityUsers(teamId: number) {
+  return db
+    .select({
+      id: users.id,
+      name: users.name,
+    })
+    .from(users)
+    .innerJoin(activityLogs, eq(activityLogs.userId, users.id))
+    .where(eq(activityLogs.teamId, teamId))
+    .groupBy(users.id, users.name)
+    .orderBy(users.name);
+}
