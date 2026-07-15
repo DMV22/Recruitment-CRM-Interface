@@ -1,5 +1,14 @@
+import { logActivity } from '@/lib/activity/log-activity';
 import { db } from '@/lib/db/drizzle';
-import { entityNotes, users, clients, vacancies, candidates, submissions } from '@/lib/db/schema';
+import {
+  entityNotes,
+  users,
+  clients,
+  vacancies,
+  candidates,
+  submissions,
+  ActivityType,
+} from '@/lib/db/schema';
 import { and, eq, desc, count } from 'drizzle-orm';
 
 export type NoteEntityType = 'client' | 'vacancy' | 'candidate' | 'submission';
@@ -78,4 +87,52 @@ export async function getNotesForEntity(
     .orderBy(desc(entityNotes.createdAt));
 
   return rows;
+}
+
+export async function createNoteForEntity(
+  teamId: number,
+  userId: number,
+  entityType: NoteEntityType,
+  entityId: number,
+  content: string
+) {
+  const belongs = await assertEntityBelongsToTeam(teamId, entityType, entityId);
+  if (!belongs) return null;
+
+  return db.transaction(async (tx) => {
+    const [note] = await tx
+      .insert(entityNotes)
+      .values({
+        entityType,
+        entityId,
+        content,
+        createdBy: userId,
+      })
+      .returning();
+
+    await logActivity(teamId, userId, ActivityType.CREATE_NOTE, entityType, entityId);
+
+    return note;
+  });
+}
+
+export async function deleteOwnNote(teamId: number, id: number, userId: number) {
+  return db.transaction(async (tx) => {
+    const [deletedNote] = await tx
+      .delete(entityNotes)
+      .where(and(eq(entityNotes.id, id), eq(entityNotes.createdBy, userId)))
+      .returning();
+
+    if (!deletedNote) return null;
+
+    await logActivity(
+      teamId,
+      userId,
+      ActivityType.DELETE_NOTE,
+      deletedNote.entityType,
+      deletedNote.entityId
+    );
+
+    return deletedNote;
+  });
 }
