@@ -1,6 +1,6 @@
 import { db } from '@/lib/db/drizzle';
-import { clients, vacancies, candidates, submissions } from '@/lib/db/schema';
-import { and, eq, count } from 'drizzle-orm';
+import { entityNotes, users, clients, vacancies, candidates, submissions } from '@/lib/db/schema';
+import { and, eq, desc, count } from 'drizzle-orm';
 
 export type NoteEntityType = 'client' | 'vacancy' | 'candidate' | 'submission';
 
@@ -52,4 +52,30 @@ async function assertEntityBelongsToTeam(
     .where(and(eq(submissions.id, entityId), eq(vacancies.teamId, teamId)));
 
   return Number(submissionResult?.total ?? 0) > 0;
+}
+
+export async function getNotesForEntity(
+  teamId: number,
+  entityType: NoteEntityType,
+  entityId: number
+): Promise<EntityNoteItem[]> {
+  const belongs = await assertEntityBelongsToTeam(teamId, entityType, entityId);
+  if (!belongs) return [];
+
+  const rows = await db
+    .select({
+      id: entityNotes.id,
+      entityType: entityNotes.entityType,
+      entityId: entityNotes.entityId,
+      content: entityNotes.content,
+      createdBy: entityNotes.createdBy,
+      createdAt: entityNotes.createdAt,
+      authorName: users.name,
+    })
+    .from(entityNotes)
+    .leftJoin(users, eq(entityNotes.createdBy, users.id))
+    .where(and(eq(entityNotes.entityType, entityType), eq(entityNotes.entityId, entityId)))
+    .orderBy(desc(entityNotes.createdAt));
+
+  return rows;
 }
