@@ -5,6 +5,7 @@ import { createCandidate, deleteCandidate, updateCandidate } from '@/lib/db/quer
 import { hasPermission } from '@/lib/rbac';
 import { createNullableString, createNullableNumber } from '@/lib/zod-helpers';
 import { validateForm } from '@/lib/form';
+import { cacheTags } from '@/lib/cache-tags';
 
 import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -67,9 +68,9 @@ export async function createCandidateAction(
     user.id
   );
 
-  revalidateTag('candidates', 'max');
-  revalidateTag('submissions', 'max');
-  revalidateTag('vacancies', 'max');
+  revalidateTag(cacheTags.candidates.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
 
   return { success: true };
 }
@@ -96,10 +97,12 @@ export async function updateCandidateAction(
   const updated = await updateCandidate(id, teamId, parsed.data, user.id);
   if (!updated) return { error: 'Candidate not found or access denied' };
 
-  revalidateTag('candidates', 'max');
-  revalidateTag('submissions', 'max');
-  revalidateTag('vacancies', 'max');
-  revalidateTag(`candidate-${id}`, 'max');
+  revalidateTag(cacheTags.candidates.list(teamId), 'max');
+  revalidateTag(cacheTags.candidates.detail(id), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.byCandidate(id), 'max');
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
+
   return { success: true };
 }
 
@@ -116,8 +119,11 @@ export async function deleteCandidateAction(id: number): Promise<CandidateFormSt
   const deleted = await deleteCandidate(id, teamId, user.id);
   if (!deleted) return { error: 'Candidate not found or access denied' };
 
-  revalidateTag('candidates', 'max');
-  revalidateTag('submissions', 'max');
-  revalidateTag('vacancies', 'max');
+  revalidateTag(cacheTags.candidates.list(teamId), 'max');
+  revalidateTag(cacheTags.candidates.detail(id), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.byCandidate(id), 'max');
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
+
   redirect('/candidates');
 }

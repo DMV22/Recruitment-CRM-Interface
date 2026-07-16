@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { Building2, Briefcase, MapPin, Coins, CalendarDays, User2, ArrowLeft } from 'lucide-react';
-import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
+import { cacheTag } from 'next/cache';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VacancyStatusBadge } from '@/components/vacancies/vacancy-status-badge';
@@ -12,6 +12,7 @@ import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getVacancyById } from '@/lib/db/queries/vacancies';
 import { getSubmissionsByVacancy, getCandidatesForSubmit } from '@/lib/db/queries/submissions';
 import { hasPermission } from '@/lib/rbac';
+import { cacheTags } from '@/lib/cache-tags';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -41,9 +42,8 @@ function formatDate(date: Date | null) {
 async function getVacancyDetailPageData(id: number, teamId: number) {
   'use cache';
 
-  cacheTag('vacancies');
-  cacheTag('submissions');
-  cacheTag(`vacancy-${id}`);
+  cacheTag(cacheTags.vacancies.detail(id));
+  cacheTag(cacheTags.submissions.byVacancy(id));
 
   const [vacancy, pipelineSubmissions, availableCandidates] = await Promise.all([
     getVacancyById(id, teamId),
@@ -181,8 +181,11 @@ export default async function VacancyDetailPage({ params }: PageProps) {
               </div>
 
               <div className="detail-field">
-                <p className="detail-field-label">Hiring manager ID</p>
-                <p className="font-medium">{vacancy.hiringManagerId ?? '—'}</p>
+                <p className="detail-field-label">Hiring manager</p>
+                <p className="vacancy-meta-item font-medium">
+                  <User2 className="icon-md text-muted-foreground" />
+                  {vacancy.hiringManager?.name ?? 'Unassigned'}
+                </p>
               </div>
             </CardContent>
           </Card>

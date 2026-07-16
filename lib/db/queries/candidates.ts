@@ -1,13 +1,8 @@
 import { db } from '@/lib/db/drizzle';
-import {
-  candidates,
-  submissions,
-  vacancies,
-  type NewCandidate,
-  activityLogs,
-  ActivityType,
-} from '@/lib/db/schema';
-import { eq, and, ilike, desc, count, inArray, or } from 'drizzle-orm';
+import { candidates, type NewCandidate, activityLogs, ActivityType } from '@/lib/db/schema';
+import { candidateScopeFilter } from '@/lib/rbac/candidate-scope';
+
+import { eq, and, desc, count, sql, isNull } from 'drizzle-orm';
 
 // ----- Types -----
 
@@ -30,33 +25,16 @@ export async function getCandidates(
   const { search, status, seniority, page = 1, perPage = 25 } = filter;
   const offset = (page - 1) * perPage;
 
-  // Scope rule: Hiring Manager can only see candidates submitted on their assigned vacancies
-  let allowedCandidateIds: number[] | undefined;
-
-  if (crmRole === 'hiring_manager') {
-    // INNER JOIN garantees that we only get candidates that have been submitted to the hiring manager's vacancies
-    const submittedCandidates = await db
-      .selectDistinct({ candidateId: submissions.candidateId })
-      .from(vacancies)
-      .innerJoin(submissions, eq(submissions.vacancyId, vacancies.id))
-      .where(and(eq(vacancies.teamId, teamId), eq(vacancies.hiringManagerId, userId)));
-
-    // Since innerJoin does not return null, we can map the raw numbers directly
-    allowedCandidateIds = submittedCandidates.map((s) => s.candidateId);
-
-    // If the hiring manager has no vacancies or no candidates submitted to their vacancies
-    if (allowedCandidateIds.length === 0) {
-      return { data: [], total: 0, page, perPage, totalPages: 0 };
-    }
-  }
+  const scopeFilter = candidateScopeFilter(userId, crmRole, teamId);
 
   const where = and(
     eq(candidates.teamId, teamId),
-    allowedCandidateIds ? inArray(candidates.id, allowedCandidateIds) : undefined,
+    isNull(candidates.deletedAt),
+    scopeFilter,
     status ? eq(candidates.status, status) : undefined,
     seniority ? eq(candidates.seniority, seniority) : undefined,
     search
-      ? or(ilike(candidates.firstName, `%${search}%`), ilike(candidates.lastName, `%${search}%`))
+      ? sql`concat(${candidates.firstName}, ' ', ${candidates.lastName}) ilike ${`%${search}%`}`
       : undefined
   );
 
@@ -81,6 +59,7 @@ export async function getCandidates(
         teamId: candidates.teamId,
         createdAt: candidates.createdAt,
         updatedAt: candidates.updatedAt,
+        deletedAt: candidates.deletedAt,
       })
       .from(candidates)
       .where(where)
@@ -102,11 +81,41 @@ export async function getCandidates(
 
 // ----- Single -----
 
-export async function getCandidateById(id: number, teamId: number) {
+export async function getCandidateById(
+  id: number,
+  teamId: number,
+  userId: number,
+  crmRole: string
+) {
+  const scope = candidateScopeFilter(userId, crmRole, teamId);
+
   const [candidate] = await db
     .select()
     .from(candidates)
-    .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId)));
+    .where(
+      and(eq(candidates.id, id), eq(candidates.teamId, teamId), isNull(candidates.deletedAt), scope)
+    )
+    .limit(1);
+
+  return candidate ?? null;
+}
+
+// ----- Optional single (including archived) -----
+// It's convenient in case you need to perform a restore or view a specific archive later
+
+export async function getCandidateByIdIncludingArchived(
+  id: number,
+  teamId: number,
+  userId: number,
+  crmRole: string
+) {
+  const scope = candidateScopeFilter(userId, crmRole, teamId);
+
+  const [candidate] = await db
+    .select()
+    .from(candidates)
+    .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId), scope))
+    .limit(1);
 
   return candidate ?? null;
 }
@@ -117,17 +126,19 @@ export async function createCandidate(
   data: Omit<NewCandidate, 'id' | 'createdAt' | 'updatedAt'>,
   userId: number
 ) {
-  const [candidate] = await db.insert(candidates).values(data).returning();
+  return db.transaction(async (tx) => {
+    const [candidate] = await tx.insert(candidates).values(data).returning();
 
-  await db.insert(activityLogs).values({
-    teamId: data.teamId,
-    userId,
-    action: ActivityType.CREATE_CANDIDATE,
-    entityType: 'candidate',
-    entityId: candidate.id,
+    await tx.insert(activityLogs).values({
+      teamId: data.teamId,
+      userId,
+      action: ActivityType.CREATE_CANDIDATE,
+      entityType: 'candidate',
+      entityId: candidate.id,
+    });
+
+    return candidate;
   });
-
-  return candidate;
 }
 
 // ----- Update -----
@@ -138,26 +149,30 @@ export async function updateCandidate(
   data: Partial<Omit<NewCandidate, 'id' | 'teamId' | 'createdAt'>>,
   userId: number
 ) {
-  const [updated] = await db
-    .update(candidates)
-    .set({ ...data, updatedAt: new Date() })
-    .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId)))
-    .returning();
+  return db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(candidates)
+      .set({ ...data, updatedAt: new Date() })
+      .where(
+        and(eq(candidates.id, id), eq(candidates.teamId, teamId), isNull(candidates.deletedAt))
+      )
+      .returning();
 
-  if (!updated) return null;
+    if (!updated) return null;
 
-  await db.insert(activityLogs).values({
-    teamId,
-    userId,
-    action: ActivityType.UPDATE_CANDIDATE,
-    entityType: 'candidate',
-    entityId: id,
+    await tx.insert(activityLogs).values({
+      teamId,
+      userId,
+      action: ActivityType.UPDATE_CANDIDATE,
+      entityType: 'candidate',
+      entityId: id,
+    });
+
+    return updated;
   });
-
-  return updated;
 }
 
-// ----- Delete (soft via status=blacklisted)  -----
+// ----- Delete (soft via deletedAt) -----
 
 export async function deleteCandidate(id: number, teamId: number, userId: number) {
   try {
@@ -165,10 +180,12 @@ export async function deleteCandidate(id: number, teamId: number, userId: number
       const [updated] = await tx
         .update(candidates)
         .set({
-          status: 'blacklisted',
+          deletedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId)))
+        .where(
+          and(eq(candidates.id, id), eq(candidates.teamId, teamId), isNull(candidates.deletedAt))
+        )
         .returning();
 
       if (!updated) return null;
@@ -185,6 +202,38 @@ export async function deleteCandidate(id: number, teamId: number, userId: number
     });
   } catch (error) {
     console.error('Error while archiving the candidate:', error);
+    return null;
+  }
+}
+
+// ----- Optional restore -----
+
+export async function restoreCandidate(id: number, teamId: number, userId: number) {
+  try {
+    return await db.transaction(async (tx) => {
+      const [updated] = await tx
+        .update(candidates)
+        .set({
+          deletedAt: null,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(candidates.id, id), eq(candidates.teamId, teamId)))
+        .returning();
+
+      if (!updated) return null;
+
+      await tx.insert(activityLogs).values({
+        teamId,
+        userId,
+        action: ActivityType.UPDATE_CANDIDATE,
+        entityType: 'candidate',
+        entityId: id,
+      });
+
+      return updated;
+    });
+  } catch (error) {
+    console.error('Error while restoring the candidate:', error);
     return null;
   }
 }

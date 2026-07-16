@@ -1,4 +1,4 @@
-import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
+import { cacheTag } from 'next/cache';
 import { notFound, redirect } from 'next/navigation';
 import { eq, and, inArray } from 'drizzle-orm';
 
@@ -9,6 +9,7 @@ import { getVacancies, getClientsForSelect } from '@/lib/db/queries/vacancies';
 import { db } from '@/lib/db/drizzle';
 import { teamMembers, users } from '@/lib/db/schema';
 import { hasPermission } from '@/lib/rbac';
+import { cacheTags } from '@/lib/cache-tags';
 
 type PageProps = {
   searchParams: Promise<{
@@ -32,7 +33,7 @@ async function getVacanciesPageData(
 ) {
   'use cache';
 
-  cacheTag('vacancies');
+  cacheTag(cacheTags.vacancies.list(teamId));
 
   const page = Number(params.page ?? '1');
   const safePage = Number.isNaN(page) || page < 1 ? 1 : page;

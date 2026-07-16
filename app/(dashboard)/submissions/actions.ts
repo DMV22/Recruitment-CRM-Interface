@@ -16,6 +16,7 @@ import {
   ALLOWED_STAGE_TRANSITIONS,
   HIRING_MANAGER_ALLOWED_TRANSITIONS,
 } from '@/lib/constants/submissions';
+import { cacheTags } from '@/lib/cache-tags';
 
 import { eq } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
@@ -109,8 +110,11 @@ export async function createSubmissionAction(
     user.id
   );
 
-  revalidateTag('submissions', 'max');
-  revalidateTag(`vacancy-${vacancyId}`, 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.byVacancy(vacancyId), 'max');
+  revalidateTag(cacheTags.submissions.byCandidate(candidateId), 'max');
+  revalidateTag(cacheTags.vacancies.detail(vacancyId), 'max');
+  revalidateTag(cacheTags.candidates.detail(candidateId), 'max');
 
   return { success: true };
 }
@@ -161,9 +165,12 @@ export async function updateSubmissionStageAction(
 
   if (!updated) return { error: 'Failed to update stage' };
 
-  revalidateTag('submissions', 'max');
-  revalidateTag(`submission-${submissionId}`, 'max');
-  revalidateTag(`vacancy-${submission.vacancy.id}`, 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.detail(submissionId), 'max');
+  revalidateTag(cacheTags.submissions.byVacancy(submission.vacancy.id), 'max');
+  revalidateTag(cacheTags.submissions.byCandidate(submission.candidate.id), 'max');
+  revalidateTag(cacheTags.vacancies.detail(submission.vacancy.id), 'max');
+  revalidateTag(cacheTags.candidates.detail(submission.candidate.id), 'max');
 
   return { success: true };
 }

@@ -1,9 +1,11 @@
-import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
+import { cacheTag } from 'next/cache';
 
 import { getUser } from '@/lib/db/queries';
 import { getUserTeamId } from '@/lib/db/queries';
 import { getClients } from '@/lib/db/queries/clients';
+import { cacheTags } from '@/lib/cache-tags';
+
 import { ClientTable } from '@/components/clients/client-table';
 
 type SearchParams = {
@@ -12,6 +14,22 @@ type SearchParams = {
   page?: string;
 };
 
+async function getClientsPageData(teamId: number, params: SearchParams) {
+  'use cache';
+
+  cacheTag(cacheTags.clients.list(teamId));
+
+  const page = Number(params.page ?? '1');
+  const safePage = Number.isNaN(page) || page < 1 ? 1 : page;
+
+  return getClients(teamId, {
+    search: params.search,
+    status: params.status,
+    page: safePage,
+    perPage: 25,
+  });
+}
+
 async function ClientsContent({ searchParams }: { searchParams: SearchParams }) {
   const user = await getUser();
   if (!user) redirect('/sign-in');
@@ -19,13 +37,7 @@ async function ClientsContent({ searchParams }: { searchParams: SearchParams }) 
   const teamId = await getUserTeamId(user.id);
   if (!teamId) redirect('/sign-in');
 
-  const page = Number(searchParams.page ?? '1');
-  const result = await getClients(teamId, {
-    search: searchParams.search,
-    status: searchParams.status,
-    page,
-    perPage: 25,
-  });
+  const result = await getClientsPageData(teamId, searchParams);
 
   return (
     <ClientTable
