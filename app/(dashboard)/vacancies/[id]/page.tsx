@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VacancyStatusBadge } from '@/components/vacancies/vacancy-status-badge';
 import { VacancyPriorityBadge } from '@/components/vacancies/vacancy-priority-badge';
 import { VacancyPipeline } from '@/components/vacancies/vacancy-pipeline';
+import { NotesSection } from '@/components/notes/notes-section';
 
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getVacancyById } from '@/lib/db/queries/vacancies';
+import { getNotesForEntity } from '@/lib/db/queries/notes';
 import { getSubmissionsByVacancy, getCandidatesForSubmit } from '@/lib/db/queries/submissions';
 import { hasPermission } from '@/lib/rbac';
 import { cacheTags } from '@/lib/cache-tags';
@@ -45,10 +47,11 @@ async function getVacancyDetailPageData(id: number, teamId: number) {
   cacheTag(cacheTags.vacancies.detail(id));
   cacheTag(cacheTags.submissions.byVacancy(id));
 
-  const [vacancy, pipelineSubmissions, availableCandidates] = await Promise.all([
+  const [vacancy, pipelineSubmissions, availableCandidates, notes] = await Promise.all([
     getVacancyById(id, teamId),
     getSubmissionsByVacancy(id, teamId),
     getCandidatesForSubmit(teamId, id),
+    getNotesForEntity(teamId, 'vacancy', id),
   ]);
 
   if (!vacancy) return null;
@@ -57,6 +60,7 @@ async function getVacancyDetailPageData(id: number, teamId: number) {
     vacancy,
     pipelineSubmissions,
     availableCandidates,
+    notes,
   };
 }
 
@@ -79,7 +83,7 @@ export default async function VacancyDetailPage({ params }: PageProps) {
   const pageData = await getVacancyDetailPageData(vacancyId, teamId);
   if (!pageData) notFound();
 
-  const { vacancy, pipelineSubmissions, availableCandidates } = pageData;
+  const { vacancy, pipelineSubmissions, availableCandidates, notes } = pageData;
 
   if (user.crmRole === 'hiring_manager' && vacancy.hiringManagerId !== user.id) {
     notFound();
@@ -221,6 +225,14 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         submissions={pipelineSubmissions}
         availableCandidates={availableCandidates}
         currentUser={user}
+      />
+
+      <NotesSection
+        entityType="vacancy"
+        entityId={vacancy.id}
+        notes={notes}
+        currentUserId={user.id}
+        canCreate={hasPermission(user, 'notes.create')}
       />
     </div>
   );
