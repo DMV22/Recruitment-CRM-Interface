@@ -22,13 +22,15 @@ export type NoteFormState = {
 };
 
 function revalidateEntity(entityType: NoteEntityType, entityId: number, teamId: number) {
-  revalidateTag(cacheTags.notes.byEntity(entityType, entityId), 'max');
-  revalidateTag(cacheTags.activity.list(teamId), 'max');
+  revalidateTag(cacheTags.notes.byEntity(entityType, entityId), { expire: 0 });
+  revalidateTag(cacheTags.activity.list(teamId), { expire: 0 });
 
-  if (entityType === 'client') revalidateTag(cacheTags.clients.detail(entityId), 'max');
-  if (entityType === 'vacancy') revalidateTag(cacheTags.vacancies.detail(entityId), 'max');
-  if (entityType === 'candidate') revalidateTag(cacheTags.candidates.detail(entityId), 'max');
-  if (entityType === 'submission') revalidateTag(cacheTags.submissions.detail(entityId), 'max');
+  if (entityType === 'client') revalidateTag(cacheTags.clients.detail(entityId), { expire: 0 });
+  if (entityType === 'vacancy') revalidateTag(cacheTags.vacancies.detail(entityId), { expire: 0 });
+  if (entityType === 'candidate')
+    revalidateTag(cacheTags.candidates.detail(entityId), { expire: 0 });
+  if (entityType === 'submission')
+    revalidateTag(cacheTags.submissions.detail(entityId), { expire: 0 });
 }
 
 export async function createNoteAction(
