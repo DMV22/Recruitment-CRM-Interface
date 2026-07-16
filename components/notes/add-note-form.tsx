@@ -31,6 +31,9 @@ export function AddNoteForm({ entityType, entityId }: Props) {
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       <div className="form-field">
+        <input type="hidden" name="entityType" value={entityType} />
+        <input type="hidden" name="entityId" value={entityId} />
+
         <Label htmlFor="content" className="sr-only">
           Note Content
         </Label>
