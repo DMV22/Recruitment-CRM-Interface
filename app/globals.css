@@ -895,4 +895,9 @@
   .status-legend-percent {
     @apply text-xs text-muted-foreground;
   }
+
+  /* --- Notes + Activity Logs --- */
+  .activity-filters {
+    @apply flex flex-wrap items-center gap-4;
+  }
 }
