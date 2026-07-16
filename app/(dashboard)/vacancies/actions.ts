@@ -10,35 +10,10 @@ import { hasPermission } from '@/lib/rbac';
 import { createVacancy, updateVacancy, deleteVacancy } from '@/lib/db/queries/vacancies';
 import { clients, teamMembers } from '@/lib/db/schema';
 import { db } from '@/lib/db/drizzle';
+import { createNullableString, createNullableNumber, createNullableDate } from '@/lib/zod-helpers';
+import { validateForm } from '@/lib/form';
 
 import { and, eq } from 'drizzle-orm';
-
-// ----- Helpers -----
-
-const nullableString = z.preprocess((value) => {
-  if (value === '' || value === undefined || value === null) {
-    return null;
-  }
-  return value;
-}, z.string().nullable());
-
-const nullableNumber = z.preprocess((value) => {
-  if (value === '' || value === undefined || value === null || value === 'unassigned') {
-    return null;
-  }
-  const num = Number(value);
-
-  return Number.isNaN(num) ? null : num;
-}, z.number().min(0).nullable());
-
-const nullableDate = z.preprocess((value) => {
-  if (value === '' || value === undefined || value === null) {
-    return null;
-  }
-  const date = new Date(value as string);
-
-  return Number.isNaN(date.getTime()) ? null : date;
-}, z.date().nullable());
 
 // ----- Schema -----
 
@@ -48,25 +23,25 @@ const vacancySchema = z
     clientId: z.coerce
       .number({ invalid_type_error: 'Client is required' })
       .min(1, 'Client is required'),
-    description: nullableString.pipe(z.string().max(5000).nullable()),
-    techStack: nullableString.pipe(z.string().max(500).nullable()),
+    description: createNullableString(z.string().max(5000)),
+    techStack: createNullableString(z.string().max(500)),
     seniority: z.preprocess(
       (value) => (value === '' || value === 'none' ? null : value),
       z.enum(['intern', 'junior', 'middle', 'senior', 'lead', 'principal']).nullable()
     ),
-    salaryMin: nullableNumber,
-    salaryMax: nullableNumber,
+    salaryMin: createNullableNumber(z.number().min(0)),
+    salaryMax: createNullableNumber(z.number().min(0)),
     currency: z.preprocess(
       (value) => (value === '' || value == null ? 'USD' : value),
       z.string().max(10)
     ),
-    location: nullableString.pipe(z.string().max(100).nullable()),
+    location: createNullableString(z.string().max(100)),
     workType: z.enum(['remote', 'hybrid', 'onsite']).default('remote'),
     status: z.enum(['open', 'on_hold', 'closed', 'filled']).default('open'),
     priority: z.enum(['low', 'medium', 'high']).default('medium'),
-    assignedRecruiterId: nullableNumber,
-    hiringManagerId: nullableNumber,
-    deadlineAt: nullableDate,
+    assignedRecruiterId: createNullableNumber(z.number().int().positive()),
+    hiringManagerId: createNullableNumber(z.number().int().positive()),
+    deadlineAt: createNullableDate(z.date()),
   })
   .superRefine((data, ctx) => {
     if (data.salaryMin !== null && data.salaryMax !== null && data.salaryMin > data.salaryMax) {
@@ -84,13 +59,6 @@ export type VacancyFormState = {
   success?: boolean;
 };
 
-function validateVacancyForm(formData: FormData) {
-  // Automatically collects all key-value pairs from the form into a single object
-  const raw = Object.fromEntries(formData.entries());
-
-  return vacancySchema.safeParse(raw);
-}
-
 // ----- Create -----
 
 export async function createVacancyAction(
@@ -104,7 +72,7 @@ export async function createVacancyAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const parsed = validateVacancyForm(formData);
+  const parsed = validateForm(formData, vacancySchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
@@ -149,7 +117,8 @@ export async function createVacancyAction(
     user.id
   );
 
-  revalidateTag('vacancies', { expire: 0 });
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
 
   return { success: true };
 }
@@ -168,7 +137,7 @@ export async function updateVacancyAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const parsed = validateVacancyForm(formData);
+  const parsed = validateForm(formData, vacancySchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
@@ -211,8 +180,9 @@ export async function updateVacancyAction(
 
   if (!updated) return { error: 'Vacancy not found or access denied' };
 
-  revalidateTag('vacancies', { expire: 0 });
-  revalidateTag(`vacancy-${id}`, { expire: 0 });
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
+  revalidateTag(`vacancy-${id}`, 'max');
   return { success: true };
 }
 
@@ -229,6 +199,7 @@ export async function deleteVacancyAction(id: number): Promise<VacancyFormState>
   const deleted = await deleteVacancy(id, teamId, user.id);
   if (!deleted) return { error: 'Vacancy not found or access denied' };
 
-  revalidateTag('vacancies', { expire: 0 });
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
   redirect('/vacancies');
 }

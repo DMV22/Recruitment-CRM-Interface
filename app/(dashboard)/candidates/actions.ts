@@ -3,32 +3,12 @@
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { createCandidate, deleteCandidate, updateCandidate } from '@/lib/db/queries/candidates';
 import { hasPermission } from '@/lib/rbac';
+import { createNullableString, createNullableNumber } from '@/lib/zod-helpers';
+import { validateForm } from '@/lib/form';
+
 import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-
-// ----- Helpers -----
-
-// Сonverts the variable into a function that accepts a custom pattern
-function createNullableString(customSchema: z.ZodTypeAny) {
-  return z.preprocess((value) => {
-    if (value === '' || value === undefined || value === null) {
-      return null;
-    }
-    return value;
-  }, customSchema.nullable());
-}
-
-function createNullableNumber(customSchema: z.ZodTypeAny) {
-  return z.preprocess((value) => {
-    if (value === '' || value === undefined || value === null || value === 'unassigned') {
-      return null;
-    }
-    const num = Number(value);
-
-    return Number.isNaN(num) ? null : num;
-  }, customSchema.nullable());
-}
 
 // ----- Schema -----
 
@@ -61,11 +41,6 @@ export type CandidateFormState = {
   success?: boolean;
 };
 
-function validateCandidateForm(formData: FormData) {
-  const raw = Object.fromEntries(formData.entries());
-  return candidateSchema.safeParse(raw);
-}
-
 // ----- Create -----
 
 export async function createCandidateAction(
@@ -79,7 +54,7 @@ export async function createCandidateAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const parsed = validateCandidateForm(formData);
+  const parsed = validateForm(formData, candidateSchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
@@ -92,7 +67,9 @@ export async function createCandidateAction(
     user.id
   );
 
-  revalidateTag('candidates', { expire: 0 });
+  revalidateTag('candidates', 'max');
+  revalidateTag('submissions', 'max');
+  revalidateTag('vacancies', 'max');
 
   return { success: true };
 }
@@ -111,7 +88,7 @@ export async function updateCandidateAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const parsed = validateCandidateForm(formData);
+  const parsed = validateForm(formData, candidateSchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
@@ -119,8 +96,10 @@ export async function updateCandidateAction(
   const updated = await updateCandidate(id, teamId, parsed.data, user.id);
   if (!updated) return { error: 'Candidate not found or access denied' };
 
-  revalidateTag('candidates', { expire: 0 });
-  revalidateTag(`candidate-${id}`, { expire: 0 });
+  revalidateTag('candidates', 'max');
+  revalidateTag('submissions', 'max');
+  revalidateTag('vacancies', 'max');
+  revalidateTag(`candidate-${id}`, 'max');
   return { success: true };
 }
 
@@ -137,6 +116,8 @@ export async function deleteCandidateAction(id: number): Promise<CandidateFormSt
   const deleted = await deleteCandidate(id, teamId, user.id);
   if (!deleted) return { error: 'Candidate not found or access denied' };
 
-  revalidateTag('candidates', { expire: 0 });
+  revalidateTag('candidates', 'max');
+  revalidateTag('submissions', 'max');
+  revalidateTag('vacancies', 'max');
   redirect('/candidates');
 }

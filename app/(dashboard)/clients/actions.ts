@@ -3,19 +3,22 @@
 import { z } from 'zod';
 import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
+
 import { getUser } from '@/lib/db/queries';
 import { getUserTeamId } from '@/lib/db/queries';
 import { hasPermission } from '@/lib/rbac';
 import { createClient, updateClient, deleteClient } from '@/lib/db/queries/clients';
+import { createNullableString } from '@/lib/zod-helpers';
+import { validateForm } from '@/lib/form';
 
 // ----- Schemas -----
 
 const clientSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200),
-  industry: z.string().max(100).optional().or(z.literal('')),
-  website: z.string().url('Invalid URL').optional().or(z.literal('')),
+  industry: createNullableString(z.string().max(100)),
+  website: createNullableString(z.string().url('Invalid URL')),
   status: z.enum(['prospect', 'active', 'inactive']).default('prospect'),
-  notes: z.string().max(2000).optional().or(z.literal('')),
+  notes: createNullableString(z.string().max(2000)),
 });
 
 export type ClientFormState = {
@@ -37,16 +40,7 @@ export async function createClientAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const raw = {
-    name: formData.get('name'),
-    industry: formData.get('industry'),
-    website: formData.get('website'),
-    status: formData.get('status'),
-    assignedUserId: formData.get('assignedUserId') || undefined,
-    notes: formData.get('notes'),
-  };
-
-  const parsed = clientSchema.safeParse(raw);
+  const parsed = validateForm(formData, clientSchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
@@ -65,7 +59,10 @@ export async function createClientAction(
     user.id
   );
 
-  revalidateTag('clients', { expire: 0 });
+  revalidateTag('clients', 'max');
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
+
   return { success: true };
 }
 
@@ -83,16 +80,7 @@ export async function updateClientAction(
   const teamId = await getUserTeamId(user.id);
   if (!teamId) return { error: 'No team found' };
 
-  const raw = {
-    name: formData.get('name'),
-    industry: formData.get('industry'),
-    website: formData.get('website'),
-    status: formData.get('status'),
-    assignedUserId: formData.get('assignedUserId') || undefined,
-    notes: formData.get('notes'),
-  };
-
-  const parsed = clientSchema.safeParse(raw);
+  const parsed = validateForm(formData, clientSchema);
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
@@ -114,8 +102,10 @@ export async function updateClientAction(
 
   if (!updated) return { error: 'Client not found or access denied' };
 
-  revalidateTag('clients', { expire: 0 });
-  revalidateTag(`client-${id}`, { expire: 0 });
+  revalidateTag('clients', 'max');
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
+  revalidateTag(`client-${id}`, 'max');
   return { success: true };
 }
 
@@ -132,6 +122,8 @@ export async function deleteClientAction(id: number): Promise<ClientFormState> {
   const deleted = await deleteClient(id, teamId, user.id);
   if (!deleted) return { error: 'Client not found or access denied' };
 
-  revalidateTag('clients', { expire: 0 });
+  revalidateTag('clients', 'max');
+  revalidateTag('vacancies', 'max');
+  revalidateTag('submissions', 'max');
   redirect('/clients');
 }
