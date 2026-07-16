@@ -1,3 +1,4 @@
+import { logActivity } from '@/lib/activity/log-activity';
 import { db } from '@/lib/db/drizzle';
 import {
   submissions,
@@ -6,7 +7,6 @@ import {
   candidates,
   clients,
   users,
-  activityLogs,
   ActivityType,
   NewSubmission,
   type PipelineStage,
@@ -204,13 +204,7 @@ export async function createSubmission(
     });
 
     // 3. Record the action in the company's general audit log
-    await tx.insert(activityLogs).values({
-      teamId,
-      userId,
-      action: ActivityType.CREATE_SUBMISSION,
-      entityType: 'submission',
-      entityId: submission.id,
-    });
+    await logActivity(teamId, userId, ActivityType.CREATE_SUBMISSION, 'submission', submission.id);
 
     return submission;
   });
@@ -254,13 +248,7 @@ export async function updateSubmissionStage(
       notes: notes ?? null,
     });
 
-    await tx.insert(activityLogs).values({
-      teamId,
-      userId,
-      action: ActivityType.UPDATE_SUBMISSION_STAGE,
-      entityType: 'submission',
-      entityId: id,
-    });
+    await logActivity(teamId, userId, ActivityType.UPDATE_SUBMISSION_STAGE, 'submission', id);
 
     return updated;
   });

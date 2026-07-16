@@ -1,5 +1,6 @@
+import { logActivity } from '@/lib/activity/log-activity';
 import { db } from '@/lib/db/drizzle';
-import { candidates, type NewCandidate, activityLogs, ActivityType } from '@/lib/db/schema';
+import { candidates, type NewCandidate, ActivityType } from '@/lib/db/schema';
 import { candidateScopeFilter } from '@/lib/rbac/candidate-scope';
 
 import { eq, and, desc, count, sql, isNull } from 'drizzle-orm';
@@ -129,13 +130,13 @@ export async function createCandidate(
   return db.transaction(async (tx) => {
     const [candidate] = await tx.insert(candidates).values(data).returning();
 
-    await tx.insert(activityLogs).values({
-      teamId: data.teamId,
+    await logActivity(
+      data.teamId,
       userId,
-      action: ActivityType.CREATE_CANDIDATE,
-      entityType: 'candidate',
-      entityId: candidate.id,
-    });
+      ActivityType.CREATE_CANDIDATE,
+      'candidate',
+      candidate.id
+    );
 
     return candidate;
   });
@@ -160,13 +161,7 @@ export async function updateCandidate(
 
     if (!updated) return null;
 
-    await tx.insert(activityLogs).values({
-      teamId,
-      userId,
-      action: ActivityType.UPDATE_CANDIDATE,
-      entityType: 'candidate',
-      entityId: id,
-    });
+    await logActivity(teamId, userId, ActivityType.UPDATE_CANDIDATE, 'candidate', id);
 
     return updated;
   });
@@ -190,13 +185,7 @@ export async function deleteCandidate(id: number, teamId: number, userId: number
 
       if (!updated) return null;
 
-      await tx.insert(activityLogs).values({
-        teamId,
-        userId,
-        action: ActivityType.ARCHIVE_CANDIDATE,
-        entityType: 'candidate',
-        entityId: id,
-      });
+      await logActivity(teamId, userId, ActivityType.ARCHIVE_CANDIDATE, 'candidate', id);
 
       return updated;
     });
@@ -222,13 +211,7 @@ export async function restoreCandidate(id: number, teamId: number, userId: numbe
 
       if (!updated) return null;
 
-      await tx.insert(activityLogs).values({
-        teamId,
-        userId,
-        action: ActivityType.UPDATE_CANDIDATE,
-        entityType: 'candidate',
-        entityId: id,
-      });
+      await logActivity(teamId, userId, ActivityType.UPDATE_CANDIDATE, 'candidate', id);
 
       return updated;
     });

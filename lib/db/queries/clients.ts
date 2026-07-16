@@ -1,5 +1,6 @@
+import { logActivity } from '@/lib/activity/log-activity';
 import { db } from '@/lib/db/drizzle';
-import { clients, clientContacts, users, activityLogs, ActivityType } from '@/lib/db/schema';
+import { clients, clientContacts, users, ActivityType } from '@/lib/db/schema';
 import type { NewClient } from '@/lib/db/schema';
 import { eq, and, ilike, or, desc, count } from 'drizzle-orm';
 
@@ -110,13 +111,7 @@ export async function createClient(
   return db.transaction(async (tx) => {
     const [client] = await tx.insert(clients).values(data).returning();
 
-    await tx.insert(activityLogs).values({
-      teamId: data.teamId,
-      userId,
-      action: ActivityType.CREATE_CLIENT,
-      entityType: 'client',
-      entityId: client.id,
-    });
+    await logActivity(data.teamId, userId, ActivityType.CREATE_CLIENT, 'client', client.id);
 
     return client;
   });
@@ -139,13 +134,7 @@ export async function updateClient(
 
     if (!updated) return null;
 
-    await tx.insert(activityLogs).values({
-      teamId,
-      userId,
-      action: ActivityType.UPDATE_CLIENT,
-      entityType: 'client',
-      entityId: id,
-    });
+    await logActivity(teamId, userId, ActivityType.UPDATE_CLIENT, 'client', id);
 
     return updated;
   });
@@ -168,13 +157,7 @@ export async function deleteClient(id: number, teamId: number, userId: number) {
 
       if (!updated) return null;
 
-      await tx.insert(activityLogs).values({
-        teamId,
-        userId,
-        action: ActivityType.ARCHIVE_CLIENT,
-        entityType: 'client',
-        entityId: id,
-      });
+      await logActivity(teamId, userId, ActivityType.ARCHIVE_CLIENT, 'client', id);
 
       return updated;
     });

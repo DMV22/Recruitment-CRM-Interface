@@ -183,7 +183,7 @@ async function ActivityContent({ searchParams }: { searchParams: SearchParams })
                         <span className="timeline-user">{log.userName ?? 'System'}</span>{' '}
                         <span className="timeline-action">
                           {formatAction(log.action as ActivityType)}
-                        </span>
+                        </span>{' '}
                         {log.entityType ? (
                           <span className="timeline-entity">
                             {formatEntity(log.entityType)} #{log.entityId}
