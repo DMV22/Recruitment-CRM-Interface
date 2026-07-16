@@ -11,29 +11,28 @@ import { getCandidateById } from '@/lib/db/queries/candidates';
 import { getNotesForEntity } from '@/lib/db/queries/notes';
 import { hasPermission } from '@/lib/rbac';
 import { cacheTags } from '@/lib/cache-tags';
+import { User } from '@/lib/db/schema';
 
 type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-async function getCandidateDetailPageData(
-  id: number,
-  teamId: number,
-  userId: number,
-  crmRole: string
-) {
+async function getCandidateDetailPageData(user: User, id: number, teamId: number) {
   'use cache';
 
   cacheTag(cacheTags.candidates.detail(id));
 
+  const canReadNotes = hasPermission(user, 'notes.read');
+  const canCreateNotes = hasPermission(user, 'notes.create');
+
   const [candidate, notes] = await Promise.all([
-    getCandidateById(id, teamId, userId, crmRole),
-    getNotesForEntity(teamId, 'candidate', id),
+    getCandidateById(id, teamId, user.id, user.crmRole),
+    canReadNotes ? getNotesForEntity(teamId, 'candidate', id) : Promise.resolve([]),
   ]);
 
   if (!candidate) return null;
 
-  return { candidate, notes };
+  return { candidate, notes, canReadNotes, canCreateNotes };
 }
 
 export default async function CandidateDetailPage({ params }: PageProps) {
@@ -50,10 +49,10 @@ export default async function CandidateDetailPage({ params }: PageProps) {
   const teamId = await getUserTeamId(user.id);
   if (!teamId) notFound();
 
-  const data = await getCandidateDetailPageData(candidateId, teamId, user.id, user.crmRole);
+  const data = await getCandidateDetailPageData(user, candidateId, teamId);
   if (!data) notFound();
 
-  const { candidate, notes } = data;
+  const { candidate, notes, canReadNotes, canCreateNotes } = data;
 
   return (
     <div className="page-content">
@@ -64,13 +63,15 @@ export default async function CandidateDetailPage({ params }: PageProps) {
 
       <CandidateDetail candidate={candidate} />
 
-      <NotesSection
-        entityType="candidate"
-        entityId={candidate.id}
-        notes={notes}
-        currentUserId={user.id}
-        canCreate={hasPermission(user, 'notes.create')}
-      />
+      {canReadNotes ? (
+        <NotesSection
+          entityType="candidate"
+          entityId={candidate.id}
+          notes={notes}
+          currentUserId={user.id}
+          canCreate={canCreateNotes}
+        />
+      ) : null}
     </div>
   );
 }
