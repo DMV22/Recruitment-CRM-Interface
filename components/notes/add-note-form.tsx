@@ -29,7 +29,7 @@ export function AddNoteForm({ entityType, entityId }: Props) {
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form ref={formRef} action={formAction} className="notes-form">
       <div className="form-field">
         <input type="hidden" name="entityType" value={entityType} />
         <input type="hidden" name="entityId" value={entityId} />
@@ -54,7 +54,7 @@ export function AddNoteForm({ entityType, entityId }: Props) {
         {state.error && <p className="form-error-block">{state.error}</p>}
       </div>
 
-      <div className="flex justify-end">
+      <div className="notes-form-footer">
         <Button type="submit" size="sm" disabled={isPending} className="gap-2">
           {isPending ? <Loader2 className="spinner" /> : <Plus className="mr-1.5 icon-md" />}
           Add note

@@ -27,7 +27,7 @@ export function NotesSection({
       <div className="detail-section-header">
         <div>
           <h2 className="detail-section-title">{title}</h2>
-          <p className="text-muted">Internal notes for this record.</p>
+          <p className="text-hint">Internal notes for this record.</p>
         </div>
       </div>
 
