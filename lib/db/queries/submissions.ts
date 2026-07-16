@@ -204,7 +204,14 @@ export async function createSubmission(
     });
 
     // 3. Record the action in the company's general audit log
-    await logActivity(teamId, userId, ActivityType.CREATE_SUBMISSION, 'submission', submission.id);
+    await logActivity(
+      tx,
+      teamId,
+      userId,
+      ActivityType.CREATE_SUBMISSION,
+      'submission',
+      submission.id
+    );
 
     return submission;
   });
@@ -248,7 +255,7 @@ export async function updateSubmissionStage(
       notes: notes ?? null,
     });
 
-    await logActivity(teamId, userId, ActivityType.UPDATE_SUBMISSION_STAGE, 'submission', id);
+    await logActivity(tx, teamId, userId, ActivityType.UPDATE_SUBMISSION_STAGE, 'submission', id);
 
     return updated;
   });

@@ -110,7 +110,7 @@ export async function createNoteForEntity(
       })
       .returning();
 
-    await logActivity(teamId, userId, ActivityType.CREATE_NOTE, entityType, entityId);
+    await logActivity(tx, teamId, userId, ActivityType.CREATE_NOTE, entityType, entityId);
 
     return note;
   });
@@ -126,6 +126,7 @@ export async function deleteOwnNote(teamId: number, id: number, userId: number) 
     if (!deletedNote) return null;
 
     await logActivity(
+      tx,
       teamId,
       userId,
       ActivityType.DELETE_NOTE,

@@ -131,6 +131,7 @@ export async function createCandidate(
     const [candidate] = await tx.insert(candidates).values(data).returning();
 
     await logActivity(
+      tx,
       data.teamId,
       userId,
       ActivityType.CREATE_CANDIDATE,
@@ -161,7 +162,7 @@ export async function updateCandidate(
 
     if (!updated) return null;
 
-    await logActivity(teamId, userId, ActivityType.UPDATE_CANDIDATE, 'candidate', id);
+    await logActivity(tx, teamId, userId, ActivityType.UPDATE_CANDIDATE, 'candidate', id);
 
     return updated;
   });
@@ -185,7 +186,7 @@ export async function deleteCandidate(id: number, teamId: number, userId: number
 
       if (!updated) return null;
 
-      await logActivity(teamId, userId, ActivityType.ARCHIVE_CANDIDATE, 'candidate', id);
+      await logActivity(tx, teamId, userId, ActivityType.ARCHIVE_CANDIDATE, 'candidate', id);
 
       return updated;
     });
@@ -211,7 +212,7 @@ export async function restoreCandidate(id: number, teamId: number, userId: numbe
 
       if (!updated) return null;
 
-      await logActivity(teamId, userId, ActivityType.UPDATE_CANDIDATE, 'candidate', id);
+      await logActivity(tx, teamId, userId, ActivityType.UPDATE_CANDIDATE, 'candidate', id);
 
       return updated;
     });
