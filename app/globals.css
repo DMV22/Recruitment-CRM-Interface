@@ -898,6 +898,50 @@
 
   /* --- Notes + Activity Logs --- */
   .activity-filters {
-    @apply flex flex-wrap items-center gap-4;
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .timeline {
+    @apply space-y-4 divide-y divide-border;
+  }
+
+  .timeline-item {
+    @apply pb-3 flex items-start gap-3;
+  }
+
+  .timeline-icon {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground;
+  }
+
+  .timeline-body {
+    @apply min-w-0 flex-1;
+  }
+
+  .timeline-text {
+    @apply text-sm leading-6;
+  }
+
+  .timeline-user {
+    @apply font-medium text-foreground;
+  }
+
+  .timeline-action {
+    @apply text-foreground;
+  }
+
+  .timeline-entity {
+    @apply text-muted-foreground;
+  }
+
+  .timeline-time {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .timeline-empty-title {
+    @apply text-sm font-semibold;
+  }
+
+  .timeline-empty-text {
+    @apply text-sm text-muted-foreground;
   }
 }
