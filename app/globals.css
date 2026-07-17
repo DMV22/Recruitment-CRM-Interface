@@ -575,7 +575,7 @@
     @apply text-xs text-muted-foreground;
   }
 
-  .text-muted {
+  .text-muted-sm {
     @apply text-sm text-muted-foreground;
   }
 
@@ -653,5 +653,246 @@
 
   .pipeline-card-action {
     @apply absolute right-2 top-2;
+  }
+
+  /* --- Dashboard --- */
+  .dashboard-kpi-grid {
+    @apply grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 mb-6;
+  }
+
+  .dashboard-middle-grid {
+    @apply grid gap-6 lg:grid-cols-3 mb-6;
+  }
+
+  .dashboard-funnel-col {
+    @apply lg:col-span-2;
+  }
+
+  .dashboard-status-col {
+    @apply lg:col-span-1;
+  }
+
+  .dashboard-lower-grid {
+    @apply grid gap-6 md:grid-cols-2;
+  }
+
+  .panel {
+    @apply rounded-lg border border-border bg-card;
+  }
+
+  .panel-wide {
+    @apply md:col-span-2;
+  }
+
+  .panel-header {
+    @apply space-y-1;
+  }
+
+  .panel-header-row {
+    @apply flex flex-row items-center justify-between gap-4;
+  }
+
+  .panel-title {
+    @apply text-base font-semibold;
+  }
+
+  .panel-subtitle {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .panel-link {
+    @apply text-xs text-primary transition-colors hover:underline underline-offset-4;
+  }
+
+  .kpi-card {
+    @apply relative flex flex-col rounded-xl border border-border bg-card shadow-sm transition-colors;
+  }
+
+  .kpi-card-header {
+    @apply flex flex-col items-start gap-3 px-5;
+  }
+
+  .kpi-card-title {
+    @apply min-h-[2.75rem] text-sm font-medium leading-5 text-muted-foreground;
+  }
+
+  .kpi-card-icon-wrap {
+    @apply flex h-9 w-9 items-center justify-center rounded-lg bg-muted;
+  }
+
+  .kpi-card-icon {
+    @apply h-4 w-4 text-foreground;
+  }
+
+  .kpi-card-content {
+    @apply mt-auto flex flex-1 flex-col justify-end gap-2 px-5;
+  }
+
+  .kpi-card-value {
+    @apply text-[1.5rem] leading-none font-semibold tracking-tight tabular-nums;
+  }
+
+  .kpi-card-description {
+    @apply min-h-[2.5rem] text-xs leading-5 text-muted-foreground;
+  }
+
+  .dashboard-pipeline {
+    @apply space-y-2;
+  }
+
+  .dashboard-pipeline-row {
+    @apply flex items-center gap-3;
+  }
+
+  .dashboard-pipeline-label {
+    @apply w-32 shrink-0 text-right text-xs text-muted-foreground;
+  }
+
+  .dashboard-pipeline-track {
+    @apply h-6 flex-1 overflow-hidden rounded-sm bg-muted;
+  }
+
+  .dashboard-pipeline-fill {
+    @apply h-full rounded-sm transition-all duration-500;
+  }
+
+  .dashboard-pipeline-count {
+    @apply w-8 shrink-0 text-right text-xs font-medium tabular-nums;
+  }
+
+  .pipeline-bar-neutral {
+    @apply bg-slate-400;
+  }
+
+  .pipeline-bar-blue {
+    @apply bg-blue-400;
+  }
+
+  .pipeline-bar-warning {
+    @apply bg-yellow-400;
+  }
+
+  .pipeline-bar-success {
+    @apply bg-green-500;
+  }
+
+  .pipeline-bar-error {
+    @apply bg-red-400;
+  }
+
+  .dashboard-list-content {
+    @apply p-0;
+  }
+
+  .dashboard-list {
+    @apply divide-y divide-border;
+  }
+
+  .dashboard-list-item {
+    @apply flex items-center justify-between px-6 py-3 transition-colors hover:bg-muted/50;
+  }
+
+  .dashboard-list-main {
+    @apply min-w-0;
+  }
+
+  .dashboard-list-title {
+    @apply truncate text-sm font-medium;
+  }
+
+  .dashboard-list-subtitle {
+    @apply truncate text-xs text-muted-foreground;
+  }
+
+  .dashboard-list-separator {
+    @apply mx-1 opacity-40;
+  }
+
+  .dashboard-list-side {
+    @apply ml-4 flex shrink-0 items-center gap-3;
+  }
+
+  .dashboard-list-time {
+    @apply whitespace-nowrap text-xs text-muted-foreground tabular-nums;
+  }
+
+  .activity-item {
+    @apply flex items-start gap-3 px-6 py-3;
+  }
+
+  .activity-icon-wrap {
+    @apply mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted;
+  }
+
+  .activity-icon {
+    @apply h-3.5 w-3.5 text-muted-foreground;
+  }
+
+  .activity-body {
+    @apply min-w-0 flex-1;
+  }
+
+  .activity-text {
+    @apply text-sm leading-snug;
+  }
+
+  .activity-user {
+    @apply font-medium text-foreground;
+  }
+
+  .activity-action {
+    @apply text-muted-foreground;
+  }
+
+  .activity-time {
+    @apply mt-0.5 text-xs text-muted-foreground;
+  }
+
+  .status-chart {
+    @apply space-y-4;
+  }
+
+  .status-track {
+    @apply flex h-3 w-full overflow-hidden rounded-full bg-muted;
+  }
+
+  .status-fill {
+    @apply h-full transition-all duration-500;
+  }
+
+  .status-bar-open {
+    @apply bg-green-500;
+  }
+
+  .status-bar-on-hold {
+    @apply bg-yellow-400;
+  }
+
+  .status-bar-filled {
+    @apply bg-blue-500;
+  }
+
+  .status-bar-closed {
+    @apply bg-slate-400;
+  }
+
+  .status-legend {
+    @apply space-y-2;
+  }
+
+  .status-legend-item {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .status-legend-meta {
+    @apply flex items-center gap-1.5 tabular-nums;
+  }
+
+  .status-legend-count {
+    @apply text-sm font-medium;
+  }
+
+  .status-legend-percent {
+    @apply text-xs text-muted-foreground;
   }
 }
