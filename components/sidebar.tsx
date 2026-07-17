@@ -58,7 +58,7 @@ const NAV_ITEMS: NavItem[] = [
     icon: GitPullRequest,
     permission: 'submissions.read',
   },
-  { label: 'Team', href: '#', icon: UsersRound, permission: 'team.read' },
+  { label: 'Team', href: '/team', icon: UsersRound, permission: 'team.read' },
   { label: 'Settings', href: '#', icon: Settings, permission: 'settings.read' },
 ];
 
