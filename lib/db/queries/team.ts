@@ -1,5 +1,7 @@
+import { logActivity } from '@/lib/activity/log-activity';
 import { db } from '@/lib/db/drizzle';
-import { invitations, teamMembers, teams, users } from '@/lib/db/schema';
+import { ActivityType, invitations, teamMembers, teams, users } from '@/lib/db/schema';
+import { CrmRole } from '@/lib/rbac';
 import { and, desc, eq, asc } from 'drizzle-orm';
 
 export async function getTeamOverview(teamId: number) {
@@ -50,4 +52,36 @@ export async function getTeamOverview(teamId: number) {
     members,
     pendingInvitations,
   };
+}
+
+export async function inviteTeamMember(
+  teamId: number,
+  email: string,
+  crmRole: CrmRole,
+  invitedBy: number
+) {
+  return db.transaction(async (tx) => {
+    const [invitation] = await tx
+      .insert(invitations)
+      .values({
+        teamId,
+        email,
+        role: 'member',
+        crmRole,
+        invitedBy,
+        status: 'pending',
+      })
+      .returning();
+
+    await logActivity(
+      tx,
+      teamId,
+      invitedBy,
+      ActivityType.INVITE_TEAM_MEMBER,
+      'team',
+      invitation.id
+    );
+
+    return invitation;
+  });
 }
