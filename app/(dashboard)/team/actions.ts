@@ -5,7 +5,7 @@ import { revalidateTag } from 'next/cache';
 
 import { cacheTags } from '@/lib/cache-tags';
 import { getUser, getUserTeamId } from '@/lib/db/queries';
-import { inviteTeamMember } from '@/lib/db/queries/team';
+import { changeUserCrmRole, inviteTeamMember } from '@/lib/db/queries/team';
 import { validateForm } from '@/lib/form';
 import { hasPermission } from '@/lib/rbac';
 import { invitations, teamMembers, users } from '@/lib/db/schema';
@@ -80,6 +80,37 @@ export async function inviteMemberAction(
   }
 
   await inviteTeamMember(teamId, email, crmRole, user.id);
+  revalidateTeam(teamId);
+
+  return { success: true };
+}
+
+export async function changeUserRoleAction(
+  _prev: TeamActionState,
+  formData: FormData
+): Promise<TeamActionState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'roles.manage')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const parsed = validateForm(formData, changeRoleSchema);
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const { userId, crmRole } = parsed.data;
+
+  // SECURITY: Protection from admin panel lockouts (Self-Demotion guard)
+  if (userId === user.id) {
+    return { error: 'You cannot modify your own CRM role. Ask another administrator to do this.' };
+  }
+
+  const updated = await changeUserCrmRole(teamId, userId, crmRole, user.id);
+  if (!updated) return { error: 'Team member not found or access denied' };
+
   revalidateTeam(teamId);
 
   return { success: true };
