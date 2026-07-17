@@ -16,7 +16,7 @@ type Props = {
   invitations: InvitationRow[];
 };
 
-function formatRoleLabel(role: CrmRole) {
+export function formatRoleLabel(role: CrmRole) {
   return role.replace('_', ' ');
 }
 
