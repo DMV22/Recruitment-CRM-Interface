@@ -115,3 +115,18 @@ export async function changeUserCrmRole(
     return updatedUser;
   });
 }
+
+export async function revokeTeamAccess(teamId: number, targetUserId: number, revokedBy: number) {
+  return db.transaction(async (tx) => {
+    const [membership] = await tx
+      .delete(teamMembers)
+      .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, targetUserId)))
+      .returning();
+
+    if (!membership) return null;
+
+    await logActivity(tx, teamId, revokedBy, ActivityType.REMOVE_TEAM_MEMBER, 'team', targetUserId);
+
+    return membership;
+  });
+}
