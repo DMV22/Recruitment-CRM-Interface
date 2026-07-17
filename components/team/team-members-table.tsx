@@ -1,13 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { format } from 'date-fns';
 import { Shield, Trash2, UserRound } from 'lucide-react';
 
 import {
@@ -22,7 +21,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { RoleSelect } from '@/components/team/role-select';
 import { formatRoleLabel } from '@/components/team/pending-invitations-list';
 import type { CrmRole } from '@/lib/rbac';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
+import { RevokeAccessDialog } from '@/components/team/revoke-access-dialog';
 
 type TeamMemberRow = {
   membershipId: number;
@@ -38,18 +38,21 @@ type Props = {
   currentUserId: number;
   canManageTeam: boolean;
   canManageRoles: boolean;
-  onRevokeClick: (member: { id: number; name: string | null }) => void;
 };
 
 const col = createColumnHelper<TeamMemberRow>();
 
-export function TeamMembersTable({
-  members,
-  currentUserId,
-  canManageTeam,
-  canManageRoles,
-  onRevokeClick,
-}: Props) {
+export function TeamMembersTable({ members, currentUserId, canManageTeam, canManageRoles }: Props) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<{ id: number; name: string | null } | null>(
+    null
+  );
+
+  const openRevokeDialog = (id: number, name: string | null) => {
+    setSelectedMember({ id, name });
+    setDialogOpen(true);
+  };
+
   const columns = useMemo(
     () => [
       col.accessor('name', {
@@ -115,11 +118,9 @@ export function TeamMembersTable({
                 size="icon"
                 className="team-button-delete"
                 onClick={() =>
-                  onRevokeClick({
-                    id: row.original.userId,
-                    name: row.original.name ?? row.original.email,
-                  })
+                  openRevokeDialog(row.original.userId, row.original.name ?? row.original.email)
                 }
+
                 aria-label={`Revoke access for ${row.original.name ?? row.original.email}`}
               >
                 <Trash2 className="icon-md" />
@@ -129,7 +130,7 @@ export function TeamMembersTable({
         ),
       }),
     ],
-    [canManageRoles, canManageTeam, currentUserId, onRevokeClick]
+    [canManageRoles, canManageTeam, currentUserId]
   );
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -190,6 +191,8 @@ export function TeamMembersTable({
           </Table>
         </div>
       </CardContent>
+
+      <RevokeAccessDialog open={dialogOpen} onOpenChange={setDialogOpen} member={selectedMember} />
     </Card>
   );
 }
