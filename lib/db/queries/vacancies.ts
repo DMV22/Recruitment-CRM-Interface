@@ -1,5 +1,6 @@
+import { logActivity } from '@/lib/activity/log-activity';
 import { db } from '@/lib/db/drizzle';
-import { vacancies, clients, users, activityLogs, ActivityType } from '@/lib/db/schema';
+import { vacancies, clients, users, ActivityType } from '@/lib/db/schema';
 import type { NewVacancy } from '@/lib/db/schema';
 import { eq, and, ilike, desc, count } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
@@ -163,13 +164,7 @@ export async function createVacancy(
   return db.transaction(async (tx) => {
     const [vacancy] = await tx.insert(vacancies).values(data).returning();
 
-    await tx.insert(activityLogs).values({
-      teamId: data.teamId,
-      userId,
-      action: ActivityType.CREATE_VACANCY,
-      entityType: 'vacancies',
-      entityId: vacancy.id,
-    });
+    await logActivity(tx, data.teamId, userId, ActivityType.CREATE_VACANCY, 'vacancy', vacancy.id);
 
     return vacancy;
   });
@@ -192,13 +187,7 @@ export async function updateVacancy(
 
     if (!updated) return null;
 
-    await tx.insert(activityLogs).values({
-      teamId,
-      userId,
-      action: ActivityType.UPDATE_VACANCY,
-      entityType: 'vacancy',
-      entityId: id,
-    });
+    await logActivity(tx, teamId, userId, ActivityType.UPDATE_VACANCY, 'vacancy', id);
 
     return updated;
   });
@@ -220,13 +209,7 @@ export async function deleteVacancy(id: number, teamId: number, userId: number) 
 
       if (!updated) return null;
 
-      await tx.insert(activityLogs).values({
-        teamId,
-        userId,
-        action: ActivityType.ARCHIVE_VACANCY,
-        entityType: 'vacancy',
-        entityId: id,
-      });
+      await logActivity(tx, teamId, userId, ActivityType.ARCHIVE_VACANCY, 'vacancy', id);
 
       return updated;
     });

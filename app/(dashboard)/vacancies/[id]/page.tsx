@@ -7,12 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VacancyStatusBadge } from '@/components/vacancies/vacancy-status-badge';
 import { VacancyPriorityBadge } from '@/components/vacancies/vacancy-priority-badge';
 import { VacancyPipeline } from '@/components/vacancies/vacancy-pipeline';
+import { NotesSection } from '@/components/notes/notes-section';
 
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { getVacancyById } from '@/lib/db/queries/vacancies';
+import { getNotesForEntity } from '@/lib/db/queries/notes';
 import { getSubmissionsByVacancy, getCandidatesForSubmit } from '@/lib/db/queries/submissions';
 import { hasPermission } from '@/lib/rbac';
 import { cacheTags } from '@/lib/cache-tags';
+import { User } from '@/lib/db/schema';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -39,16 +42,20 @@ function formatDate(date: Date | null) {
   }).format(new Date(date));
 }
 
-async function getVacancyDetailPageData(id: number, teamId: number) {
+async function getVacancyDetailPageData(user: User, id: number, teamId: number) {
   'use cache';
 
   cacheTag(cacheTags.vacancies.detail(id));
   cacheTag(cacheTags.submissions.byVacancy(id));
 
-  const [vacancy, pipelineSubmissions, availableCandidates] = await Promise.all([
+  const canReadNotes = hasPermission(user, 'notes.read');
+  const canCreateNotes = hasPermission(user, 'notes.create');
+
+  const [vacancy, pipelineSubmissions, availableCandidates, notes] = await Promise.all([
     getVacancyById(id, teamId),
     getSubmissionsByVacancy(id, teamId),
     getCandidatesForSubmit(teamId, id),
+    canReadNotes ? getNotesForEntity(teamId, 'vacancy', id) : Promise.resolve([]),
   ]);
 
   if (!vacancy) return null;
@@ -57,6 +64,9 @@ async function getVacancyDetailPageData(id: number, teamId: number) {
     vacancy,
     pipelineSubmissions,
     availableCandidates,
+    notes,
+    canReadNotes,
+    canCreateNotes,
   };
 }
 
@@ -76,10 +86,11 @@ export default async function VacancyDetailPage({ params }: PageProps) {
   const teamId = await getUserTeamId(user.id);
   if (!teamId) notFound();
 
-  const pageData = await getVacancyDetailPageData(vacancyId, teamId);
+  const pageData = await getVacancyDetailPageData(user, vacancyId, teamId);
   if (!pageData) notFound();
 
-  const { vacancy, pipelineSubmissions, availableCandidates } = pageData;
+  const { vacancy, pipelineSubmissions, availableCandidates, notes, canReadNotes, canCreateNotes } =
+    pageData;
 
   if (user.crmRole === 'hiring_manager' && vacancy.hiringManagerId !== user.id) {
     notFound();
@@ -222,6 +233,16 @@ export default async function VacancyDetailPage({ params }: PageProps) {
         availableCandidates={availableCandidates}
         currentUser={user}
       />
+
+      {canReadNotes ? (
+        <NotesSection
+          entityType="vacancy"
+          entityId={vacancy.id}
+          notes={notes}
+          currentUserId={user.id}
+          canCreate={canCreateNotes}
+        />
+      ) : null}
     </div>
   );
 }

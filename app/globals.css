@@ -895,4 +895,99 @@
   .status-legend-percent {
     @apply text-xs text-muted-foreground;
   }
+
+  /* --- Notes + Activity Logs --- */
+  .notes-form {
+    @apply space-y-3;
+  }
+
+  .notes-form-footer {
+    @apply flex items-center justify-end;
+  }
+
+  .notes-list {
+    @apply mt-6 space-y-3;
+  }
+
+  .notes-item {
+    @apply rounded-lg border border-border bg-card p-4;
+  }
+
+  .notes-item-header {
+    @apply mb-2 flex items-start justify-between gap-3;
+  }
+
+  .notes-meta {
+    @apply flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground;
+  }
+
+  .notes-author {
+    @apply font-medium text-foreground;
+  }
+
+  .notes-separator {
+    @apply opacity-50;
+  }
+
+  .notes-date {
+    @apply tabular-nums;
+  }
+
+  .notes-content {
+    @apply whitespace-pre-wrap text-sm leading-6 text-foreground;
+  }
+
+  .notes-empty {
+    @apply mt-4 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border px-6 py-10 text-center;
+  }
+
+  .notes-empty-title,
+  .timeline-empty-title {
+    @apply text-sm font-semibold;
+  }
+
+  .notes-empty-text,
+  .timeline-empty-text {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .activity-filters {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .timeline {
+    @apply space-y-4 divide-y divide-border;
+  }
+
+  .timeline-item {
+    @apply pb-3 flex items-start gap-3;
+  }
+
+  .timeline-icon {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground;
+  }
+
+  .timeline-body {
+    @apply min-w-0 flex-1;
+  }
+
+  .timeline-text {
+    @apply text-sm leading-6;
+  }
+
+  .timeline-user {
+    @apply font-medium text-foreground;
+  }
+
+  .timeline-action {
+    @apply text-foreground;
+  }
+
+  .timeline-entity {
+    @apply text-muted-foreground;
+  }
+
+  .timeline-time {
+    @apply text-xs text-muted-foreground;
+  }
 }

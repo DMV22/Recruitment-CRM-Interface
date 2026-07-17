@@ -21,4 +21,12 @@ export const cacheTags = {
     byCandidate: (candidateId: number) => `submissions-candidate-${candidateId}`,
     byClient: (clientId: number) => `submissions-client-${clientId}`,
   },
+
+  notes: {
+    byEntity: (entityType: string, entityId: number) => `notes-${entityType}-${entityId}`,
+  },
+
+  activity: {
+    list: (teamId: number) => `activity-team-${teamId}`,
+  },
 } as const;

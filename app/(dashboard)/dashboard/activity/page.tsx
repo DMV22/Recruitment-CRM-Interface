@@ -1,4 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { notFound, redirect } from 'next/navigation';
+import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 import {
   Settings,
   LogOut,
@@ -15,12 +16,25 @@ import {
   FileCheck2,
   Archive,
   GitCommit,
+  MessageSquareText,
   type LucideIcon,
 } from 'lucide-react';
-import { ActivityType } from '@/lib/db/schema';
-import { getActivityLogs } from '@/lib/db/queries';
 
-const iconMap: Record<ActivityType, LucideIcon | undefined> = {
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ActivityFilters } from '@/components/activity/activity-filters';
+
+import { getUser, getUserTeamId } from '@/lib/db/queries';
+import {
+  getActivityTimeline,
+  getActivityUsers,
+  type ActivityEntityType,
+} from '@/lib/db/queries/activity';
+import { ActivityType, User } from '@/lib/db/schema';
+import { hasPermission } from '@/lib/rbac';
+import { cacheTags } from '@/lib/cache-tags';
+import { formatRelativeTime } from '@/lib/format-time';
+
+const iconMap: Partial<Record<ActivityType, LucideIcon>> = {
   [ActivityType.SIGN_UP]: UserPlus,
   [ActivityType.SIGN_IN]: UserCog,
   [ActivityType.SIGN_OUT]: LogOut,
@@ -44,115 +58,179 @@ const iconMap: Record<ActivityType, LucideIcon | undefined> = {
   [ActivityType.ARCHIVE_CANDIDATE]: Archive,
   [ActivityType.CREATE_SUBMISSION]: FileCheck2,
   [ActivityType.UPDATE_SUBMISSION_STAGE]: GitCommit,
+  [ActivityType.CREATE_NOTE]: MessageSquareText,
+  [ActivityType.DELETE_NOTE]: Archive,
 };
 
-function getRelativeTime(date: Date) {
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return 'just now';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
-  return date.toLocaleDateString();
-}
-
-function formatAction(action: ActivityType): string {
+function formatAction(action: ActivityType) {
   switch (action) {
-    case ActivityType.SIGN_UP:
-      return 'You signed up';
-    case ActivityType.SIGN_IN:
-      return 'You signed in';
-    case ActivityType.SIGN_OUT:
-      return 'You signed out';
-    case ActivityType.UPDATE_PASSWORD:
-      return 'You changed your password';
-    case ActivityType.DELETE_ACCOUNT:
-      return 'You deleted your account';
-    case ActivityType.UPDATE_ACCOUNT:
-      return 'You updated your account';
-    case ActivityType.CREATE_TEAM:
-      return 'You created a new team';
-    case ActivityType.REMOVE_TEAM_MEMBER:
-      return 'You removed a team member';
-    case ActivityType.INVITE_TEAM_MEMBER:
-      return 'You invited a team member';
-    case ActivityType.ACCEPT_INVITATION:
-      return 'You accepted an invitation';
     case ActivityType.CREATE_CLIENT:
-      return 'You created a new client';
+      return 'Created a client';
     case ActivityType.UPDATE_CLIENT:
-      return 'You updated a client';
+      return 'Updated a client';
     case ActivityType.ARCHIVE_CLIENT:
-      return 'You archived a client';
+      return 'Archived a client';
     case ActivityType.CREATE_VACANCY:
-      return 'You created a new vacancy';
+      return 'Created a vacancy';
     case ActivityType.UPDATE_VACANCY:
-      return 'You updated a vacancy';
+      return 'Updated a vacancy';
     case ActivityType.ARCHIVE_VACANCY:
-      return 'You archived a vacancy';
+      return 'Archived a vacancy';
     case ActivityType.CREATE_CANDIDATE:
-      return 'You created a new candidate';
+      return 'Created a candidate';
     case ActivityType.UPDATE_CANDIDATE:
-      return 'You updated a candidate';
+      return 'Updated a candidate';
     case ActivityType.ARCHIVE_CANDIDATE:
-      return 'You archived a candidate';
+      return 'Archived a candidate';
     case ActivityType.CREATE_SUBMISSION:
-      return 'You created a new submission';
+      return 'Created a submission';
     case ActivityType.UPDATE_SUBMISSION_STAGE:
-      return 'You updated the stage of a submission';
+      return 'Changed a submission stage';
+    case ActivityType.CREATE_NOTE:
+      return 'Added a note';
+    case ActivityType.DELETE_NOTE:
+      return 'Deleted a note';
     default:
-      return 'Unknown action occurred';
+      return action.replaceAll('_', ' ').toLowerCase();
   }
 }
 
-export default async function ActivityPage() {
-  const logs = await getActivityLogs();
+function formatEntity(entityType: string | null) {
+  if (!entityType) return 'system';
+  return entityType.replaceAll('_', ' ');
+}
+
+type SearchParams = {
+  entityType?: ActivityEntityType | 'all';
+  userId?: string;
+  page?: string;
+};
+
+async function getActivityPageData(teamId: number, user: User, params: SearchParams) {
+  'use cache';
+
+  cacheTag(cacheTags.activity.list(teamId));
+
+  const page = Number(params.page ?? '1');
+  const safePage = Number.isNaN(page) || page < 1 ? 1 : page;
+
+  const entityType =
+    params.entityType && params.entityType !== 'all' ? params.entityType : undefined;
+
+  const userId = params.userId && params.userId !== 'all' ? Number(params.userId) : undefined;
+
+  const [timeline, activityUsers] = await Promise.all([
+    getActivityTimeline(teamId, user, {
+      entityType,
+      userId,
+      page: safePage,
+      perPage: 25,
+    }),
+    user.crmRole === 'admin' ? getActivityUsers(teamId) : Promise.resolve([]),
+  ]);
+
+  return {
+    timeline,
+    activityUsers,
+  };
+}
+
+async function ActivityContent({ searchParams }: { searchParams: SearchParams }) {
+  const user = await getUser();
+  if (!user) redirect('/sign-in');
+
+  if (!hasPermission(user, 'activity.read')) {
+    notFound();
+  }
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) redirect('/sign-in');
+
+  const { activityUsers, timeline } = await getActivityPageData(teamId, user, searchParams);
 
   return (
-    <section className="flex-1 p-4 lg:p-8">
-      <h1 className="text-lg lg:text-2xl font-medium text-gray-900 mb-6">Activity Log</h1>
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
+    <>
+      {/* Filters Section */}
+      <Card className="panel">
+        <CardHeader className="panel-header">
+          <CardTitle className="panel-title">Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          {logs.length > 0 ? (
-            <ul className="space-y-4">
-              {logs.map((log) => {
-                const Icon = iconMap[log.action as ActivityType] || Settings;
-                const formattedAction = formatAction(log.action as ActivityType);
+          <ActivityFilters crmRole={user.crmRole} activityUsers={activityUsers} />
+        </CardContent>
+      </Card>
+
+      {/* Timeline Section */}
+      <Card className="panel">
+        <CardHeader className="panel-header">
+          <CardTitle className="panel-title">Timeline</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          {timeline.data.length > 0 ? (
+            <ul className="timeline">
+              {timeline.data.map((log) => {
+                const Icon = iconMap[log.action as ActivityType] ?? Settings;
 
                 return (
-                  <li key={log.id} className="flex items-center space-x-4">
-                    <div className="bg-orange-100 rounded-full p-2">
-                      <Icon className="w-5 h-5 text-orange-600" />
+                  <li key={log.id} className="timeline-item">
+                    <div className="timeline-icon">
+                      <Icon className="icon-md" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {formattedAction}
-                        {log.ipAddress && ` from IP ${log.ipAddress}`}
+
+                    <div className="timeline-body">
+                      <p className="timeline-text">
+                        <span className="timeline-user">{log.userName ?? 'System'}</span>{' '}
+                        <span className="timeline-action">
+                          {formatAction(log.action as ActivityType)}
+                        </span>{' '}
+                        {log.entityType ? (
+                          <span className="timeline-entity">
+                            {formatEntity(log.entityType)} #{log.entityId}
+                          </span>
+                        ) : null}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {getRelativeTime(new Date(log.timestamp))}
-                      </p>
+
+                      <p className="timeline-time">{formatRelativeTime(log.timestamp)}</p>
                     </div>
                   </li>
                 );
               })}
             </ul>
           ) : (
-            <div className="flex flex-col items-center justify-center text-center py-12">
-              <AlertCircle className="h-12 w-12 text-orange-500 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No activity yet</h3>
-              <p className="text-sm text-gray-500 max-w-sm">
-                When you perform actions like signing in or updating your account, they will appear
-                here.
-              </p>
+            <div className="table-empty-content text-center">
+              <AlertCircle className="h-10 w-10 text-muted-foreground" />
+              <div>
+                <h3 className="timeline-empty-title text-foreground">No activity found</h3>
+                <p className="timeline-empty-text">
+                  No operational records match the selected filter parameters.
+                </p>
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
-    </section>
+    </>
   );
 }
+
+export default async function ActivityPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const params = await searchParams;
+
+  return (
+    <div className="page-content">
+      <div className="page-header">
+        <h1 className="page-title-lg">Activity Log</h1>
+        <p className="page-subtitle">Team timeline of CRM operations and notes activity.</p>
+      </div>
+
+      <ActivityContent searchParams={params} />
+    </div>
+  );
+}
+
+export const metadata = { title: 'Activity Log | Recruitment CRM' };
