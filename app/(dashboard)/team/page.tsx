@@ -4,6 +4,7 @@ import { cacheTag } from 'next/dist/server/use-cache/cache-tag';
 import { getUser, getUserTeamId } from '@/lib/db/queries';
 import { hasPermission } from '@/lib/rbac';
 import { getTeamOverview } from '@/lib/db/queries/team';
+import { cacheTags } from '@/lib/cache-tags';
 
 import { TeamMembersTable } from '@/components/team/team-members-table';
 import { InviteMemberForm } from '@/components/team/invite-member-form';
@@ -12,7 +13,7 @@ import { PendingInvitationsList } from '@/components/team/pending-invitations-li
 async function getCachedTeamData(teamId: number) {
   'use cache';
 
-  cacheTag(`team-${teamId}`);
+  cacheTag(cacheTags.team.list(teamId));
   return getTeamOverview(teamId);
 }
 
