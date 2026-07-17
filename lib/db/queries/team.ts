@@ -2,7 +2,7 @@ import { logActivity } from '@/lib/activity/log-activity';
 import { db } from '@/lib/db/drizzle';
 import { ActivityType, invitations, teamMembers, teams, users } from '@/lib/db/schema';
 import { CrmRole } from '@/lib/rbac';
-import { and, desc, eq, asc } from 'drizzle-orm';
+import { and, desc, eq, asc, count } from 'drizzle-orm';
 
 export async function getTeamOverview(teamId: number) {
   // 1. First, we check whether the command exists (to prevent unnecessary JOIN queries if the ID is incorrect)
@@ -83,5 +83,35 @@ export async function inviteTeamMember(
     );
 
     return invitation;
+  });
+}
+
+export async function changeUserCrmRole(
+  teamId: number,
+  targetUserId: number,
+  crmRole: CrmRole,
+  changedBy: number
+) {
+  return db.transaction(async (tx) => {
+    const [membershipCheck] = await tx
+      .select({ total: count() })
+      .from(teamMembers)
+      .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, targetUserId)));
+
+    const exists = Number(membershipCheck?.total ?? 0) > 0;
+    if (!exists) return null;
+
+    const [updatedUser] = await tx
+      .update(users)
+      .set({
+        crmRole,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, targetUserId))
+      .returning();
+
+    await logActivity(tx, teamId, changedBy, ActivityType.UPDATE_ACCOUNT, 'team', targetUserId);
+
+    return updatedUser;
   });
 }
