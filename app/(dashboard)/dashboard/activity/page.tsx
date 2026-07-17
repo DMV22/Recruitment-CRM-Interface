@@ -18,6 +18,7 @@ import {
   GitCommit,
   MessageSquareText,
   type LucideIcon,
+  UserX,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,6 +46,8 @@ const iconMap: Partial<Record<ActivityType, LucideIcon>> = {
   [ActivityType.REMOVE_TEAM_MEMBER]: UserMinus,
   [ActivityType.INVITE_TEAM_MEMBER]: Mail,
   [ActivityType.ACCEPT_INVITATION]: CheckCircle,
+  [ActivityType.CHANGE_USER_ROLE]: UserCog,
+  [ActivityType.REVOKE_TEAM_ACCESS]: UserX,
 
   // Custom CRM actions
   [ActivityType.CREATE_CLIENT]: Building2,

@@ -110,7 +110,7 @@ export async function changeUserCrmRole(
       .where(eq(users.id, targetUserId))
       .returning();
 
-    await logActivity(tx, teamId, changedBy, ActivityType.UPDATE_ACCOUNT, 'team', targetUserId);
+    await logActivity(tx, teamId, changedBy, ActivityType.CHANGE_USER_ROLE, 'team', targetUserId);
 
     return updatedUser;
   });
@@ -125,7 +125,7 @@ export async function revokeTeamAccess(teamId: number, targetUserId: number, rev
 
     if (!membership) return null;
 
-    await logActivity(tx, teamId, revokedBy, ActivityType.REMOVE_TEAM_MEMBER, 'team', targetUserId);
+    await logActivity(tx, teamId, revokedBy, ActivityType.REVOKE_TEAM_ACCESS, 'team', targetUserId);
 
     return membership;
   });
