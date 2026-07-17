@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RoleSelect } from '@/components/team/role-select';
-import { RevokeAccessDialog } from '@/components/team/revoke-access-button';
 import { formatRoleLabel } from '@/components/team/pending-invitations-list';
 import type { CrmRole } from '@/lib/rbac';
 import { Button } from '../ui/button';
