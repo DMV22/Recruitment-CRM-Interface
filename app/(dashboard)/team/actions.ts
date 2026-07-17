@@ -5,7 +5,7 @@ import { revalidateTag } from 'next/cache';
 
 import { cacheTags } from '@/lib/cache-tags';
 import { getUser, getUserTeamId } from '@/lib/db/queries';
-import { changeUserCrmRole, inviteTeamMember } from '@/lib/db/queries/team';
+import { changeUserCrmRole, inviteTeamMember, revokeTeamAccess } from '@/lib/db/queries/team';
 import { validateForm } from '@/lib/form';
 import { hasPermission } from '@/lib/rbac';
 import { invitations, teamMembers, users } from '@/lib/db/schema';
@@ -110,6 +110,29 @@ export async function changeUserRoleAction(
 
   const updated = await changeUserCrmRole(teamId, userId, crmRole, user.id);
   if (!updated) return { error: 'Team member not found or access denied' };
+
+  revalidateTeam(teamId);
+
+  return { success: true };
+}
+
+export async function revokeAccessAction(userId: number): Promise<TeamActionState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'team.manage')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  // SECURITY: Blocking self-removal from the team (Self-Eviction guard)
+  if (userId === user.id) {
+    return {
+      error: 'You cannot remove yourself from the team. Ask another administrator to do this.',
+    };
+  }
+
+  const revoked = await revokeTeamAccess(teamId, userId, user.id);
+  if (!revoked) return { error: 'Team member not found' };
 
   revalidateTeam(teamId);
 
