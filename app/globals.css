@@ -999,4 +999,29 @@
   .team-form-footer {
     @apply md:col-span-2 flex justify-end;
   }
+
+  /* --- Pending Invitations List --- */
+  .invites-list-wrapper {
+    @apply space-y-3;
+  }
+
+  .invite-card-row {
+    @apply flex flex-col gap-3 rounded-lg border border-border bg-card/50 p-4 sm:flex-row sm:items-center sm:justify-between transition-colors hover:bg-muted/30;
+  }
+
+  .invite-card-info {
+    @apply min-w-0 space-y-1.5;
+  }
+
+  .invite-card-email-block {
+    @apply flex items-center gap-2;
+  }
+
+  .invite-card-email {
+    @apply truncate text-sm font-medium text-foreground;
+  }
+
+  .invite-card-meta {
+    @apply flex flex-wrap items-center gap-2;
+  }
 }
