@@ -27,7 +27,7 @@ export function RoleSelect({ userId, value, disabled }: Props) {
 
     startTransition(async () => {
       // Error handling: Retrieving the result of the Server Action
-      const result = await changeUserRoleAction({ success: false }, formData);
+      const result = await changeUserRoleAction({}, formData);
 
       if (result?.error) {
         // If the server rejected the mutation (for example, self-demotion or IDOR)
