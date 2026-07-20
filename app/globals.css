@@ -1053,4 +1053,25 @@
   .team-button-delete {
     @apply text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 transition-colors;
   }
+
+  /* --- Pending Invitation Banner --- */
+  .banner-title-content {
+    @apply flex items-center gap-2;
+  }
+
+  .banner-title-icon {
+    @apply h-5 w-5 text-primary;
+  }
+
+  .banner-body {
+    @apply space-y-4 p-6 pt-0;
+  }
+
+  .banner-meta-list {
+    @apply text-sm text-muted-foreground space-y-1 bg-muted/30 p-3 rounded-lg border border-border/50;
+  }
+
+  .banner-meta-value {
+    @apply text-foreground font-medium;
+  }
 }
