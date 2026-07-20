@@ -125,7 +125,7 @@ export default async function DashboardPage() {
   if (!hasPermission(user, 'dashboard.read')) notFound();
 
   const teamId = await getUserTeamId(user.id);
-  if (!teamId) notFound();
+  if (!teamId) redirect('/team');
 
   return (
     <Suspense fallback={<DashboardSkeleton />}>
