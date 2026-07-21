@@ -29,8 +29,8 @@ export type TeamActionState = {
 };
 
 function revalidateTeam(teamId: number) {
-  revalidateTag(cacheTags.team.list(teamId), 'max');
-  revalidateTag(cacheTags.activity.list(teamId), 'max');
+  revalidateTag(cacheTags.team.list(teamId), { expire: 0 });
+  revalidateTag(cacheTags.activity.list(teamId), { expire: 0 });
 }
 
 export async function inviteMemberAction(
