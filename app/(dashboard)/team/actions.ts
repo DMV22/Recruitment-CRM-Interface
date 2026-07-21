@@ -79,7 +79,14 @@ export async function inviteMemberAction(
     return { error: 'This user is already a member of your team' };
   }
 
-  await inviteTeamMember(teamId, email, crmRole, user.id);
+  try {
+    await inviteTeamMember(teamId, email, crmRole, user.id);
+  } catch {
+    return {
+      error: 'A pending invitation for this email already exists or the user is already assigned.',
+    };
+  }
+
   revalidateTeam(teamId);
 
   return { success: true };

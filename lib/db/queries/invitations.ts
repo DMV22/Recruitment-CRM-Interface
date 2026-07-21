@@ -28,7 +28,7 @@ export async function getPendingInvitationForUser(email: string) {
 
 export async function acceptPendingInvitation(invitationId: number, userId: number) {
   return db.transaction(async (tx) => {
-    // 1. Checking if a user exists
+    // 1. Верифікація існування користувача та його актуального email
     const [user] = await tx
       .select({
         id: users.id,
@@ -40,65 +40,63 @@ export async function acceptPendingInvitation(invitationId: number, userId: numb
 
     if (!user) return { error: 'User not found' };
 
-    // 2. Checking the existence and status of an invitation
-    const [invitation] = await tx
-      .select()
-      .from(invitations)
-      .where(and(eq(invitations.id, invitationId), eq(invitations.status, 'pending')))
-      .limit(1);
-
-    if (!invitation) return { error: 'Invitation not found or already accepted' };
-
-    // 3. Security: Verifying email ownership
-    if (invitation.email.toLowerCase() !== user.email.toLowerCase()) {
-      return { error: 'This invitation does not belong to the current user' };
-    }
-
-    // 4. Optomization: Fast and easy index-based count() instead of select()
-    const [membershipCheck] = await tx
+    // 2. Попередня перевірка на рівні додатку.
+    // Скорочує навантаження, але фінальний захист від Race Condition забезпечить UNIQUE CONSTRAINT у БД.
+    const [existingMembership] = await tx
       .select({ total: count() })
       .from(teamMembers)
       .where(eq(teamMembers.userId, userId));
 
-    if (Number(membershipCheck?.total ?? 0) > 0) {
-      return { error: 'You are already a member of a team' };
+    if (Number(existingMembership?.total ?? 0) > 0) {
+      return { error: 'You are already a member of a team' as const };
     }
 
-    // 5. Building a relationship with the team
-    await tx.insert(teamMembers).values({
-      userId,
-      teamId: invitation.teamId,
-      role: invitation.role,
-    });
-
-    // 6. Updating a user role in the global table
-    await tx
-      .update(users)
-      .set({
-        crmRole: invitation.crmRole,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, userId));
-
-    // 7. Updating the invitation status
-    const [accepted] = await tx
+    // 3. АТОМАРНЕ ЗАХОПЛЕННЯ (Atomic Claim): Зміна статусу інвайту на 'accepted' одним запитом.
+    // Це унеможливлює Race Condition - паралельний запит отримає пустий результат.
+    const [claimedInvitation] = await tx
       .update(invitations)
       .set({
         status: 'accepted',
       })
-      .where(eq(invitations.id, invitationId))
+      .where(and(eq(invitations.id, invitationId), eq(invitations.status, 'pending')))
       .returning();
 
-    // 8. Audit: Logging a successful team join within a transaction
+    // 4. Захисні гварди: перевірка чи інвайт взагалі існував та чи належить він поточному юзеру
+    if (!claimedInvitation) {
+      return { error: 'Invitation not found or already accepted' as const };
+    }
+
+    if (claimedInvitation.email.toLowerCase() !== user.email.toLowerCase()) {
+      return { error: 'This invitation does not belong to the current user' as const };
+    }
+
+    // 5. Створення зв'язку з командою.
+    // Якщо в цей мікромомент інший потік спробував вставити цей же userId, UNIQUE constraint бази заблокує операцію та скасує транзакцію.
+    await tx.insert(teamMembers).values({
+      userId,
+      teamId: claimedInvitation.teamId,
+      role: claimedInvitation.role,
+    });
+
+    // 6. Синхронізація глобальної CRM-ролі користувача
+    await tx
+      .update(users)
+      .set({
+        crmRole: claimedInvitation.crmRole,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    // 7. Аудит: Логування успішного приєднання до команди всередині транзакції
     await logActivity(
       tx,
-      invitation.teamId,
+      claimedInvitation.teamId,
       userId,
       ActivityType.ACCEPT_INVITATION,
       'team',
-      invitation.teamId
+      claimedInvitation.teamId
     );
 
-    return { success: true, invitation: accepted };
+    return { success: true, invitation: claimedInvitation };
   });
 }

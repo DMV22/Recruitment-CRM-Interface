@@ -7,6 +7,8 @@ import {
   timestamp,
   integer,
   boolean,
+  uniqueIndex,
+  index,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -76,17 +78,24 @@ export const teams = pgTable('teams', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const teamMembers = pgTable('team_members', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }), // Юзер зник => членство зникло
-  teamId: integer('team_id')
-    .notNull()
-    .references(() => teams.id, { onDelete: 'cascade' }), // Команда зникла => членство зникло
-  role: varchar('role', { length: 50 }).notNull(),
-  joinedAt: timestamp('joined_at').notNull().defaultNow(),
-});
+export const teamMembers = pgTable(
+  'team_members',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }), // Юзер зник => членство зникло
+    teamId: integer('team_id')
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }), // Команда зникла => членство зникло
+    role: varchar('role', { length: 50 }).notNull(),
+    joinedAt: timestamp('joined_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userUnique: uniqueIndex('team_members_user_id_unique').on(table.userId),
+    teamIdx: index('team_members_team_id_idx').on(table.teamId),
+  })
+);
 
 export const activityLogs = pgTable('activity_logs', {
   id: serial('id').primaryKey(),
