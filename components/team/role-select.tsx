@@ -21,31 +21,27 @@ type Props = {
 export function RoleSelect({ userId, value, disabled }: Props) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-
-  // Optimistic state: initialized with the 'value' prop from the server
-  const [optimisticRole, setOptimisticRole] = useOptimistic<CrmRole, CrmRole>(
-    value,
-    (_, nextRole) => nextRole
-  );
+  const [currentValue, setCurrentValue] = useState<CrmRole>(value);
 
   const handleRoleChange = (nextValue: string) => {
+    const previousValue = currentValue;
     const nextRole = nextValue as CrmRole;
+
     setError(null);
+    setCurrentValue(nextRole);
 
     const formData = new FormData();
     formData.set('userId', String(userId));
     formData.set('crmRole', nextValue);
 
     startTransition(async () => {
-      // Change the UI on the client instantly
-      setOptimisticRole(nextRole);
-
       // Error handling: Retrieving the result of the Server Action
       const result = await changeUserRoleAction({}, formData);
 
       if (result?.error) {
         // If the server rejected the mutation (for example, self-demotion or IDOR)
         setError(result.error);
+        setCurrentValue(previousValue);
       }
     });
   };
@@ -55,7 +51,7 @@ export function RoleSelect({ userId, value, disabled }: Props) {
       <div className="flex items-center gap-2">
         <Select
           name="crmRole"
-          value={optimisticRole}
+          value={currentValue}
           disabled={disabled || pending}
           onValueChange={handleRoleChange}
         >
