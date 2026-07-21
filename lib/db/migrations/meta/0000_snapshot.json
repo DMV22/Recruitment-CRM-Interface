@@ -1,5 +1,5 @@
 {
-  "id": "45ec0abe-fab0-4e3f-9f30-f04cb02c5021",
+  "id": "e3a85ec5-a1e9-4979-b28a-a1d35236be22",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -64,18 +64,26 @@
           "name": "activity_logs_team_id_teams_id_fk",
           "tableFrom": "activity_logs",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "activity_logs_user_id_users_id_fk": {
           "name": "activity_logs_user_id_users_id_fk",
           "tableFrom": "activity_logs",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -202,6 +210,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -210,9 +224,13 @@
           "name": "candidates_team_id_teams_id_fk",
           "tableFrom": "candidates",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -283,9 +301,13 @@
           "name": "client_contacts_client_id_clients_id_fk",
           "tableFrom": "client_contacts",
           "tableTo": "clients",
-          "columnsFrom": ["client_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -370,17 +392,25 @@
           "name": "clients_team_id_teams_id_fk",
           "tableFrom": "clients",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "clients_assigned_user_id_users_id_fk": {
           "name": "clients_assigned_user_id_users_id_fk",
           "tableFrom": "clients",
           "tableTo": "users",
-          "columnsFrom": ["assigned_user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "assigned_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -424,7 +454,7 @@
           "name": "created_by",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -440,9 +470,13 @@
           "name": "entity_notes_created_by_users_id_fk",
           "tableFrom": "entity_notes",
           "tableTo": "users",
-          "columnsFrom": ["created_by"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -515,18 +549,26 @@
           "name": "invitations_team_id_teams_id_fk",
           "tableFrom": "invitations",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "invitations_invited_by_users_id_fk": {
           "name": "invitations_invited_by_users_id_fk",
           "tableFrom": "invitations",
           "tableTo": "users",
-          "columnsFrom": ["invited_by"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "invited_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -570,7 +612,7 @@
           "name": "changed_by",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "notes": {
           "name": "notes",
@@ -592,18 +634,26 @@
           "name": "pipeline_history_submission_id_submissions_id_fk",
           "tableFrom": "pipeline_history",
           "tableTo": "submissions",
-          "columnsFrom": ["submission_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "submission_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "pipeline_history_changed_by_users_id_fk": {
           "name": "pipeline_history_changed_by_users_id_fk",
           "tableFrom": "pipeline_history",
           "tableTo": "users",
-          "columnsFrom": ["changed_by"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "changed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -639,7 +689,7 @@
           "name": "submitted_by",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "current_stage": {
           "name": "current_stage",
@@ -682,27 +732,39 @@
           "name": "submissions_vacancy_id_vacancies_id_fk",
           "tableFrom": "submissions",
           "tableTo": "vacancies",
-          "columnsFrom": ["vacancy_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "vacancy_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "submissions_candidate_id_candidates_id_fk": {
           "name": "submissions_candidate_id_candidates_id_fk",
           "tableFrom": "submissions",
           "tableTo": "candidates",
-          "columnsFrom": ["candidate_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "candidate_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "submissions_submitted_by_users_id_fk": {
           "name": "submissions_submitted_by_users_id_fk",
           "tableFrom": "submissions",
           "tableTo": "users",
-          "columnsFrom": ["submitted_by"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "submitted_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -748,24 +810,63 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "team_members_user_id_unique": {
+          "name": "team_members_user_id_unique",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "team_members_team_id_idx": {
+          "name": "team_members_team_id_idx",
+          "columns": [
+            {
+              "expression": "team_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "team_members_user_id_users_id_fk": {
           "name": "team_members_user_id_users_id_fk",
           "tableFrom": "team_members",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "team_members_team_id_teams_id_fk": {
           "name": "team_members_team_id_teams_id_fk",
           "tableFrom": "team_members",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -885,7 +986,9 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         }
       },
       "policies": {},
@@ -1027,26 +1130,38 @@
           "name": "vacancies_team_id_teams_id_fk",
           "tableFrom": "vacancies",
           "tableTo": "teams",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "vacancies_client_id_clients_id_fk": {
           "name": "vacancies_client_id_clients_id_fk",
           "tableFrom": "vacancies",
           "tableTo": "clients",
-          "columnsFrom": ["client_id"],
-          "columnsTo": ["id"],
-          "onDelete": "no action",
+          "columnsFrom": [
+            "client_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "vacancies_assigned_recruiter_id_users_id_fk": {
           "name": "vacancies_assigned_recruiter_id_users_id_fk",
           "tableFrom": "vacancies",
           "tableTo": "users",
-          "columnsFrom": ["assigned_recruiter_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "assigned_recruiter_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1054,8 +1169,12 @@
           "name": "vacancies_hiring_manager_id_users_id_fk",
           "tableFrom": "vacancies",
           "tableTo": "users",
-          "columnsFrom": ["hiring_manager_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "hiring_manager_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1071,22 +1190,41 @@
     "public.candidate_status": {
       "name": "candidate_status",
       "schema": "public",
-      "values": ["active", "passive", "placed", "blacklisted"]
+      "values": [
+        "active",
+        "passive",
+        "placed",
+        "blacklisted"
+      ]
     },
     "public.client_status": {
       "name": "client_status",
       "schema": "public",
-      "values": ["prospect", "active", "inactive"]
+      "values": [
+        "prospect",
+        "active",
+        "inactive"
+      ]
     },
     "public.crm_role": {
       "name": "crm_role",
       "schema": "public",
-      "values": ["admin", "recruiter", "hiring_manager", "viewer"]
+      "values": [
+        "admin",
+        "recruiter",
+        "hiring_manager",
+        "viewer"
+      ]
     },
     "public.note_entity_type": {
       "name": "note_entity_type",
       "schema": "public",
-      "values": ["client", "vacancy", "candidate", "submission"]
+      "values": [
+        "client",
+        "vacancy",
+        "candidate",
+        "submission"
+      ]
     },
     "public.pipeline_stage": {
       "name": "pipeline_stage",
@@ -1105,22 +1243,42 @@
     "public.seniority": {
       "name": "seniority",
       "schema": "public",
-      "values": ["intern", "junior", "middle", "senior", "lead", "principal"]
+      "values": [
+        "intern",
+        "junior",
+        "middle",
+        "senior",
+        "lead",
+        "principal"
+      ]
     },
     "public.vacancy_priority": {
       "name": "vacancy_priority",
       "schema": "public",
-      "values": ["low", "medium", "high"]
+      "values": [
+        "low",
+        "medium",
+        "high"
+      ]
     },
     "public.vacancy_status": {
       "name": "vacancy_status",
       "schema": "public",
-      "values": ["open", "on_hold", "closed", "filled"]
+      "values": [
+        "open",
+        "on_hold",
+        "closed",
+        "filled"
+      ]
     },
     "public.work_type": {
       "name": "work_type",
       "schema": "public",
-      "values": ["remote", "hybrid", "onsite"]
+      "values": [
+        "remote",
+        "hybrid",
+        "onsite"
+      ]
     }
   },
   "schemas": {},

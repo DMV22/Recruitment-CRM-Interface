@@ -1,1 +1,0 @@
-ALTER TABLE "candidates" ADD COLUMN "deleted_at" timestamp;
