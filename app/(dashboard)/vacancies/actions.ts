@@ -1,0 +1,211 @@
+'use server';
+
+import { z } from 'zod';
+import { revalidateTag } from 'next/cache';
+import { redirect } from 'next/navigation';
+
+import { getUser } from '@/lib/db/queries';
+import { getUserTeamId } from '@/lib/db/queries';
+import { hasPermission } from '@/lib/rbac';
+import { createVacancy, updateVacancy, deleteVacancy } from '@/lib/db/queries/vacancies';
+import { clients, teamMembers } from '@/lib/db/schema';
+import { db } from '@/lib/db/drizzle';
+import { createNullableString, createNullableNumber, createNullableDate } from '@/lib/zod-helpers';
+import { validateForm } from '@/lib/form';
+import { cacheTags } from '@/lib/cache-tags';
+
+import { and, eq } from 'drizzle-orm';
+
+// ----- Schema -----
+
+const vacancySchema = z
+  .object({
+    title: z.string().min(1, 'Title is required').max(200),
+    clientId: z.coerce
+      .number({ invalid_type_error: 'Client is required' })
+      .min(1, 'Client is required'),
+    description: createNullableString(z.string().max(5000)),
+    techStack: createNullableString(z.string().max(500)),
+    seniority: z.preprocess(
+      (value) => (value === '' || value === 'none' ? null : value),
+      z.enum(['intern', 'junior', 'middle', 'senior', 'lead', 'principal']).nullable()
+    ),
+    salaryMin: createNullableNumber(z.number().min(0)),
+    salaryMax: createNullableNumber(z.number().min(0)),
+    currency: z.preprocess(
+      (value) => (value === '' || value == null ? 'USD' : value),
+      z.string().max(10)
+    ),
+    location: createNullableString(z.string().max(100)),
+    workType: z.enum(['remote', 'hybrid', 'onsite']).default('remote'),
+    status: z.enum(['open', 'on_hold', 'closed', 'filled']).default('open'),
+    priority: z.enum(['low', 'medium', 'high']).default('medium'),
+    assignedRecruiterId: createNullableNumber(z.number().int().positive()),
+    hiringManagerId: createNullableNumber(z.number().int().positive()),
+    deadlineAt: createNullableDate(z.date()),
+  })
+  .superRefine((data, ctx) => {
+    if (data.salaryMin !== null && data.salaryMax !== null && data.salaryMin > data.salaryMax) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Minimum salary cannot be greater than maximum salary',
+        path: ['salaryMin'],
+      });
+    }
+  });
+
+export type VacancyFormState = {
+  error?: string;
+  fieldErrors?: Partial<Record<string, string[]>>;
+  success?: boolean;
+};
+
+// ----- Create -----
+
+export async function createVacancyAction(
+  _prev: VacancyFormState,
+  formData: FormData
+): Promise<VacancyFormState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'vacancies.create')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const parsed = validateForm(formData, vacancySchema);
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const { assignedRecruiterId, hiringManagerId, clientId } = parsed.data;
+
+  // Verifying that a `client` belongs to a team
+  const client = await db.query.clients.findFirst({
+    where: and(eq(clients.id, clientId), eq(clients.teamId, teamId)),
+    columns: { id: true },
+  });
+
+  if (!client) return { error: 'Client not found or access denied' };
+
+  // Verifying that a `recruiter` belongs to a team
+  if (assignedRecruiterId !== null) {
+    const member = await db.query.teamMembers.findFirst({
+      where: and(eq(teamMembers.userId, assignedRecruiterId), eq(teamMembers.teamId, teamId)),
+      columns: { userId: true },
+    });
+
+    if (!member)
+      return { fieldErrors: { assignedRecruiterId: ['Recruiter does not belong to this team'] } };
+  }
+
+  // Similarly, for `hiringManagerId`
+  if (hiringManagerId !== null) {
+    const member = await db.query.teamMembers.findFirst({
+      where: and(eq(teamMembers.userId, hiringManagerId), eq(teamMembers.teamId, teamId)),
+      columns: { userId: true },
+    });
+
+    if (!member)
+      return { fieldErrors: { hiringManagerId: ['Hiring manager does not belong to this team'] } };
+  }
+
+  await createVacancy(
+    {
+      teamId,
+      ...parsed.data,
+    },
+    user.id
+  );
+
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+
+  return { success: true };
+}
+
+// ----- Update -----
+
+export async function updateVacancyAction(
+  id: number,
+  _prev: VacancyFormState,
+  formData: FormData
+): Promise<VacancyFormState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'vacancies.update')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const parsed = validateForm(formData, vacancySchema);
+  if (!parsed.success) {
+    return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+
+  const { assignedRecruiterId, hiringManagerId, clientId } = parsed.data;
+
+  const client = await db.query.clients.findFirst({
+    where: and(eq(clients.id, clientId), eq(clients.teamId, teamId)),
+    columns: { id: true },
+  });
+
+  if (!client) return { error: 'Client not found or access denied' };
+
+  if (assignedRecruiterId !== null) {
+    const member = await db.query.teamMembers.findFirst({
+      where: and(eq(teamMembers.userId, assignedRecruiterId), eq(teamMembers.teamId, teamId)),
+      columns: { userId: true },
+    });
+
+    if (!member)
+      return { fieldErrors: { assignedRecruiterId: ['Recruiter does not belong to this team'] } };
+  }
+
+  if (hiringManagerId !== null) {
+    const member = await db.query.teamMembers.findFirst({
+      where: and(eq(teamMembers.userId, hiringManagerId), eq(teamMembers.teamId, teamId)),
+      columns: { userId: true },
+    });
+
+    if (!member)
+      return { fieldErrors: { hiringManagerId: ['Hiring manager does not belong to this team'] } };
+  }
+
+  const updated = await updateVacancy(
+    id,
+    teamId,
+    parsed.data, // Simply pass a clean object
+    user.id
+  );
+
+  if (!updated) return { error: 'Vacancy not found or access denied' };
+
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
+  revalidateTag(cacheTags.vacancies.detail(id), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.byVacancy(id), 'max');
+
+  return { success: true };
+}
+
+// ----- Delete -----
+
+export async function deleteVacancyAction(id: number): Promise<VacancyFormState> {
+  const user = await getUser();
+  if (!user) return { error: 'Unauthorized' };
+  if (!hasPermission(user, 'vacancies.archive')) return { error: 'Forbidden' };
+
+  const teamId = await getUserTeamId(user.id);
+  if (!teamId) return { error: 'No team found' };
+
+  const deleted = await deleteVacancy(id, teamId, user.id);
+  if (!deleted) return { error: 'Vacancy not found or access denied' };
+
+  revalidateTag(cacheTags.vacancies.list(teamId), 'max');
+  revalidateTag(cacheTags.vacancies.detail(id), 'max');
+  revalidateTag(cacheTags.submissions.list(teamId), 'max');
+  revalidateTag(cacheTags.submissions.byVacancy(id), 'max');
+
+  redirect('/vacancies');
+}

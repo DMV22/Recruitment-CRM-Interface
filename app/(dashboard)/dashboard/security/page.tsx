@@ -28,16 +28,14 @@ export default function SecurityPage() {
     FormData
   >(updatePassword, {});
 
-  const [deleteState, deleteAction, isDeletePending] = useActionState<
-    DeleteState,
-    FormData
-  >(deleteAccount, {});
+  const [deleteState, deleteAction, isDeletePending] = useActionState<DeleteState, FormData>(
+    deleteAccount,
+    {}
+  );
 
   return (
     <section className="flex-1 p-4 lg:p-8">
-      <h1 className="text-lg lg:text-2xl font-medium bold text-gray-900 mb-6">
-        Security Settings
-      </h1>
+      <h1 className="text-lg lg:text-2xl font-medium bold text-gray-900 mb-6">Security Settings</h1>
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>Password</CardTitle>
@@ -88,9 +86,7 @@ export default function SecurityPage() {
                 defaultValue={passwordState.confirmPassword}
               />
             </div>
-            {passwordState.error && (
-              <p className="text-red-500 text-sm">{passwordState.error}</p>
-            )}
+            {passwordState.error && <p className="text-red-500 text-sm">{passwordState.error}</p>}
             {passwordState.success && (
               <p className="text-green-500 text-sm">{passwordState.success}</p>
             )}
@@ -138,9 +134,7 @@ export default function SecurityPage() {
                 defaultValue={deleteState.password}
               />
             </div>
-            {deleteState.error && (
-              <p className="text-red-500 text-sm">{deleteState.error}</p>
-            )}
+            {deleteState.error && <p className="text-red-500 text-sm">{deleteState.error}</p>}
             <Button
               type="submit"
               variant="destructive"

@@ -39,3 +39,8 @@ next-env.d.ts
 # Docker
 postgres_data/
 .env*.local
+
+scripts/test-*.ts
+app/**/test-ui/
+app/**/test-table/
+app/**/test-form/

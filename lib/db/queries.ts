@@ -11,11 +11,7 @@ export async function getUser() {
   }
 
   const sessionData = await verifyToken(sessionCookie.value);
-  if (
-    !sessionData ||
-    !sessionData.user ||
-    typeof sessionData.user.id !== 'number'
-  ) {
+  if (!sessionData || !sessionData.user || typeof sessionData.user.id !== 'number') {
     return null;
   }
 
@@ -36,39 +32,11 @@ export async function getUser() {
   return user[0];
 }
 
-export async function getTeamByStripeCustomerId(customerId: string) {
-  const result = await db
-    .select()
-    .from(teams)
-    .where(eq(teams.stripeCustomerId, customerId))
-    .limit(1);
-
-  return result.length > 0 ? result[0] : null;
-}
-
-export async function updateTeamSubscription(
-  teamId: number,
-  subscriptionData: {
-    stripeSubscriptionId: string | null;
-    stripeProductId: string | null;
-    planName: string | null;
-    subscriptionStatus: string;
-  }
-) {
-  await db
-    .update(teams)
-    .set({
-      ...subscriptionData,
-      updatedAt: new Date()
-    })
-    .where(eq(teams.id, teamId));
-}
-
 export async function getUserWithTeam(userId: number) {
   const result = await db
     .select({
       user: users,
-      teamId: teamMembers.teamId
+      teamId: teamMembers.teamId,
     })
     .from(users)
     .leftJoin(teamMembers, eq(users.id, teamMembers.userId))
@@ -90,7 +58,7 @@ export async function getActivityLogs() {
       action: activityLogs.action,
       timestamp: activityLogs.timestamp,
       ipAddress: activityLogs.ipAddress,
-      userName: users.name
+      userName: users.name,
     })
     .from(activityLogs)
     .leftJoin(users, eq(activityLogs.userId, users.id))
@@ -116,15 +84,24 @@ export async function getTeamForUser() {
                 columns: {
                   id: true,
                   name: true,
-                  email: true
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   return result?.team || null;
+}
+
+export async function getUserTeamId(userId: number): Promise<number | null> {
+  const [member] = await db
+    .select({ teamId: teamMembers.teamId })
+    .from(teamMembers)
+    .where(eq(teamMembers.userId, userId))
+    .limit(1);
+  return member?.teamId ?? null;
 }

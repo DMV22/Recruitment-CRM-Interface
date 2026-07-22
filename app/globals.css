@@ -1,12 +1,10 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 /*
   ---break---
 */
 @custom-variant dark (&:is(.dark *));
 
-@import "tw-animate-css";
-
-@variant dark (&:is(.dark *));
+@import 'tw-animate-css';
 
 @theme {
   --color-background: hsl(var(--background));
@@ -66,6 +64,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -77,7 +76,7 @@
 
 @layer utilities {
   body {
-    font-family: "Manrope", Arial, Helvetica, sans-serif;
+    font-family: 'Manrope', Arial, Helvetica, sans-serif;
   }
 }
 
@@ -158,6 +157,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -269,7 +269,809 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* @layer components — спільні UI-патерни проекту */
+
+@layer components {
+
+  /* --- Сторінки / layout --- */
+  .page-header {
+    @apply space-y-1;
+  }
+
+  .page-title {
+    @apply text-xl font-semibold;
+  }
+
+  .page-title-lg {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  .page-subtitle {
+    @apply mt-1 text-sm text-muted-foreground;
+  }
+
+  .page-content {
+    @apply space-y-6;
+  }
+
+  .back-link {
+    @apply inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground;
+  }
+
+  /* --- Detail / card-layout --- */
+  .detail-page {
+    @apply max-w-3xl space-y-6;
+  }
+
+  .detail-header {
+    @apply flex items-start justify-between gap-4;
+  }
+
+  .detail-title {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .detail-card {
+    @apply space-y-4 rounded-lg border border-border bg-card p-5;
+  }
+
+  .detail-card-sm {
+    @apply space-y-3 rounded-lg border border-border bg-card p-5;
+  }
+
+  .detail-grid {
+    @apply grid grid-cols-1 gap-4 text-sm sm:grid-cols-2;
+  }
+
+  .detail-label {
+    @apply mb-1 flex items-center gap-1.5 text-sm text-muted-foreground;
+  }
+
+  .detail-link {
+    @apply inline-flex items-center gap-1 text-primary hover:underline;
+  }
+
+  .detail-field {
+    @apply space-y-1;
+  }
+
+  .detail-field-label {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .detail-section {
+    @apply space-y-4 rounded-lg border border-border bg-card p-5;
+  }
+
+  .detail-section-header {
+    @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .detail-section-title {
+    @apply text-lg font-semibold;
+  }
+
+  /* --- Toolbar (фільтри + кнопки над таблицею) --- */
+  .toolbar {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .toolbar-actions {
+    @apply ml-auto flex items-center gap-2;
+  }
+
+  .toolbar-count {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .table-toolbar {
+    @apply flex flex-col gap-3 border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .table-toolbar-filters {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  /* --- Таблиця --- */
+  .table-wrapper {
+    @apply overflow-x-auto rounded-md border border-border;
+  }
+
+  .table-actions {
+    @apply flex items-center justify-end gap-1;
+  }
+
+  .table-link {
+    @apply text-left font-medium text-foreground transition-colors hover:text-primary;
+  }
+
+  .table-external-link {
+    @apply inline-flex items-center gap-1 text-sm text-primary hover:underline;
+  }
+
+  .table-empty-cell {
+    @apply h-32 text-center;
+  }
+
+  .table-empty-content {
+    @apply flex flex-col items-center gap-2 text-muted-foreground;
+  }
+
+  /* --- Пагінація --- */
+  .pagination {
+    @apply flex items-center justify-between text-sm text-muted-foreground;
+  }
+
+  .pagination-buttons {
+    @apply flex gap-2;
+  }
+
+  /* --- Форма --- */
+  .form-wrapper {
+    @apply w-full overflow-y-auto sm:max-w-md;
+  }
+
+  .form-body {
+    @apply mt-6 space-y-5;
+  }
+
+  .form-field {
+    @apply space-y-1.5;
+  }
+
+  .form-error {
+    @apply text-xs text-destructive;
+  }
+
+  .form-error-block {
+    @apply text-sm text-destructive;
+  }
+
+  .form-footer {
+    @apply flex gap-3 pt-2;
+  }
+
+  .form-grid {
+    @apply mt-6 grid grid-cols-1 gap-5 md:grid-cols-2;
+  }
+
+  .form-field-wide {
+    @apply space-y-1.5 md:col-span-2;
+  }
+
+  /* --- Status badges --- */
+  .status-badge {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+  }
+
+  .status-badge-prospect,
+  .status-badge-on-hold,
+  .status-badge-medium,
+  .status-badge-passive {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
+  }
+
+  .status-badge-active,
+  .status-badge-open {
+    @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
+  }
+
+  .status-badge-inactive,
+  .status-badge-closed,
+  .status-badge-low,
+  .status-badge-blacklisted {
+    @apply bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400;
+  }
+
+  .status-badge-filled,
+  .status-badge-placed {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400;
+  }
+
+  .status-badge-high {
+    @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
+  }
+
+  /* --- Submission stage badges --- */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .badge-neutral {
+    @apply bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300;
+  }
+
+  .badge-blue {
+    @apply bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400;
+  }
+
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
+  }
+
+  .badge-success {
+    @apply bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400;
+  }
+
+  .badge-error {
+    @apply bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400;
+  }
+
+  /* --- Кнопки / іконки --- */
+  .btn-danger {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  }
+
+  .btn-icon {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
+  }
+
+  .btn-sm {
+    @apply h-8 px-3 text-xs;
+  }
+
+  .icon-xs {
+    @apply h-3 w-3;
+  }
+
+  .icon-sm {
+    @apply h-3.5 w-3.5;
+  }
+
+  .icon-md {
+    @apply h-4 w-4;
+  }
+
+  .spinner {
+    @apply mr-2 h-4 w-4 animate-spin;
+  }
+
+  /* --- Контакти (detail-page) --- */
+  .contact-list {
+    @apply divide-y divide-border;
+  }
+
+  .contact-item {
+    @apply py-3 flex items-start justify-between gap-4;
+  }
+
+  .contact-meta {
+    @apply text-right text-xs text-muted-foreground space-y-0.5;
+  }
+
+  .contact-badge {
+    @apply ml-2 text-xs text-muted-foreground;
+  }
+
+  /* --- Loading skeleton --- */
+  .skeleton-row {
+    @apply flex h-14 items-center gap-4 border-t border-border px-4;
+  }
+
+  .skeleton-header-row {
+    @apply grid grid-cols-7 gap-4 border-b px-4 py-3;
+  }
+
+  .skeleton-body-row {
+    @apply grid grid-cols-7 gap-4;
+  }
+
+  /* --- Типографіка --- */
+  .card-label {
+    @apply text-sm font-medium;
+  }
+
+  .text-hint {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .text-meta {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .text-muted-sm {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* --- Salary display --- */
+  .salary-text {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* --- Vacancy detail page --- */
+  .vacancy-meta-row {
+    @apply flex flex-wrap items-center gap-4 text-sm text-muted-foreground;
+  }
+
+  .vacancy-meta-item {
+    @apply inline-flex items-center gap-1.5;
+  }
+
+  .snapshot-item {
+    @apply flex items-center gap-2 text-muted-foreground;
+  }
+
+  .snapshot-placeholder {
+    @apply rounded-md border border-dashed p-4 text-muted-foreground;
+  }
+
+  /* --- Empty states --- */
+  .empty-state {
+    @apply flex flex-col items-center justify-center gap-2 px-6 py-10 text-center;
+  }
+
+  .empty-state-title {
+    @apply text-sm font-medium text-foreground;
+  }
+
+  .empty-state-desc {
+    @apply max-w-md text-sm text-muted-foreground;
+  }
+
+  /* --- Pipeline --- */
+  .pipeline-stages {
+    @apply grid gap-4 xl:grid-cols-3;
+  }
+
+  .pipeline-stage-group {
+    @apply space-y-3 rounded-lg border border-border bg-background/50 p-4;
+  }
+
+  .pipeline-stage-rejected {
+    @apply border-dashed;
+  }
+
+  .pipeline-stage-header {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  .pipeline-stage-count {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .pipeline-cards {
+    @apply space-y-2;
+  }
+
+  .pipeline-card {
+    @apply relative space-y-1 rounded-md border border-border bg-card p-3;
+  }
+
+  .pipeline-card-name {
+    @apply pr-8 text-sm font-medium text-foreground;
+  }
+
+  .pipeline-card-meta {
+    @apply block text-xs text-muted-foreground;
+  }
+
+  .pipeline-card-action {
+    @apply absolute right-2 top-2;
+  }
+
+  /* --- Dashboard --- */
+  .dashboard-kpi-grid {
+    @apply grid gap-4 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 mb-6;
+  }
+
+  .dashboard-middle-grid {
+    @apply grid gap-6 lg:grid-cols-3 mb-6;
+  }
+
+  .dashboard-funnel-col {
+    @apply lg:col-span-2;
+  }
+
+  .dashboard-status-col {
+    @apply lg:col-span-1;
+  }
+
+  .dashboard-lower-grid {
+    @apply grid gap-6 md:grid-cols-2;
+  }
+
+  .panel {
+    @apply rounded-lg border border-border bg-card;
+  }
+
+  .panel-wide {
+    @apply md:col-span-2;
+  }
+
+  .panel-header {
+    @apply space-y-1;
+  }
+
+  .panel-header-row {
+    @apply flex flex-row items-center justify-between gap-4;
+  }
+
+  .panel-title {
+    @apply text-base font-semibold;
+  }
+
+  .panel-subtitle {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .panel-link {
+    @apply text-xs text-primary transition-colors hover:underline underline-offset-4;
+  }
+
+  .kpi-card {
+    @apply relative flex flex-col rounded-xl border border-border bg-card shadow-sm transition-colors;
+  }
+
+  .kpi-card-header {
+    @apply flex flex-col items-start gap-3 px-5;
+  }
+
+  .kpi-card-title {
+    @apply min-h-[2.75rem] text-sm font-medium leading-5 text-muted-foreground;
+  }
+
+  .kpi-card-icon-wrap {
+    @apply flex h-9 w-9 items-center justify-center rounded-lg bg-muted;
+  }
+
+  .kpi-card-icon {
+    @apply h-4 w-4 text-foreground;
+  }
+
+  .kpi-card-content {
+    @apply mt-auto flex flex-1 flex-col justify-end gap-2 px-5;
+  }
+
+  .kpi-card-value {
+    @apply text-[1.5rem] leading-none font-semibold tracking-tight tabular-nums;
+  }
+
+  .kpi-card-description {
+    @apply min-h-[2.5rem] text-xs leading-5 text-muted-foreground;
+  }
+
+  .dashboard-pipeline {
+    @apply space-y-2;
+  }
+
+  .dashboard-pipeline-row {
+    @apply flex items-center gap-3;
+  }
+
+  .dashboard-pipeline-label {
+    @apply w-32 shrink-0 text-right text-xs text-muted-foreground;
+  }
+
+  .dashboard-pipeline-track {
+    @apply h-6 flex-1 overflow-hidden rounded-sm bg-muted;
+  }
+
+  .dashboard-pipeline-fill {
+    @apply h-full rounded-sm transition-all duration-500;
+  }
+
+  .dashboard-pipeline-count {
+    @apply w-8 shrink-0 text-right text-xs font-medium tabular-nums;
+  }
+
+  .pipeline-bar-neutral {
+    @apply bg-slate-400;
+  }
+
+  .pipeline-bar-blue {
+    @apply bg-blue-400;
+  }
+
+  .pipeline-bar-warning {
+    @apply bg-yellow-400;
+  }
+
+  .pipeline-bar-success {
+    @apply bg-green-500;
+  }
+
+  .pipeline-bar-error {
+    @apply bg-red-400;
+  }
+
+  .dashboard-list-content {
+    @apply p-0;
+  }
+
+  .dashboard-list {
+    @apply divide-y divide-border;
+  }
+
+  .dashboard-list-item {
+    @apply flex items-center justify-between px-6 py-3 transition-colors hover:bg-muted/50;
+  }
+
+  .dashboard-list-main {
+    @apply min-w-0;
+  }
+
+  .dashboard-list-title {
+    @apply truncate text-sm font-medium;
+  }
+
+  .dashboard-list-subtitle {
+    @apply truncate text-xs text-muted-foreground;
+  }
+
+  .dashboard-list-separator {
+    @apply mx-1 opacity-40;
+  }
+
+  .dashboard-list-side {
+    @apply ml-4 flex shrink-0 items-center gap-3;
+  }
+
+  .dashboard-list-time {
+    @apply whitespace-nowrap text-xs text-muted-foreground tabular-nums;
+  }
+
+  .activity-item {
+    @apply flex items-start gap-3 px-6 py-3;
+  }
+
+  .activity-icon-wrap {
+    @apply mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted;
+  }
+
+  .activity-icon {
+    @apply h-3.5 w-3.5 text-muted-foreground;
+  }
+
+  .activity-body {
+    @apply min-w-0 flex-1;
+  }
+
+  .activity-text {
+    @apply text-sm leading-snug;
+  }
+
+  .activity-user {
+    @apply font-medium text-foreground;
+  }
+
+  .activity-action {
+    @apply text-muted-foreground;
+  }
+
+  .activity-time {
+    @apply mt-0.5 text-xs text-muted-foreground;
+  }
+
+  .status-chart {
+    @apply space-y-4;
+  }
+
+  .status-track {
+    @apply flex h-3 w-full overflow-hidden rounded-full bg-muted;
+  }
+
+  .status-fill {
+    @apply h-full transition-all duration-500;
+  }
+
+  .status-bar-open {
+    @apply bg-green-500;
+  }
+
+  .status-bar-on-hold {
+    @apply bg-yellow-400;
+  }
+
+  .status-bar-filled {
+    @apply bg-blue-500;
+  }
+
+  .status-bar-closed {
+    @apply bg-slate-400;
+  }
+
+  .status-legend {
+    @apply space-y-2;
+  }
+
+  .status-legend-item {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .status-legend-meta {
+    @apply flex items-center gap-1.5 tabular-nums;
+  }
+
+  .status-legend-count {
+    @apply text-sm font-medium;
+  }
+
+  .status-legend-percent {
+    @apply text-xs text-muted-foreground;
+  }
+
+  /* --- Notes + Activity Logs --- */
+  .notes-form {
+    @apply space-y-3;
+  }
+
+  .notes-form-footer {
+    @apply flex items-center justify-end;
+  }
+
+  .notes-list {
+    @apply mt-6 space-y-3;
+  }
+
+  .notes-item {
+    @apply rounded-lg border border-border bg-card p-4;
+  }
+
+  .notes-item-header {
+    @apply mb-2 flex items-start justify-between gap-3;
+  }
+
+  .notes-meta {
+    @apply flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground;
+  }
+
+  .notes-author {
+    @apply font-medium text-foreground;
+  }
+
+  .notes-separator {
+    @apply opacity-50;
+  }
+
+  .notes-date {
+    @apply tabular-nums;
+  }
+
+  .notes-content {
+    @apply whitespace-pre-wrap text-sm leading-6 text-foreground;
+  }
+
+  .notes-empty {
+    @apply mt-4 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border px-6 py-10 text-center;
+  }
+
+  .notes-empty-title,
+  .timeline-empty-title {
+    @apply text-sm font-semibold;
+  }
+
+  .notes-empty-text,
+  .timeline-empty-text {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .activity-filters {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .timeline {
+    @apply space-y-4 divide-y divide-border;
+  }
+
+  .timeline-item {
+    @apply pb-3 flex items-start gap-3;
+  }
+
+  .timeline-icon {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground;
+  }
+
+  .timeline-body {
+    @apply min-w-0 flex-1;
+  }
+
+  .timeline-text {
+    @apply text-sm leading-6;
+  }
+
+  .timeline-user {
+    @apply font-medium text-foreground;
+  }
+
+  .timeline-action {
+    @apply text-foreground;
+  }
+
+  .timeline-entity {
+    @apply text-muted-foreground;
+  }
+
+  .timeline-time {
+    @apply text-xs text-muted-foreground;
+  }
+
+  /* --- Team Management --- */
+  .team-invite-form {
+    @apply grid gap-4 md:grid-cols-2;
+  }
+
+  .team-form-footer {
+    @apply md:col-span-2 flex justify-end;
+  }
+
+  /* --- Pending Invitations List --- */
+  .invites-list-wrapper {
+    @apply space-y-3;
+  }
+
+  .invite-card-row {
+    @apply flex flex-col gap-3 rounded-lg border border-border bg-card/50 p-4 sm:flex-row sm:items-center sm:justify-between transition-colors hover:bg-muted/30;
+  }
+
+  .invite-card-info {
+    @apply min-w-0 space-y-1.5;
+  }
+
+  .invite-card-email-block {
+    @apply flex items-center gap-2;
+  }
+
+  .invite-card-email {
+    @apply truncate text-sm font-medium text-foreground;
+  }
+
+  .invite-card-meta {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  /* --- Team Table --- */
+  .member-cell {
+    @apply flex min-w-0 items-center gap-3;
+  }
+
+  .member-avatar {
+    @apply flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary;
+  }
+
+  .member-info {
+    @apply min-w-0 space-y-0.5;
+  }
+
+  .member-name {
+    @apply truncate text-sm font-medium text-foreground;
+  }
+
+  .member-email {
+    @apply truncate text-xs text-muted-foreground;
+  }
+
+  .team-badge-you {
+    @apply inline-flex items-center gap-1 rounded-md bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground select-none;
+  }
+
+  .team-button-delete {
+    @apply text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 transition-colors;
+  }
+
+  /* --- Pending Invitation Banner --- */
+  .banner-title-content {
+    @apply flex items-center gap-2;
+  }
+
+  .banner-title-icon {
+    @apply h-5 w-5 text-primary;
+  }
+
+  .banner-body {
+    @apply space-y-4 p-6 pt-0;
+  }
+
+  .banner-meta-list {
+    @apply text-sm text-muted-foreground space-y-1 bg-muted/30 p-3 rounded-lg border border-border/50;
+  }
+
+  .banner-meta-value {
+    @apply text-foreground font-medium;
   }
 }
