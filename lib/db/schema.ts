@@ -7,6 +7,8 @@ import {
   timestamp,
   integer,
   boolean,
+  uniqueIndex,
+  index,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -76,24 +78,31 @@ export const teams = pgTable('teams', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
-export const teamMembers = pgTable('team_members', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id')
-    .notNull()
-    .references(() => users.id),
-  teamId: integer('team_id')
-    .notNull()
-    .references(() => teams.id),
-  role: varchar('role', { length: 50 }).notNull(),
-  joinedAt: timestamp('joined_at').notNull().defaultNow(),
-});
+export const teamMembers = pgTable(
+  'team_members',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }), // Юзер зник => членство зникло
+    teamId: integer('team_id')
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }), // Команда зникла => членство зникло
+    role: varchar('role', { length: 50 }).notNull(),
+    joinedAt: timestamp('joined_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    userUnique: uniqueIndex('team_members_user_id_unique').on(table.userId),
+    teamIdx: index('team_members_team_id_idx').on(table.teamId),
+  })
+);
 
 export const activityLogs = pgTable('activity_logs', {
   id: serial('id').primaryKey(),
   teamId: integer('team_id')
     .notNull()
-    .references(() => teams.id),
-  userId: integer('user_id').references(() => users.id),
+    .references(() => teams.id, { onDelete: 'cascade' }), // Немає команди => немає її логів
+  userId: integer('user_id').references(() => users.id, { onDelete: 'set null' }), // Юзер зник => лог залишився для аудиту
   action: text('action').notNull(),
   entityType: varchar('entity_type', { length: 50 }),
   entityId: integer('entity_id'),
@@ -105,28 +114,29 @@ export const invitations = pgTable('invitations', {
   id: serial('id').primaryKey(),
   teamId: integer('team_id')
     .notNull()
-    .references(() => teams.id),
+    .references(() => teams.id, { onDelete: 'cascade' }), // Немає команди => немає інвайтів
   email: varchar('email', { length: 255 }).notNull(),
   role: varchar('role', { length: 50 }).notNull(),
   crmRole: crmRoleEnum('crm_role').notNull().default('viewer'),
   invitedBy: integer('invited_by')
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: 'cascade' }), // Хто запросив видалено => інвайт згорає (або cascade)
   invitedAt: timestamp('invited_at').notNull().defaultNow(),
   status: varchar('status', { length: 20 }).notNull().default('pending'),
 });
 
-// CRM Tables
+// --- CRM TABLES ---
 
 export const clients = pgTable('clients', {
   id: serial('id').primaryKey(),
   teamId: integer('team_id')
     .notNull()
-    .references(() => teams.id),
+    .references(() => teams.id, { onDelete: 'cascade' }), // Видалено компанію => зникли її клієнти
   name: varchar('name', { length: 200 }).notNull(),
   industry: varchar('industry', { length: 100 }),
   website: varchar('website', { length: 255 }),
   status: clientStatusEnum('status').notNull().default('prospect'),
+  // ЗАХИСТ: Забороняє видаляти рекрутера, поки на нього призначено клієнтів (свідомий вибір)
   assignedUserId: integer('assigned_user_id').references(() => users.id),
   notes: text('notes'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
@@ -137,7 +147,7 @@ export const clientContacts = pgTable('client_contacts', {
   id: serial('id').primaryKey(),
   clientId: integer('client_id')
     .notNull()
-    .references(() => clients.id),
+    .references(() => clients.id, { onDelete: 'cascade' }), // Клієнт зник => його контакти стерлися
   name: varchar('name', { length: 100 }).notNull(),
   email: varchar('email', { length: 255 }),
   phone: varchar('phone', { length: 50 }),
@@ -150,10 +160,10 @@ export const vacancies = pgTable('vacancies', {
   id: serial('id').primaryKey(),
   teamId: integer('team_id')
     .notNull()
-    .references(() => teams.id),
+    .references(() => teams.id, { onDelete: 'cascade' }), // Немає команди => немає вакансій
   clientId: integer('client_id')
     .notNull()
-    .references(() => clients.id),
+    .references(() => clients.id, { onDelete: 'cascade' }), // Клієнт зник => його вакансії зникли
   title: varchar('title', { length: 200 }).notNull(),
   description: text('description'),
   techStack: text('tech_stack'),
@@ -165,6 +175,7 @@ export const vacancies = pgTable('vacancies', {
   workType: workTypeEnum('work_type').notNull().default('remote'),
   status: vacancyStatusEnum('status').notNull().default('open'),
   priority: vacancyPriorityEnum('priority').notNull().default('medium'),
+  // ЗАХИСТ: Забороняє видаляти рекрутерів та HM, доки вакансії відкриті та призначені на них
   assignedRecruiterId: integer('assigned_recruiter_id').references(() => users.id),
   hiringManagerId: integer('hiring_manager_id').references(() => users.id),
   deadlineAt: timestamp('deadline_at'),
@@ -176,7 +187,7 @@ export const candidates = pgTable('candidates', {
   id: serial('id').primaryKey(),
   teamId: integer('team_id')
     .notNull()
-    .references(() => teams.id),
+    .references(() => teams.id, { onDelete: 'cascade' }), // Немає команди => немає бази кандидатів
   firstName: varchar('first_name', { length: 100 }).notNull(),
   lastName: varchar('last_name', { length: 100 }).notNull(),
   email: varchar('email', { length: 255 }),
@@ -200,13 +211,11 @@ export const submissions = pgTable('submissions', {
   id: serial('id').primaryKey(),
   vacancyId: integer('vacancy_id')
     .notNull()
-    .references(() => vacancies.id),
+    .references(() => vacancies.id, { onDelete: 'cascade' }), // Вакансія видалена => сабмішн зник
   candidateId: integer('candidate_id')
     .notNull()
-    .references(() => candidates.id),
-  submittedBy: integer('submitted_by')
-    .notNull()
-    .references(() => users.id),
+    .references(() => candidates.id, { onDelete: 'cascade' }), // Кандидат видалений => сабмішн зник
+  submittedBy: integer('submitted_by').references(() => users.id, { onDelete: 'set null' }), // Рекрутер зник => картка подачі жива, автор NULL (System)
   currentStage: pipelineStageEnum('current_stage').notNull().default('sourced'),
   rejectionReason: text('rejection_reason'),
   notes: text('notes'),
@@ -218,12 +227,10 @@ export const pipelineHistory = pgTable('pipeline_history', {
   id: serial('id').primaryKey(),
   submissionId: integer('submission_id')
     .notNull()
-    .references(() => submissions.id),
+    .references(() => submissions.id, { onDelete: 'cascade' }), // Немає сабмішна => немає його історії етапів
   fromStage: pipelineStageEnum('from_stage'),
   toStage: pipelineStageEnum('to_stage').notNull(),
-  changedBy: integer('changed_by')
-    .notNull()
-    .references(() => users.id),
+  changedBy: integer('changed_by').references(() => users.id, { onDelete: 'set null' }), // Автор зміни етапу зник => лог історії живий
   notes: text('notes'),
   changedAt: timestamp('changed_at').notNull().defaultNow(),
 });
@@ -233,9 +240,7 @@ export const entityNotes = pgTable('entity_notes', {
   entityType: noteEntityTypeEnum('entity_type').notNull(),
   entityId: integer('entity_id').notNull(),
   content: text('content').notNull(),
-  createdBy: integer('created_by')
-    .notNull()
-    .references(() => users.id),
+  createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }), // Автор коментаря зник => коментар у таймлайні живий
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
@@ -424,6 +429,8 @@ export enum ActivityType {
   REMOVE_TEAM_MEMBER = 'REMOVE_TEAM_MEMBER',
   INVITE_TEAM_MEMBER = 'INVITE_TEAM_MEMBER',
   ACCEPT_INVITATION = 'ACCEPT_INVITATION',
+  CHANGE_USER_ROLE = 'CHANGE_USER_ROLE',
+  REVOKE_TEAM_ACCESS = 'REVOKE_TEAM_ACCESS',
 
   // CRM
   CREATE_CLIENT = 'CREATE_CLIENT',

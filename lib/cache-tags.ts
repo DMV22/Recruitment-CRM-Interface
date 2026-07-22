@@ -29,4 +29,8 @@ export const cacheTags = {
   activity: {
     list: (teamId: number) => `activity-team-${teamId}`,
   },
+
+  team: {
+    list: (teamId: number) => `team-members-team-${teamId}`,
+  },
 } as const;

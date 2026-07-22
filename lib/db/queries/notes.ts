@@ -18,7 +18,7 @@ export type EntityNoteItem = {
   entityType: NoteEntityType;
   entityId: number;
   content: string;
-  createdBy: number;
+  createdBy: number | null;
   createdAt: Date;
   authorName: string | null;
 };
