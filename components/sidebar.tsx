@@ -88,10 +88,13 @@ function SidebarContent({ user, onNavigate }: { user: User; onNavigate?: () => v
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-border">
+      <Link
+        href="/"
+        className="flex items-center gap-3 px-4 py-5 border-b border-border hover:bg-muted/40 transition-colors select-none group"
+      >
         <Image src="/crm-software.png" alt="CRM Logo" width={40} height={40} />
         <span className="font-semibold text-sm tracking-tight">Recruitment CRM</span>
-      </div>
+      </Link>
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-2" aria-label="Main navigation">
