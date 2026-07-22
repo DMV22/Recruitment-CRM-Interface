@@ -51,9 +51,10 @@ export async function inviteMemberAction(
 
   const { email, crmRole } = parsed.data;
 
-  // SECURITY: Checking whether this email address is already a member or has been invited
-  // 1. Searching for an active invitation (pending) to this team
-  const [existingInvite] = await db
+  // SECURITY:
+  // 1) Prevent duplicate pending invitations inside the same team.
+  // This gives a clear user-facing error before we hit DB constraints.
+  const [existingInviteInCurrentTeam] = await db
     .select({ total: count() })
     .from(invitations)
     .where(
@@ -64,26 +65,44 @@ export async function inviteMemberAction(
       )
     );
 
-  if (Number(existingInvite?.total ?? 0) > 0) {
-    return { error: 'An invitation has already been sent to this email address' };
+  if (Number(existingInviteInCurrentTeam?.total ?? 0) > 0) {
+    return { error: 'An invitation has already been sent to this email address.' };
   }
 
-  // 2. Searching to see if a user with this email address is already a member of this team
-  const [existingMember] = await db
+  // SECURITY:
+  // 2) Prevent inviting a user who is already a member of the current team.
+  const [existingMemberInCurrentTeam] = await db
     .select({ total: count() })
     .from(teamMembers)
     .innerJoin(users, eq(teamMembers.userId, users.id))
     .where(and(eq(teamMembers.teamId, teamId), eq(users.email, email)));
 
-  if (Number(existingMember?.total ?? 0) > 0) {
-    return { error: 'This user is already a member of your team' };
+  if (Number(existingMemberInCurrentTeam?.total ?? 0) > 0) {
+    return { error: 'This user is already a member of your team.' };
+  }
+
+  // DOMAIN GUARD:
+  // 3) Prevent inviting a user who already belongs to another team.
+  // Since the system currently enforces one active team membership per user, such invitations would become invisible/useless for that user.
+  const [existingMemberInAnotherTeam] = await db
+    .select({ total: count() })
+    .from(teamMembers)
+    .innerJoin(users, eq(teamMembers.userId, users.id))
+    .where(eq(users.email, email));
+
+  if (Number(existingMemberInAnotherTeam?.total ?? 0) > 0) {
+    return {
+      error: 'This user already belongs to another team and cannot be invited.',
+    };
   }
 
   try {
     await inviteTeamMember(teamId, email, crmRole, user.id);
   } catch {
+    // Final protection against race conditions or DB-level unique violations.
     return {
-      error: 'A pending invitation for this email already exists or the user is already assigned.',
+      error:
+        'Unable to send the invitation because a pending invite already exists or the user is already assigned.',
     };
   }
 
