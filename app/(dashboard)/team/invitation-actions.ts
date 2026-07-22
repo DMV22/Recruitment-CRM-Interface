@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidateTag } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 import { getUser } from '@/lib/db/queries';
 import { acceptPendingInvitation } from '@/lib/db/queries/invitations';
@@ -34,5 +35,5 @@ export async function acceptInvitationAction(
   revalidateTag(cacheTags.team.list(teamId), { expire: 0 });
   revalidateTag(cacheTags.activity.list(teamId), { expire: 0 });
 
-  return { success: true };
+  redirect('/team');
 }
