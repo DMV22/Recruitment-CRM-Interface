@@ -96,6 +96,20 @@ export async function inviteMemberAction(
     };
   }
 
+  // DOMAIN GUARD:
+  // 4) Prevent hidden cross-team pending invitations.
+  // Without this check, a user with no team could receive multiple invitations, but the current UX shows only the oldest pending one.
+  const [existingPendingInviteAnywhere] = await db
+    .select({ total: count() })
+    .from(invitations)
+    .where(and(eq(invitations.email, email), eq(invitations.status, 'pending')));
+
+  if (Number(existingPendingInviteAnywhere?.total ?? 0) > 0) {
+    return {
+      error: 'This email already has a pending invitation to another team.',
+    };
+  }
+
   try {
     await inviteTeamMember(teamId, email, crmRole, user.id);
   } catch {
