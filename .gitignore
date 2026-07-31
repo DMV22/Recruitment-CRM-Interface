@@ -44,3 +44,5 @@ scripts/test-*.ts
 app/**/test-ui/
 app/**/test-table/
 app/**/test-form/
+
+.agents/skills/
