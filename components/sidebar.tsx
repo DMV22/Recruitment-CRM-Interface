@@ -59,7 +59,7 @@ const NAV_ITEMS: NavItem[] = [
     permission: 'submissions.read',
   },
   { label: 'Team', href: '/team', icon: UsersRound, permission: 'team.read' },
-  { label: 'Settings', href: '#', icon: Settings, permission: 'settings.read' },
+  { label: 'Settings', href: '/settings', icon: Settings, permission: 'settings.read' },
 ];
 
 // Sidebar Content
@@ -110,12 +110,7 @@ function SidebarContent({ user, onNavigate }: { user: User; onNavigate?: () => v
               <li key={item.label}>
                 <Link
                   href={item.href}
-                  onClick={(e) => {
-                    if (item.href === '#') {
-                      e.preventDefault();
-                    }
-                    if (onNavigate) onNavigate();
-                  }}
+                  onClick={() => onNavigate?.()}
                   className={cn(
                     'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                     isActive
@@ -152,7 +147,7 @@ function SidebarContent({ user, onNavigate }: { user: User; onNavigate?: () => v
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-52">
             <DropdownMenuItem asChild>
-              <Link href="#">Settings</Link>
+              <Link href="/settings">Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

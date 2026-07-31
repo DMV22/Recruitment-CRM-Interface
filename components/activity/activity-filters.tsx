@@ -14,9 +14,10 @@ import {
 type Props = {
   crmRole: string;
   activityUsers: { id: number; name: string | null }[];
+  anchor?: string;
 };
 
-export function ActivityFilters({ crmRole, activityUsers }: Props) {
+export function ActivityFilters({ crmRole, activityUsers, anchor }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -36,10 +37,11 @@ export function ActivityFilters({ crmRole, activityUsers }: Props) {
 
       startTransition(() => {
         const query = params.toString();
-        router.push(query ? `${pathname}?${query}` : pathname);
+        const hash = anchor ? `#${anchor}` : '';
+        router.push(query ? `${pathname}?${query}${hash}` : `${pathname}${hash}`);
       });
     },
-    [router, pathname, searchParams]
+    [anchor, router, pathname, searchParams]
   );
 
   return (
